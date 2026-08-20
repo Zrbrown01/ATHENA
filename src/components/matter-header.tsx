@@ -1,6 +1,7 @@
 import { CalendarPlus, FileUp, Mail, Mic, MoreHorizontal, Timer } from "lucide-react";
 import type { MatterSummary } from "@/domain/types";
 import { StatusPill } from "./status-pill";
+import Link from "next/link";
 
 export function MatterHeader({ matter }: { matter: MatterSummary }) {
   return (
@@ -14,12 +15,12 @@ export function MatterHeader({ matter }: { matter: MatterSummary }) {
           </div>
         </div>
         <div className="quick-actions" aria-label="Matter actions">
-          <button type="button"><Mail size={16} />Email</button>
-          <button type="button"><Mic size={16} />Dictate</button>
-          <button type="button"><Timer size={16} />Add time</button>
-          <button type="button"><FileUp size={16} />Upload</button>
-          <button type="button"><CalendarPlus size={16} />Task</button>
-          <button className="icon-button" type="button" aria-label="More actions"><MoreHorizontal size={18} /></button>
+          <Link href="/communications"><Mail size={16} />Email</Link>
+          <button type="button" disabled title="Verbatim is not connected"><Mic size={16} />Dictate</button>
+          <Link href="/billing"><Timer size={16} />Add time</Link>
+          <Link href="/documents"><FileUp size={16} />Upload</Link>
+          <Link href="/"><CalendarPlus size={16} />Task</Link>
+          <button className="icon-button" type="button" disabled aria-label="More actions"><MoreHorizontal size={18} /></button>
         </div>
       </div>
       <dl className="matter-metadata">
@@ -31,9 +32,12 @@ export function MatterHeader({ matter }: { matter: MatterSummary }) {
         <div><dt>Attorney</dt><dd>{matter.assignedAttorney}</dd></div>
       </dl>
       <nav className="matter-tabs" aria-label="Matter workspace">
-        {['Overview', 'Case', 'Work', 'Evidence', 'Financials', 'Resolution'].map((tab, index) => (
-          <button type="button" className={index === 0 ? "selected" : ""} key={tab}>{tab}</button>
-        ))}
+        <Link className="selected" href="/matters/golden">Overview</Link>
+        <Link href="/matters/golden#case">Case</Link>
+        <Link href="/#priority-work-title">Work</Link>
+        <Link href="/documents">Evidence</Link>
+        <Link href="/billing">Financials</Link>
+        <Link href="/matters/golden/authority">Resolution</Link>
       </nav>
     </section>
   );

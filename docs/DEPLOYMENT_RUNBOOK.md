@@ -6,16 +6,15 @@
 - Canonical host: `www.athenacms.app`
 - Apex behavior: `https://athenacms.app` redirects permanently to the canonical `www` host.
 
-The application is not deployed by this foundation slice. Cloud and hosting selection must be recorded in an ADR after security, BAA, cost, regional availability, and operations review.
+The application is deployed as an owner-only Sites pilot at `https://athena-cms.new-reign-ca-8518.chatgpt.site`. It contains synthetic data only and is not a production authorization. The canonical custom domain remains pending DNS verification.
 
 ## Required production configuration
 
 ```text
 NEXT_PUBLIC_APP_URL=https://www.athenacms.app
-ALLOWED_ORIGINS=https://www.athenacms.app
-AUTH_MODE=production
-DATABASE_URL=<managed secret reference>
-OBJECT_STORAGE_DRIVER=<approved provider>
+AUTH_MODE=platform_headers
+D1_BINDING=DB
+R2_BINDING=DOCUMENTS
 OCR_PROVIDER=<approved provider or disabled>
 AI_PROVIDER=<approved provider or disabled>
 ```
@@ -23,6 +22,14 @@ AI_PROVIDER=<approved provider or disabled>
 Never commit production values or credentials. Use the selected cloud’s managed secret service.
 
 ## Domain activation checklist
+
+Current Sites records for the `www` host:
+
+```text
+CNAME www -> custom-domains.chatgpt.site (DNS only)
+TXT _openai-site-verification.www -> openai-site-verification=JNWRykv3X6kW5n2AMnTCud8jAumBO2QyerQLSYJcpwU
+TXT _cf-custom-hostname.www -> 62406762-1264-4515-b2b8-b8fe5874a50e
+```
 
 1. Verify domain ownership and identify the authoritative DNS provider.
 2. Configure the hosting provider’s required DNS records for `www`.

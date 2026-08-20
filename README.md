@@ -9,19 +9,21 @@ Athena is a California-first, matter-centered case management platform for worke
 
 ## Current build status
 
-This first foundation slice includes:
+The current private pilot includes:
 
-- A desktop-first, accessible matter workspace.
-- A canonical tenant-aware relational schema.
+- A desktop-first work queue, matter inventory, and matter workspace.
+- Referral/conflict intake, California docket control, evidence, communications, billing, reporting, clients, authority, and operations views.
+- A canonical tenant-aware PostgreSQL model plus a deployment-local D1 persistence model.
 - Separate Matter, Claim, Injury, and ADJ records.
 - Original-document metadata and provenance-bearing fact observations.
 - A QME fact-review workflow with source page, excerpt, confidence, and downstream impact.
-- A server-side authorization boundary for fact review.
-- Immutable business-event envelopes and transactional outbox schema.
+- Authenticated, persisted human gates for fact review, intake, authority, time, reports, and filing packets.
+- PDF content validation, checksum, tenant-scoped R2 storage, and quarantine metadata. No document is released because malware scanning is not connected.
+- Immutable business-event envelopes and transactional D1 outbox writes.
 - Provider-neutral integration contracts with honest disabled states.
 - Synthetic golden-matter data and authorization tests.
 
-It is **not production ready**. Authentication is a clearly marked development adapter; external providers are not connected; document upload, malware scanning, OCR, and AI execution are not yet implemented.
+It is **not production ready**. The hosted pilot is owner-only and uses the hosting platform’s authenticated identity headers. Microsoft 365, MerusCase, EAMS, malware scanning, OCR, AI execution, court reporting, and client access are not connected.
 
 ## Local development
 
@@ -49,6 +51,9 @@ Local and preview environments must contain synthetic data only.
 src/app/                 Next.js routes and API boundary
 src/components/          Accessible product UI
 src/db/schema.ts         Canonical PostgreSQL schema
+db/schema.ts             Hosted pilot D1 schema
+drizzle/                 Hosted pilot SQLite migrations
+db/postgres-migrations/  Canonical PostgreSQL migrations
 src/domain/              Matter data and domain commands
 src/integrations/        External-provider contracts
 src/platform/            Tenant authorization and events
@@ -61,4 +66,4 @@ Sources create evidence → evidence creates candidate facts → verified facts 
 
 ## Data and compliance notice
 
-Use synthetic data only until the production environment, contracts, authorization model, security controls, and provider configurations have been independently reviewed. Athena is not represented as HIPAA compliant, SOC 2 attested, EAMS connected, MerusCase connected, or production ready.
+Use synthetic data only until the production environment, contracts, authorization model, security controls, and provider configurations have been independently reviewed. Athena is not represented as HIPAA compliant, SOC 2 attested, EAMS connected, MerusCase connected, malware-scanned, or production ready.

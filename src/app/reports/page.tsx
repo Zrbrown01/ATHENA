@@ -1,0 +1,10 @@
+import { BarChart3, FileCheck2, FileClock, ShieldCheck } from "lucide-react";
+import { AppShell } from "@/components/app-shell";
+import { MetricGrid, ModuleHeader, WorkstreamTable } from "@/components/module-layout";
+import { WorkflowDecision } from "@/components/workflow-decision";
+const rows=[
+ {primary:"90-day status — Rivera v. Northstar",secondary:"Client template v4 · sources linked",owner:"Maya Chen",due:"Due Aug 21",status:"Needs approval",tone:"warning" as const},
+ {primary:"Quarterly portfolio — Summit Claims",secondary:"23 open matters · synthetic metrics",owner:"Client team",due:"Due Aug 30",status:"In progress",tone:"info" as const},
+ {primary:"Closure report — Vasquez v. Orion",secondary:"Settlement and lien closure verified",owner:"Sara Kim",due:"Completed Aug 18",status:"Approved",tone:"success" as const},
+];
+export default function ReportsPage(){return <AppShell active="Reports"><div className="simple-page"><ModuleHeader eyebrow="REPORTING" title="Client reporting" description="Source-linked drafts, client-specific templates, human approval, and delivery readiness." /><MetricGrid metrics={[{label:"Due this week",value:"8",detail:"3 need approval",icon:FileClock},{label:"Approved",value:"14",detail:"This month",icon:FileCheck2},{label:"Portfolio reports",value:"4",detail:"Scheduled",icon:BarChart3},{label:"Uncited claims",value:"0",detail:"In approval queue",icon:ShieldCheck}]} /><div className="module-two-column"><WorkstreamTable title="Report queue" description="Generated content remains a draft until a human approves it." rows={rows} column="Report" /><aside className="panel decision-panel"><span className="eyebrow">APPROVAL GATE</span><h2>90-day status report</h2><p>Rivera v. Northstar Logistics · six cited matter facts · no unresolved conflicts detected.</p><dl><div><dt>Template</dt><dd>Summit v4</dd></div><div><dt>Sources</dt><dd>6 linked</dd></div><div><dt>Delivery</dt><dd>Not connected</dd></div></dl><WorkflowDecision workflowType="report" aggregateId="report-rivera-90day" matterId="matter-golden" action="approve" label="Approve report" successLabel="Report approved" /></aside></div></div></AppShell>}

@@ -18,12 +18,12 @@ import Link from "next/link";
 const navigation = [
   ["My Work", Gauge, "/"],
   ["Matters", BriefcaseBusiness, "/matters"],
-  ["Calendar", CalendarDays, "/"],
-  ["Documents", FileText, "/"],
-  ["Communications", Mail, "/"],
-  ["Billing", WalletCards, "/"],
-  ["Reports", Landmark, "/"],
-  ["Clients", Users, "/"],
+  ["Calendar", CalendarDays, "/calendar"],
+  ["Documents", FileText, "/documents"],
+  ["Communications", Mail, "/communications"],
+  ["Billing", WalletCards, "/billing"],
+  ["Reports", Landmark, "/reports"],
+  ["Clients", Users, "/clients"],
 ] as const;
 
 export function AppShell({ children, active = "My Work" }: { children: React.ReactNode; active?: string }) {
@@ -54,6 +54,9 @@ export function AppShell({ children, active = "My Work" }: { children: React.Rea
           </div>
           <Link className="nav-item" href="/admin/integrations">
             <Settings aria-hidden="true" size={17} /> Administration
+          </Link>
+          <Link className="nav-item" href="/operations/california">
+            <Landmark aria-hidden="true" size={17} /> California ops
           </Link>
         </div>
       </aside>
