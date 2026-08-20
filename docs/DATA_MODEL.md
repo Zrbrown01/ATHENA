@@ -29,10 +29,12 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 | `audit_records` | actor, action, resource, outcome, reason, and request identity |
 | `preview_events` | immutable business-event envelope |
 | `preview_outbox` | reliable outgoing work pending processing/reconciliation |
+| `governance_rules` | immutable tenant/code/version calculation content with explicit synthetic, pending-review, or attorney-approved status |
+| `obligations` | matter-scoped rule snapshot, trigger provenance, calculation trace, owner/revision, and completion or cancellation evidence |
 
 ## Object keys
 
-R2 keys begin with the tenant ID. Original uploads use `<tenant>/<matter-or-unassigned>/<document>/original.pdf`. Exports use `<tenant>/exports/<matter>/<export>/manifest.json`. Authorization is checked before metadata lookup and download; object keys are never accepted from the browser.
+R2 keys begin with the tenant ID. Original uploads use `<tenant>/<matter-or-unassigned>/<document>/original.pdf`. Exports use `<tenant>/exports/<matter>/<export>/matter-archive.tar`. Authorization is checked before metadata lookup and download; object keys are never accepted from the browser.
 
 ## Migration rule
 

@@ -63,7 +63,7 @@ Updated: 2026-08-20
 | Medical and med-legal | Functional pilot | Exact-page QME candidates and review are tested; provider/OCR and full QME/AME cycle remain blocked/incomplete |
 | Documents/evidence | Tested quarantine slice | PDF security tests, tenant R2 keys, checksums, metadata, and compensation; scanning/release, versions, preview, processing, and full export remain |
 | Communications | Externally blocked | Retryable Microsoft handoff is persisted and never labeled sent; Graph connection/sync/delivery remain unavailable |
-| Calendar/docketing | Product foundation | Docket view and filing gate; durable deadlines, business-day rules, recurrence, chains, and readiness records remain |
+| Calendar/docketing | Functional obligation slice | Versioned business-day calculation plus durable create/reassign/complete/cancel lifecycle, provenance, optimistic revision checks, evidence/reason fields, event/outbox writes, and operator controls. The only active content is an explicitly acknowledged synthetic firm policy; attorney-reviewed California rules, sourced holidays, recurrence, chains, and readiness remain |
 | Court/EAMS | Externally blocked | Packet approval and honest health; versioned forms/packet validation/status adapter remain |
 | Proceedings/readiness | Product foundation | California queue view; structured readiness evaluator remains |
 | Records/subpoenas | Not started | Domain and end-to-end lifecycle remain |
@@ -89,8 +89,8 @@ Updated: 2026-08-20
 
 ## Next implementation slice
 
-1. Obligation creation/completion and attorney-reviewed California rule/holiday content.
-2. Ethical-wall administration and negative end-to-end tests for search, AI retrieval, caches, jobs, and support access.
+1. Ethical-wall administration and negative end-to-end tests for search, AI retrieval, caches, jobs, and support access.
+2. Attorney-reviewed California rule/holiday content, exception/waiver controls, recurrence, chains, escalation, and readiness records.
 3. Automated outbox scheduling plus external consumer idempotency and reconciliation after provider approval.
 4. Approved malware scanning/OCR pipeline with quarantine release; full-environment restore and incident exercises.
 5. Production archive scale limits, streaming, encryption/key policy, and restore tooling for non-synthetic originals.

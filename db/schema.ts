@@ -1,4 +1,5 @@
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 
 export const factReviews = sqliteTable("fact_reviews", {
   id: text("id").primaryKey(),
@@ -112,6 +113,9 @@ export const governanceRules = sqliteTable("governance_rules", {
   businessDays: integer("business_days").notNull(),
   effectiveAt: integer("effective_at", { mode: "timestamp_ms" }).notNull(),
   reviewBy: integer("review_by", { mode: "timestamp_ms" }).notNull(),
+  contentStatus: text("content_status", { enum: ["synthetic_sandbox", "pending_attorney_review", "attorney_approved"] }).notNull().default("pending_attorney_review"),
+  reviewedBy: text("reviewed_by"),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
 }, (table) => [uniqueIndex("idx_governance_rule_version").on(table.tenantId, table.code, table.version)]);
 
 export const obligations = sqliteTable("obligations", {
@@ -119,12 +123,27 @@ export const obligations = sqliteTable("obligations", {
   tenantId: text("tenant_id").notNull(),
   matterId: text("matter_id").notNull(),
   ruleId: text("rule_id").notNull(),
+  ruleCode: text("rule_code").notNull().default("legacy"),
+  ruleVersion: integer("rule_version").notNull().default(1),
+  authorityCitation: text("authority_citation").notNull().default("Legacy obligation; review required"),
   title: text("title").notNull(),
+  requirement: text("requirement").notNull().default("Review obligation requirements"),
+  triggerAt: integer("trigger_at", { mode: "timestamp_ms" }).notNull().default(sql`0`),
+  triggerSourceType: text("trigger_source_type").notNull().default("legacy"),
+  triggerSourceId: text("trigger_source_id").notNull().default("legacy"),
   dueAt: integer("due_at", { mode: "timestamp_ms" }).notNull(),
   ownerId: text("owner_id").notNull(),
-  status: text("status", { enum: ["open", "completed", "waived"] }).notNull(),
-  calculation: text("calculation", { mode: "json" }).notNull(),
+  status: text("status", { enum: ["open", "completed", "cancelled"] }).notNull(),
+  calculation: text("calculation", { mode: "json" }).$type<string[]>().notNull(),
+  revision: integer("revision").notNull().default(1),
+  completedBy: text("completed_by"),
+  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
+  completionEvidence: text("completion_evidence"),
+  cancelledBy: text("cancelled_by"),
+  cancelledAt: integer("cancelled_at", { mode: "timestamp_ms" }),
+  cancellationReason: text("cancellation_reason"),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(sql`0`),
 }, (table) => [index("idx_obligations_tenant_due").on(table.tenantId, table.status, table.dueAt)]);
 
 export const matterAccessPolicies = sqliteTable("matter_access_policies", {

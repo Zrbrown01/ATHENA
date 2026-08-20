@@ -2,7 +2,7 @@
 
 ## Required test layers
 
-- Unit: domain state machines, authorization, billing/deadline calculations, upload validation, retention/hold policy, provider retry, source-grounding, and export manifests.
+- Unit: domain state machines, authorization, billing/deadline calculations, obligation lifecycle/content-status/revision gates, upload validation, retention/hold policy, provider retry, source-grounding, and export manifests.
 - Integration: D1 migrations, atomic state/event/outbox/audit writes, R2 compensation and downloads, idempotency, tenant predicates, and provider handoff recovery.
 - End to end: ten synthetic golden workflows, keyboard navigation, error recovery, and critical performance targets.
 - Security: cross-tenant UI/API/object/export/job/event/search/AI denials, ethical walls, origin/CSRF, injection/XSS/SSRF, rate limit, content security, secrets, and dependency scanning.
@@ -17,7 +17,7 @@ The local integration smoke executes all seven companion API transitions against
 
 ## Remaining gates
 
-Automated browser E2E/visual regression, database concurrency/idempotency integration, persisted ethical-wall administration tests, automated outbox scheduling, full export archive with original bytes, attorney-reviewed deadline content, AI grounding evaluation, migration reconciliation, performance budgets, and backup restore remain required before production.
+Automated browser E2E/visual regression, adversarial database concurrency tests, persisted ethical-wall administration tests, automated outbox scheduling, attorney-reviewed deadline content and sourced holiday operations, AI grounding evaluation, migration reconciliation, performance budgets, and backup restore remain required before production.
 
 ## Standard checks
 
