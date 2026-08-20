@@ -12,9 +12,9 @@ export interface ExportRecordInventory {
 
 export function buildCompanionExport(input: { tenantId: string; matterId: string; generatedAt: Date; generatedBy: string; events: ExportEvent[]; inventory?: ExportRecordInventory }) {
   const inventory = input.inventory ?? { auditRecords: [], deliveryReceipts: [], documentMetadata: [], legalHolds: [], originalDocumentBytesIncluded: 0 };
-  const coverage = assessExportCoverage({ sourceDocumentCount: 1 + inventory.documentMetadata.length, originalDocumentBytesIncluded: inventory.originalDocumentBytesIncluded });
+  const coverage = assessExportCoverage({ sourceDocumentCount: Math.max(1, inventory.documentMetadata.length), originalDocumentBytesIncluded: inventory.originalDocumentBytesIncluded });
   return {
-    manifestVersion: 2,
+    manifestVersion: 3,
     classification: "synthetic-pilot-export",
     completeness: coverage.completeness,
     missingItems: coverage.missingItems,
@@ -30,7 +30,7 @@ export function buildCompanionExport(input: { tenantId: string; matterId: string
     events: input.events,
     records: inventory,
     coverage: coverage.items,
-    limitations: ["Synthetic fixture export only", "No production PHI", "Original PDF bytes are not part of this deterministic fixture", "Microsoft delivery is blocked and not represented as sent", "A partial export must never be represented as a complete tenant or matter export"],
+    limitations: ["Synthetic fixture export only", "No production PHI", ...(coverage.completeness === "partial" ? ["Original PDF bytes are not part of this deterministic fixture", "A partial export must never be represented as a complete tenant or matter export"] : []), "Microsoft delivery is blocked and not represented as sent"],
   };
 }
 

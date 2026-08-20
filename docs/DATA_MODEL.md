@@ -40,4 +40,6 @@ Every D1 schema change is generated through Drizzle, inspected for backward comp
 
 ## Export completeness
 
-`export_jobs` records the tenant, matter, run, object identity, checksum, byte size, format, manifest version, creator, and immutable completeness assessment. `completeness=complete` is permitted only when every required category is actually bundled. `missing_items` and the manifest coverage ledger make omissions machine-readable; a downloadable partial export is never labeled complete.
+`export_jobs` records the tenant, matter, run, object identity, checksum, byte size, archive entry count, format, manifest version, creator, restoration verification timestamp, and immutable completeness assessment. `completeness=complete` is permitted only when every required category is bundled and every included original passes a read-back checksum. `missing_items` and the manifest coverage ledger make omissions machine-readable; a downloadable partial export is never labeled complete.
+
+The deterministic QME processor creates a valid synthetic PDF with a pinned SHA-256 and `trusted_synthetic_fixture` storage metadata. This generated fixture may enter `ready` without a malware provider because it contains fixed source-controlled text and no user bytes. User uploads remain `awaiting_scan` and are not given the same trust path.

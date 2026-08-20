@@ -17,6 +17,8 @@ import {
 } from "../../db/schema";
 import { companionFixture } from "@/domain/companion/fixture";
 import { buildCompanionExport } from "@/domain/companion/export-manifest";
+import { buildSyntheticQmePdf, SYNTHETIC_QME_BYTE_SIZE, SYNTHETIC_QME_SHA256 } from "@/domain/documents/synthetic-qme-original";
+import { buildVerifiedMatterArchive } from "@/domain/exports/matter-archive";
 import { summitSyntheticBillingProfile, validateBillingEntry } from "@/domain/billing/validate-entry";
 import type { CompanionAction, CompanionStage } from "@/domain/companion/run";
 import type { EventEnvelope } from "./events";
@@ -34,7 +36,7 @@ export async function readCompanionRun(tenantId: string, matterId: string) {
     .from(candidateTimeEntries).where(and(eq(candidateTimeEntries.tenantId, tenantId), eq(candidateTimeEntries.runId, run.id))).limit(1);
   const [billing] = await db.select({ outcome: billingValidations.outcome, ruleCode: billingValidations.ruleCode, ruleVersion: billingValidations.ruleVersion, explanation: billingValidations.explanation })
     .from(billingValidations).where(and(eq(billingValidations.tenantId, tenantId), eq(billingValidations.runId, run.id))).limit(1);
-  const [exportJob] = await db.select({ id: exportJobs.id, status: exportJobs.status, sha256: exportJobs.sha256, byteSize: exportJobs.byteSize, format: exportJobs.format, completeness: exportJobs.completeness, missingItems: exportJobs.missingItems })
+  const [exportJob] = await db.select({ id: exportJobs.id, status: exportJobs.status, sha256: exportJobs.sha256, byteSize: exportJobs.byteSize, format: exportJobs.format, completeness: exportJobs.completeness, missingItems: exportJobs.missingItems, archiveEntryCount: exportJobs.archiveEntryCount, restorationVerifiedAt: exportJobs.restorationVerifiedAt })
     .from(exportJobs).where(and(eq(exportJobs.tenantId, tenantId), eq(exportJobs.runId, run.id))).limit(1);
   return { ...run, draft: draft ?? null, handoff: handoff ?? null, time: time ?? null, billing: billing ?? null, exportJob: exportJob ?? null };
 }
@@ -69,6 +71,24 @@ export async function persistCompanionTransition(input: {
     actorId: input.actor.userId, actorEmail: input.actor.email, updatedAt: now,
     ...runPatch(input.action),
   }).where(and(eq(companionRuns.id, input.event.aggregateId), eq(companionRuns.tenantId, input.event.tenantId), eq(companionRuns.stage, input.currentStage as Exclude<CompanionStage, "not_started">)));
+
+  if (input.action === "process_qme") {
+    const bytes = buildSyntheticQmePdf();
+    const objectKey = `${input.event.tenantId}/${input.event.matterId}/${companionFixture.document.id}/original.pdf`;
+    const bucket = getDocumentBucket();
+    await bucket.put(objectKey, bytes, { httpMetadata: { contentType: "application/pdf" }, customMetadata: { tenantId: input.event.tenantId, matterId: input.event.matterId!, documentId: companionFixture.document.id, sha256: SYNTHETIC_QME_SHA256, scanStatus: "trusted_synthetic_fixture", providerMode: "deterministic_sandbox" } });
+    try {
+      await db.batch([runUpdate, db.insert(documentIntakes).values({
+        id: companionFixture.document.id, tenantId: input.event.tenantId, matterId: input.event.matterId!, title: companionFixture.document.title,
+        objectKey, sha256: SYNTHETIC_QME_SHA256, byteSize: SYNTHETIC_QME_BYTE_SIZE, mimeType: "application/pdf",
+        classification: "medical_qme_synthetic_fixture", status: "ready", actorId: input.actor.userId, actorEmail: input.actor.email, createdAt: now,
+      }).onConflictDoNothing(), eventQuery, outboxQuery, auditQuery]);
+    } catch (error) {
+      await bucket.delete(objectKey);
+      throw error;
+    }
+    return;
+  }
 
   if (input.action === "create_verbatim_draft") {
     await db.batch([runUpdate, db.insert(workProductDrafts).values({
@@ -115,7 +135,7 @@ export async function persistCompanionTransition(input: {
       await db.batch([
         runUpdate,
         db.update(companionRuns).set({ exportJobId: artifact.exportId }).where(and(eq(companionRuns.id, input.event.aggregateId), eq(companionRuns.tenantId, input.event.tenantId))),
-        db.insert(exportJobs).values({ id: artifact.exportId, tenantId: input.event.tenantId, matterId: input.event.matterId!, runId: input.event.aggregateId, status: "ready", objectKey: artifact.objectKey, sha256: artifact.sha256, byteSize: artifact.byteSize, format: "application/json", manifestVersion: 2, completeness: artifact.completeness, missingItems: artifact.missingItems, createdBy: input.actor.userId, createdAt: now }),
+        db.insert(exportJobs).values({ id: artifact.exportId, tenantId: input.event.tenantId, matterId: input.event.matterId!, runId: input.event.aggregateId, status: "ready", objectKey: artifact.objectKey, sha256: artifact.sha256, byteSize: artifact.byteSize, format: "application/x-tar", manifestVersion: 3, completeness: artifact.completeness, missingItems: artifact.missingItems, archiveEntryCount: artifact.archiveEntryCount, restorationVerifiedAt: artifact.restorationVerifiedAt, createdBy: input.actor.userId, createdAt: now }),
         eventQuery, outboxQuery, auditQuery,
       ]);
     } catch (error) {
@@ -149,14 +169,25 @@ async function buildExportArtifact(input: Parameters<typeof persistCompanionTran
   const eventIds = new Set(events.map((event) => event.eventId));
   const receipts = (await db.select({ id: outboxDeliveries.id, eventId: outboxDeliveries.eventId, destination: outboxDeliveries.destination, outcome: outboxDeliveries.outcome, attempt: outboxDeliveries.attempt, detail: outboxDeliveries.detail, createdAt: outboxDeliveries.createdAt })
     .from(outboxDeliveries).where(eq(outboxDeliveries.tenantId, input.event.tenantId)).orderBy(asc(outboxDeliveries.createdAt))).filter((receipt) => eventIds.has(receipt.eventId));
-  const exportId = createId();
-  const manifest = buildCompanionExport({ tenantId: input.event.tenantId, matterId: input.event.matterId!, generatedAt: now, generatedBy: input.actor.userId, events: [...events, { eventId: input.event.eventId, eventType: input.event.eventType, occurredAt: now, actorId: input.actor.userId, payload: input.event.payload }], inventory: { auditRecords: audits, deliveryReceipts: receipts, documentMetadata: documents, legalHolds: holds, originalDocumentBytesIncluded: 0 } });
-  const bytes = new TextEncoder().encode(JSON.stringify(manifest, null, 2));
-  const sha256 = await digestHex(bytes);
-  const objectKey = `${input.event.tenantId}/exports/${input.event.matterId}/${exportId}/manifest.json`;
   const bucket = getDocumentBucket();
-  await bucket.put(objectKey, bytes, { httpMetadata: { contentType: "application/json" }, customMetadata: { tenantId: input.event.tenantId, matterId: input.event.matterId!, exportId, sha256, classification: "synthetic-pilot-export" } });
-  return { exportId, objectKey, sha256, byteSize: bytes.byteLength, completeness: manifest.completeness, missingItems: manifest.missingItems };
+  const originals: Array<{ path: string; bytes: Uint8Array; sha256: string }> = [];
+  for (const document of documents) {
+    const object = await bucket.get(document.objectKey);
+    if (!object) continue;
+    const bytes = new Uint8Array(await object.arrayBuffer());
+    if (bytes.byteLength !== document.byteSize || await digestHex(bytes) !== document.sha256) continue;
+    originals.push({ path: `documents/${document.id}/original.pdf`, bytes, sha256: document.sha256 });
+  }
+  const exportId = createId();
+  const manifest = buildCompanionExport({ tenantId: input.event.tenantId, matterId: input.event.matterId!, generatedAt: now, generatedBy: input.actor.userId, events: [...events, { eventId: input.event.eventId, eventType: input.event.eventType, occurredAt: now, actorId: input.actor.userId, payload: input.event.payload }], inventory: { auditRecords: audits, deliveryReceipts: receipts, documentMetadata: documents, legalHolds: holds, originalDocumentBytesIncluded: originals.length } });
+  const verified = await buildVerifiedMatterArchive(manifest, originals);
+  const archive = verified.archive;
+  const archiveEntryCount = verified.entryCount;
+  const restorationVerifiedAt = verified.restorationVerified ? now : null;
+  const sha256 = await digestHex(archive);
+  const objectKey = `${input.event.tenantId}/exports/${input.event.matterId}/${exportId}/matter-archive.tar`;
+  await bucket.put(objectKey, archive, { httpMetadata: { contentType: "application/x-tar" }, customMetadata: { tenantId: input.event.tenantId, matterId: input.event.matterId!, exportId, sha256, classification: "synthetic-pilot-export", completeness: manifest.completeness, restorationVerified: String(Boolean(restorationVerifiedAt)) } });
+  return { exportId, objectKey, sha256, byteSize: archive.byteLength, completeness: manifest.completeness, missingItems: manifest.missingItems, archiveEntryCount, restorationVerifiedAt };
 }
 
 function eventValues(event: EventEnvelope<Record<string, unknown>>) {

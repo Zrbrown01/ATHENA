@@ -13,7 +13,7 @@ const steps: { stage: Exclude<CompanionStage, "not_started">; title: string; det
   { stage: "report_approved", title: "Attorney approval recorded", detail: "An authenticated attorney or partner approves the client report and creates audit/event evidence.", provider: "Athena native" },
   { stage: "delivery_handoff_blocked", title: "Microsoft delivery handoff", detail: "The approved report is queued as retryable work but remains blocked—not sent—until Microsoft 365 is activated.", provider: "Microsoft 365 disconnected" },
   { stage: "time_confirmed", title: "Time and billing validated", detail: "1.2 hours are human-confirmed; the synthetic Summit rule version validates narrative and UTBMS codes.", provider: "Athena native" },
-  { stage: "export_ready", title: "Auditable export ready", detail: "A tenant-scoped JSON manifest with sources, facts, events, time, limitations, and checksum is stored in R2.", provider: "Athena native" },
+  { stage: "export_ready", title: "Verified matter archive ready", detail: "A tenant-scoped TAR bundles the coverage manifest and verified synthetic original, then proves checksums by reading the archive back before release.", provider: "Athena native" },
 ];
 
 const actionLabels: Record<CompanionAction, string> = {
@@ -69,7 +69,7 @@ export function CompanionPilot() {
         {data?.run?.exportJob && <><div className="pilot-result warning"><AlertTriangle size={17}/><span><strong>{data.run.exportJob.completeness === "complete" ? "Complete export" : "Partial export — limitation enforced"}</strong><small>{data.run.exportJob.missingItems.length ? `Missing: ${data.run.exportJob.missingItems.join(", ")}` : "Every required export category is included."}</small></span></div><a className="secondary-action export-link" href={`/api/exports/${data.run.exportJob.id}`}><Download size={15}/>Download verified {data.run.exportJob.completeness} export</a></>}
       </aside>
     </section>
-    <section className="panel provenance-strip"><FileSearch size={19}/><div><strong>Source grounding</strong><p>QME pages 27, 29, and 31 remain linked to the impairment, restriction, and apportionment candidates. Every transition adds an actor-attributed event, audit record, and outbox item.</p></div><AlertTriangle size={18}/><div><strong>Release limitation</strong><p>The fixture contains no original PDF bytes. Real uploads remain quarantined until an approved malware scanner and OCR pipeline are connected.</p></div></section>
+    <section className="panel provenance-strip"><FileSearch size={19}/><div><strong>Source grounding</strong><p>QME pages 27, 29, and 31 remain linked to the impairment, restriction, and apportionment candidates. Every transition adds an actor-attributed event, audit record, and outbox item.</p></div><AlertTriangle size={18}/><div><strong>Release boundary</strong><p>The archive includes a safe, generated synthetic PDF original. User uploads remain quarantined until an approved malware scanner and OCR pipeline are connected.</p></div></section>
   </div>;
 }
 

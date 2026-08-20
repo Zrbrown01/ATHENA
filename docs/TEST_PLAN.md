@@ -26,4 +26,6 @@ Automated browser E2E/visual regression, database concurrency/idempotency integr
 ## Export coverage evidence
 
 - Manifest coverage tests prove that one missing original byte stream forces `completeness=partial` and that completeness is possible only when included byte-stream count covers every source document.
-- Download responses expose the stored checksum and completeness classification.
+- TAR tests prove safe paths, unique entries, header checksums, manifest presence, exact original hashes, and rejection of incomplete restoration claims.
+- The complete golden-archive test packages manifest v3 with the deterministic PDF, reads both entries back, and proves restoration evidence.
+- Download responses expose the stored checksum, completeness classification, and restoration-verification state.

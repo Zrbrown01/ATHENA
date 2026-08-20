@@ -52,7 +52,7 @@ Updated: 2026-08-20
 | Governance Engine | Pilot gates | Explicit human-approval commands cover legally/financially consequential pilot workflows; configurable rule engine remains |
 | Billing | Functional pilot | Human time-confirmation gate and synthetic pre-bill view; no accounting export or connected ledger |
 | Audit | Functional pilot | Material companion transitions create actor-attributed audit records plus immutable events; read/access audit and incident operations remain |
-| Export | Tested partial-export control | Authorized tenant/matter-scoped, checksummed R2 manifest v2 includes record inventory, coverage ledger, audit/delivery/hold metadata, and an enforced partial label/header when original bytes are absent; complete archive packaging remains required |
+| Export | Tested complete golden archive | Manifest v3 inventories scoped records and coverage; TAR packaging includes the checksum-pinned synthetic original; Athena reads the archive back and verifies every original hash before recording restoration evidence. Missing bytes still force an explicit partial label/header |
 
 ## Module status matrix
 
@@ -89,8 +89,8 @@ Updated: 2026-08-20
 
 ## Next implementation slice
 
-1. Complete archive packaging including original bytes and restoration verification; current manifests correctly block a complete label when bytes are absent.
-2. Obligation creation/completion and attorney-reviewed California rule/holiday content.
-3. Ethical-wall administration and negative end-to-end tests for search, AI retrieval, caches, jobs, and support access.
-4. Automated outbox scheduling plus external consumer idempotency and reconciliation after provider approval.
-5. Approved malware scanning/OCR pipeline with quarantine release; complete backup/restore and incident exercises.
+1. Obligation creation/completion and attorney-reviewed California rule/holiday content.
+2. Ethical-wall administration and negative end-to-end tests for search, AI retrieval, caches, jobs, and support access.
+3. Automated outbox scheduling plus external consumer idempotency and reconciliation after provider approval.
+4. Approved malware scanning/OCR pipeline with quarantine release; full-environment restore and incident exercises.
+5. Production archive scale limits, streaming, encryption/key policy, and restore tooling for non-synthetic originals.

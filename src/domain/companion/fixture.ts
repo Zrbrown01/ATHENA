@@ -1,3 +1,5 @@
+import { SYNTHETIC_QME_SHA256 } from "@/domain/documents/synthetic-qme-original";
+
 export const companionFixture = {
   runId: "companion-rivera-release-one",
   matterId: "matter-golden-001",
@@ -15,7 +17,7 @@ export const companionFixture = {
     title: "QME Report — Dr. Priya Shah — 08/18/2026",
     classification: "QME report",
     providerMode: "deterministic_sandbox",
-    sourceChecksum: "fixture-only-not-an-original-file",
+    sourceChecksum: SYNTHETIC_QME_SHA256,
   },
   facts: [
     { id: "fact-001", type: "wpi", value: "12% WPI — lumbar spine", page: 27 },

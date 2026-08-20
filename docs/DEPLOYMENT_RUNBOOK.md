@@ -71,6 +71,13 @@ TXT _cf-custom-hostname.www -> 62406762-1264-4515-b2b8-b8fe5874a50e
 - R2/object storage: require provider versioning/replication or approved backup, inventory/checksum manifests, tenant-scoped restore, and periodic sample recovery.
 - A backup configuration is not evidence. Record restore date, operator, source point, recovery environment, duration, checks, exceptions, and approval.
 
+### Matter archive verification
+
+- Complete golden exports use `application/x-tar` and contain `manifest.json` plus `documents/<document-id>/original.pdf` entries.
+- Before an export job becomes ready, Athena parses the TAR, rejects unsafe/duplicate paths or invalid header checksums, and recomputes every original SHA-256 against document metadata.
+- `restoration_verified_at` is written only after that read-back succeeds. Missing or mismatched bytes preserve a partial classification and machine-readable `missing_items`.
+- This verifies the synthetic matter archive, not full-environment disaster recovery. Production archives still require streaming/size limits, encryption policy, key recovery, and sampled restore exercises.
+
 ## Production launch checklist
 
 1. Security architecture, threat model, privacy/legal, vendor, BAA/DPA, and subprocessor reviews approved.
