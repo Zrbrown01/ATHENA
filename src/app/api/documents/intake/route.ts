@@ -6,12 +6,17 @@ import { createEvent } from "@/platform/events";
 import { persistDocumentIntake } from "@/platform/preview-persistence";
 import { requestActor } from "@/platform/request-actor";
 import { DocumentValidationError, safeDocumentName, validatePdfUpload } from "@/domain/documents/validate-upload";
+import { pilotContext } from "@/platform/pilot-context";
+import { AuthorizationError, authorizeMatter, requireRole } from "@/platform/tenant-context";
+import { assertTrustedWriteOrigin, RequestSecurityError } from "@/platform/request-security";
 
 const TENANT_ID = "tenant-golden";
 
 export async function GET(request: Request) {
   const actor = requestActor(request);
   if (!actor) return Response.json({ error: "Authentication required" }, { status: 401 });
+  try { requireRole(pilotContext(actor), ["attorney", "partner", "paralegal", "records_specialist"]); }
+  catch { return Response.json({ error: "Access denied" }, { status: 403 }); }
   const db = getPreviewDb();
   const rows = await db.select({
     id: documentIntakes.id, title: documentIntakes.title, byteSize: documentIntakes.byteSize,
@@ -23,13 +28,24 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  try { assertTrustedWriteOrigin(request); }
+  catch (error) { if (error instanceof RequestSecurityError) return Response.json({ error: "Untrusted request origin" }, { status: 403 }); throw error; }
   const actor = requestActor(request);
   if (!actor) return Response.json({ error: "Authentication required" }, { status: 401 });
 
   const form = await request.formData();
   const file = form.get("file");
   const matterId = textValue(form.get("matterId"));
-  const classification = textValue(form.get("classification")) ?? "unclassified";
+  const requestedClassification = textValue(form.get("classification")) ?? "unclassified";
+  const classification = ["medical_qme", "medical_report", "hearing_notice", "unclassified"].includes(requestedClassification) ? requestedClassification : "unclassified";
+  try {
+    const context = pilotContext(actor);
+    requireRole(context, ["attorney", "partner", "paralegal", "records_specialist"]);
+    if (matterId) authorizeMatter(context, TENANT_ID, matterId);
+  } catch (error) {
+    if (error instanceof AuthorizationError) return Response.json({ error: "Access denied" }, { status: 403 });
+    throw error;
+  }
   if (!(file instanceof File)) return Response.json({ error: "A PDF file is required" }, { status: 400 });
   const bytes = await file.arrayBuffer();
   const signature = new TextDecoder().decode(bytes.slice(0, 5));

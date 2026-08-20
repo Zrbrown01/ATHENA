@@ -7,6 +7,20 @@ export const metadata: Metadata = {
   description: "Matter-centered operations for workers’ compensation defense firms.",
   applicationName: "Athena",
   alternates: { canonical: "/" },
+  openGraph: {
+    title: "Athena · Workers’ Compensation Defense OS",
+    description: "Know the file. See what comes next.",
+    url: "/",
+    siteName: "Athena",
+    type: "website",
+    images: [{ url: "/og.png", width: 1730, height: 909, alt: "Athena workers’ compensation defense operating system" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Athena · Workers’ Compensation Defense OS",
+    description: "Know the file. See what comes next.",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

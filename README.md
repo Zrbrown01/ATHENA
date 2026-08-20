@@ -32,6 +32,7 @@ Requirements: Node.js 22+ and npm 11+.
 ```bash
 cp .env.example .env.local
 npm install
+npm run db:migrate:local
 npm run dev
 ```
 
@@ -59,6 +60,16 @@ src/integrations/        External-provider contracts
 src/platform/            Tenant authorization and events
 docs/                    Product, architecture, security, and status records
 ```
+
+The deterministic Release 1 workflow is available at `/pilot/release-one`. It persists each stage, approval, audit record, event, outbox item, billing validation, provider failure state, and export. Its sandbox results prove workflow behavior only; they do not represent connected providers.
+
+Local backup command:
+
+```bash
+npm run db:backup:local
+```
+
+The generated backup remains under the ignored `.wrangler/` directory. Production backup and restore evidence is still a launch gate.
 
 ## Product loop
 

@@ -1,4 +1,4 @@
-import { CalendarPlus, FileUp, Mail, Mic, MoreHorizontal, Timer } from "lucide-react";
+import { CalendarPlus, FileUp, Mail, Mic, Timer } from "lucide-react";
 import type { MatterSummary } from "@/domain/types";
 import { StatusPill } from "./status-pill";
 import Link from "next/link";
@@ -16,11 +16,10 @@ export function MatterHeader({ matter }: { matter: MatterSummary }) {
         </div>
         <div className="quick-actions" aria-label="Matter actions">
           <Link href="/communications"><Mail size={16} />Email</Link>
-          <button type="button" disabled title="Verbatim is not connected"><Mic size={16} />Dictate</button>
+          <Link href="/pilot/release-one"><Mic size={16} />Dictate</Link>
           <Link href="/billing"><Timer size={16} />Add time</Link>
           <Link href="/documents"><FileUp size={16} />Upload</Link>
           <Link href="/"><CalendarPlus size={16} />Task</Link>
-          <button className="icon-button" type="button" disabled aria-label="More actions"><MoreHorizontal size={18} /></button>
         </div>
       </div>
       <dl className="matter-metadata">

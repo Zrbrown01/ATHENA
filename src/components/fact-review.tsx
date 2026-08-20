@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, ChevronRight, ExternalLink, Pencil, X } from "lucide-react";
+import { Check, ExternalLink, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import type { CandidateFact, ReviewStatus } from "@/domain/types";
 import { StatusPill } from "./status-pill";
@@ -50,7 +51,7 @@ export function FactReview({ initialFacts }: { initialFacts: CandidateFact[] }) 
           <div className="heading-with-count"><h2 id="fact-review-title">Matter data review</h2><span>{unresolved}</span></div>
           <p>Material facts extracted from the new QME report require attorney confirmation.</p>
         </div>
-        <button className="text-button" type="button">Open review queue <ChevronRight size={15} /></button>
+        <Link className="text-button" href="/pilot/release-one">Open controlled workflow</Link>
       </header>
       <div className="fact-list">
         {error && <p className="inline-error" role="alert">{error} Please try again.</p>}
@@ -64,15 +65,14 @@ export function FactReview({ initialFacts }: { initialFacts: CandidateFact[] }) 
               {fact.currentValue && <p className="current-value"><span>Current</span> {fact.currentValue}</p>}
               <p className="proposed-value"><span>Proposed</span> {fact.proposedValue}</p>
               <blockquote>“{fact.sourceExcerpt}”</blockquote>
-              <button className="source-link" type="button"><ExternalLink size={13} />{fact.sourceDocument} · page {fact.sourcePage}</button>
+              <Link className="source-link" href="/documents#recent-documents"><ExternalLink size={13} />{fact.sourceDocument} · page {fact.sourcePage}</Link>
               <p className="impact"><strong>Downstream impact:</strong> {fact.downstreamImpact}</p>
             </div>
             <div className="fact-actions">
               {fact.reviewStatus === "candidate" ? <>
                 <button className="confirm" type="button" disabled={pendingId === fact.id} onClick={() => updateFact(fact.id, "verified")}><Check size={15} />Confirm</button>
-                <button type="button" disabled={pendingId === fact.id}><Pencil size={15} />Edit</button>
                 <button type="button" disabled={pendingId === fact.id} onClick={() => updateFact(fact.id, "rejected")}><X size={15} />Reject</button>
-              </> : <button type="button" onClick={() => updateFact(fact.id, "candidate")}>Undo decision</button>}
+              </> : <span className="decision-recorded">Decision recorded in the audit trail</span>}
             </div>
           </article>
         ))}

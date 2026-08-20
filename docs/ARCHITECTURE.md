@@ -1,13 +1,15 @@
 # Architecture
 
-## Direction
+## Direction and deployment profile
 
 Athena begins as a modular monolith: one web application, one canonical PostgreSQL database, background workers, durable workflows, and separately scalable document processing when required. Domain boundaries are explicit even though deployment is initially unified.
+
+The current owner-only pilot runs on Sites with a Cloudflare Worker, D1, and R2. D1 is a deployment-local persistence implementation for the pilot; it does not replace the PostgreSQL target or provide PostgreSQL row-level security. R2 holds tenant-scoped quarantined originals and generated exports. Provider-shaped deterministic fixtures prove workflow orchestration without claiming that any external provider is connected.
 
 ## Runtime boundaries
 
 1. **Web/API:** authenticated commands and permission-filtered queries.
-2. **PostgreSQL:** relational current state, immutable business events, audit records, provenance, and the transactional outbox.
+2. **Relational persistence:** D1 in the Sites pilot; PostgreSQL remains the production target for relational current state, immutable business events, audit records, provenance, and the transactional outbox.
 3. **Object storage:** encrypted originals and distinguishable derived objects.
 4. **Workers:** scanning, OCR, extraction, event delivery, reconciliation, exports, and report generation.
 5. **Durable workflows:** legal deadlines, approvals, QME cycles, filing, billing, migration, and other work that must survive restarts.
@@ -21,7 +23,7 @@ Athena does not use full event sourcing. The application writes queryable relati
 
 Every tenant-owned record carries `tenant_id`. Production queries must receive tenant context from verified identity claims, include tenant predicates, and use PostgreSQL row-level security as defense in depth. Isolation also applies to object keys, cache keys, jobs, search documents, events, logs, exports, and AI retrieval.
 
-The current development identity adapter is not suitable for production and is intentionally called out in build status.
+Hosted pilot requests require platform-authenticated identity headers and the site is owner-only. Local development uses an explicit synthetic identity. Neither is the final multi-tenant identity/RLS design, and the distinction is intentionally called out in build status.
 
 ## Domain boundaries
 
@@ -42,9 +44,9 @@ Cross-domain activity uses typed commands and versioned events. A domain does no
 ## Initial technology choices
 
 - Next.js and React with strict TypeScript.
-- PostgreSQL modeled through Drizzle ORM.
+- D1 pilot tables and a PostgreSQL target schema modeled through Drizzle ORM.
 - Zod for untrusted command validation.
 - Vitest and Testing Library for automated tests.
 - Provider-neutral adapters for identity, object storage, OCR, AI, email, legacy import, filing, telephony, and deposition services.
 
-Production cloud, identity provider, object storage, workflow engine, OCR provider, and AI provider remain open decisions pending security, cost, BAA, and design-partner review.
+Production identity, PostgreSQL hosting, workflow engine, OCR provider, AI provider, and external integrations remain open decisions pending security, cost, BAA, and design-partner review. Sites, D1, and R2 are accepted for the private pilot only.

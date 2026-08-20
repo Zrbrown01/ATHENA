@@ -10,7 +10,7 @@ export default function Home() {
       <div className="work-page">
         <header className="work-title">
           <div><span className="eyebrow">THURSDAY · AUGUST 20</span><h1>Good afternoon, Maya</h1><p>Here is the work that needs your attention across 42 open matters.</p></div>
-          <button type="button" className="primary-action">Add task</button>
+          <Link href="/pilot/release-one" className="primary-action">Run Release 1 pilot</Link>
         </header>
 
         <section className="kpi-strip" aria-label="Work summary">
@@ -25,9 +25,10 @@ export default function Home() {
         <section className="queue-panel" aria-labelledby="priority-work-title">
           <header className="queue-header">
             <div><h2 id="priority-work-title">Priority work</h2><p>Ordered by deadline, risk, and client obligation.</p></div>
-            <nav className="queue-tabs" aria-label="Priority work views">
-              {['Today', 'Client reports', 'Authority pending', 'Data review', 'My hearings'].map((view, index) => <button className={index === 0 ? "selected" : ""} type="button" key={view}>{view}{view === 'Today' && <span>8</span>}</button>)}
-            </nav>
+            <div className="queue-tabs" aria-label="Current priority work view">
+              <span className="selected">Today <b>8</b></span>
+              <span>Client reports</span><span>Authority pending</span><span>Data review</span><span>My hearings</span>
+            </div>
           </header>
           <div className="work-table-wrap">
             <table className="work-table">
@@ -43,12 +44,12 @@ export default function Home() {
               </tr>)}</tbody>
             </table>
           </div>
-          <footer className="queue-footer"><span><CheckCircle2 size={15} />4 items completed today</span><button type="button">View all work <ArrowRight size={14} /></button></footer>
+          <footer className="queue-footer"><span><CheckCircle2 size={15} />4 items completed today</span><Link href="/matters">View all work <ArrowRight size={14} /></Link></footer>
         </section>
 
         <div className="work-bottom-grid">
-          <section className="panel day-panel"><header className="section-heading"><h2>Today’s schedule</h2><button type="button">Open calendar <ArrowRight size={14} /></button></header><ol><li><time>10:00</time><span><strong>Rivera · QME review</strong><small>Client report preparation</small></span></li><li><time>13:30</time><span><strong>Nguyen · Applicant deposition</strong><small>Remote · Noted pending connection</small></span></li><li><time>15:00</time><span><strong>Harris · Strategy call</strong><small>Summit Claims Services</small></span></li></ol></section>
-          <section className="panel time-panel"><header className="section-heading"><h2>Candidate time</h2><button type="button">Review all <ArrowRight size={14} /></button></header><div className="time-total"><Clock3 size={20} /><span><strong>6.8 hours</strong><small>Across 9 activities</small></span></div><div className="time-bars"><div><span>Email &amp; reporting</span><b>3.2h</b></div><div><span>Document review</span><b>2.1h</b></div><div><span>Hearings &amp; calls</span><b>1.5h</b></div></div></section>
+          <section className="panel day-panel"><header className="section-heading"><h2>Today’s schedule</h2><Link href="/calendar">Open calendar <ArrowRight size={14} /></Link></header><ol><li><time>10:00</time><span><strong>Rivera · QME review</strong><small>Client report preparation</small></span></li><li><time>13:30</time><span><strong>Nguyen · Applicant deposition</strong><small>Remote · Noted pending connection</small></span></li><li><time>15:00</time><span><strong>Harris · Strategy call</strong><small>Summit Claims Services</small></span></li></ol></section>
+          <section className="panel time-panel"><header className="section-heading"><h2>Candidate time</h2><Link href="/billing">Review all <ArrowRight size={14} /></Link></header><div className="time-total"><Clock3 size={20} /><span><strong>6.8 hours</strong><small>Across 9 activities</small></span></div><div className="time-bars"><div><span>Email &amp; reporting</span><b>3.2h</b></div><div><span>Document review</span><b>2.1h</b></div><div><span>Hearings &amp; calls</span><b>1.5h</b></div></div></section>
         </div>
       </div>
     </AppShell>

@@ -15,14 +15,16 @@ export interface EventEnvelope<TPayload extends Record<string, unknown>> {
   idempotencyKey: string;
   source: string;
   visibility: "internal" | "client" | "restricted";
+  retentionPolicy: string;
   payload: TPayload;
 }
 
 export function createEvent<TPayload extends Record<string, unknown>>(
-  input: Omit<EventEnvelope<TPayload>, "eventId" | "eventVersion" | "occurredAt">,
+  input: Omit<EventEnvelope<TPayload>, "eventId" | "eventVersion" | "occurredAt" | "retentionPolicy"> & { retentionPolicy?: string },
 ): EventEnvelope<TPayload> {
   return {
     ...input,
+    retentionPolicy: input.retentionPolicy ?? "firm-default",
     eventId: createId(),
     eventVersion: 1,
     occurredAt: new Date().toISOString(),

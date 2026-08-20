@@ -22,8 +22,8 @@ export async function persistFactReview(
       eventId: event.eventId, eventType: event.eventType, eventVersion: event.eventVersion,
       tenantId: event.tenantId, aggregateType: event.aggregateType, aggregateId: event.aggregateId,
       matterId: event.matterId, actorId: actor.userId, occurredAt: now,
-      correlationId: event.correlationId, idempotencyKey: event.idempotencyKey,
-      visibility: event.visibility, payload: event.payload,
+      correlationId: event.correlationId, causationId: event.causationId, idempotencyKey: event.idempotencyKey,
+      source: event.source, visibility: event.visibility, retentionPolicy: event.retentionPolicy, payload: event.payload,
     }).onConflictDoNothing(),
     db.insert(previewOutbox).values({
       id: createId(), tenantId: event.tenantId, eventId: event.eventId,
@@ -52,8 +52,8 @@ export async function persistDocumentIntake(input: {
       eventVersion: input.event.eventVersion, tenantId: input.event.tenantId,
       aggregateType: input.event.aggregateType, aggregateId: input.event.aggregateId,
       matterId: input.event.matterId, actorId: input.actor.userId, occurredAt: now,
-      correlationId: input.event.correlationId, idempotencyKey: input.event.idempotencyKey,
-      visibility: input.event.visibility, payload: input.event.payload,
+      correlationId: input.event.correlationId, causationId: input.event.causationId, idempotencyKey: input.event.idempotencyKey,
+      source: input.event.source, visibility: input.event.visibility, retentionPolicy: input.event.retentionPolicy, payload: input.event.payload,
     }),
     db.insert(previewOutbox).values({
       id: createId(), tenantId: input.tenantId, eventId: input.event.eventId,
@@ -80,8 +80,8 @@ export async function persistWorkflowDecision(input: {
       eventVersion: input.event.eventVersion, tenantId: input.event.tenantId,
       aggregateType: input.event.aggregateType, aggregateId: input.event.aggregateId,
       matterId: input.event.matterId, actorId: input.actor.userId, occurredAt: now,
-      correlationId: input.event.correlationId, idempotencyKey: input.event.idempotencyKey,
-      visibility: input.event.visibility, payload: input.event.payload,
+      correlationId: input.event.correlationId, causationId: input.event.causationId, idempotencyKey: input.event.idempotencyKey,
+      source: input.event.source, visibility: input.event.visibility, retentionPolicy: input.event.retentionPolicy, payload: input.event.payload,
     }).onConflictDoNothing(),
     db.insert(previewOutbox).values({
       id: createId(), tenantId: input.event.tenantId, eventId: input.event.eventId,

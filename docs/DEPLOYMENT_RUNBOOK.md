@@ -63,3 +63,22 @@ TXT _cf-custom-hostname.www -> 62406762-1264-4515-b2b8-b8fe5874a50e
 - Disable affected integrations before replaying or repairing provider events.
 - Preserve originals, audit evidence, events, and failed work throughout recovery.
 - Do not restore one tenant’s data into a shared environment without verified isolation controls.
+
+## Backup and restore evidence
+
+- Local D1: `npm run db:backup:local` writes an ignored SQL export beneath `.wrangler/`. Restore only into a disposable local database, reapply migrations, and compare table counts, event IDs, export checksums, and workflow stages.
+- Target PostgreSQL: use an encrypted managed snapshot plus `pg_dump --format=custom`; restore into an isolated recovery environment and run tenant/isolation, checksum, event/outbox, and export reconciliation.
+- R2/object storage: require provider versioning/replication or approved backup, inventory/checksum manifests, tenant-scoped restore, and periodic sample recovery.
+- A backup configuration is not evidence. Record restore date, operator, source point, recovery environment, duration, checks, exceptions, and approval.
+
+## Production launch checklist
+
+1. Security architecture, threat model, privacy/legal, vendor, BAA/DPA, and subprocessor reviews approved.
+2. Verified identity/MFA/session policy, role/context authorization, ethical walls, support access, access review, and break-glass audit tested.
+3. Tenant isolation proven across API, objects, search, cache, jobs, events, export, logs, and AI.
+4. Malware scanning, retention/legal hold, deletion, complete export, backup/restore, incident response, monitoring, rate limiting, CSP/origin controls, secrets, and vulnerability gates proven.
+5. Provider credentials/scopes/subscriptions/recovery/reconciliation verified individually; disabled integrations remain disabled.
+6. California content versions and client governance/billing profiles receive named legal/operational approval.
+7. Migration dry run, counts/checksums/exceptions, user acceptance, cutover, rollback, and legacy archive approved.
+8. Accessibility, performance, load, golden workflows, disaster recovery, and incident tabletop pass with recorded evidence.
+9. DNS/TLS/canonical redirects/callbacks/webhooks verified; production data is introduced only after named launch approval.

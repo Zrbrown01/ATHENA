@@ -1,29 +1,22 @@
 import { NextResponse } from "next/server";
 import { reviewFact, reviewFactCommand } from "@/domain/facts/review-fact";
-import { AuthorizationError, type TenantContext } from "@/platform/tenant-context";
+import { AuthorizationError } from "@/platform/tenant-context";
 import { requestActor } from "@/platform/request-actor";
 import { persistFactReview } from "@/platform/preview-persistence";
-
-// Development-only identity adapter. Production must replace this with verified
-// IdP claims and database-backed matter authorization before deployment.
-function previewContext(userId: string): TenantContext {
-  return {
-    tenantId: "tenant-golden",
-    userId,
-    roles: ["attorney"],
-    matterAccess: new Set(["matter-golden-001"]),
-  };
-}
+import { pilotContext } from "@/platform/pilot-context";
+import { assertTrustedWriteOrigin, RequestSecurityError } from "@/platform/request-security";
 
 export async function POST(request: Request) {
   try {
+    assertTrustedWriteOrigin(request);
     const actor = requestActor(request);
     if (!actor) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     const command = reviewFactCommand.parse(await request.json());
-    const event = reviewFact(previewContext(actor.userId), command);
+    const event = reviewFact(pilotContext(actor), command);
     await persistFactReview(event, actor, command);
     return NextResponse.json({ event }, { status: 200 });
   } catch (error) {
+    if (error instanceof RequestSecurityError) return NextResponse.json({ error: "Untrusted request origin" }, { status: 403 });
     if (error instanceof AuthorizationError) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }

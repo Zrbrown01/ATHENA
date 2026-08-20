@@ -1,8 +1,8 @@
 import {
   BriefcaseBusiness,
   CalendarDays,
-  ChevronDown,
   FileText,
+  FlaskConical,
   Gauge,
   Landmark,
   Mail,
@@ -58,6 +58,9 @@ export function AppShell({ children, active = "My Work" }: { children: React.Rea
           <Link className="nav-item" href="/operations/california">
             <Landmark aria-hidden="true" size={17} /> California ops
           </Link>
+          <Link className="nav-item" href="/pilot/release-one">
+            <FlaskConical aria-hidden="true" size={17} /> Release 1 pilot
+          </Link>
         </div>
       </aside>
 
@@ -72,11 +75,10 @@ export function AppShell({ children, active = "My Work" }: { children: React.Rea
             <button className="ask-button" type="button" disabled title="AI provider is not connected">
               <Sparkles size={16} aria-hidden="true" /> Ask Athena
             </button>
-            <button className="user-button" type="button">
+            <div className="user-button" aria-label="Signed in pilot identity">
               <span className="avatar">MC</span>
               <span><strong>Maya Chen</strong><small>Attorney · Pilot</small></span>
-              <ChevronDown size={15} aria-hidden="true" />
-            </button>
+            </div>
           </div>
         </header>
         <main>{children}</main>
