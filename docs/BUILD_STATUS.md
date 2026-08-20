@@ -52,7 +52,7 @@ Updated: 2026-08-20
 | Governance Engine | Pilot gates | Explicit human-approval commands cover legally/financially consequential pilot workflows; configurable rule engine remains |
 | Billing | Functional pilot | Human time-confirmation gate and synthetic pre-bill view; no accounting export or connected ledger |
 | Audit | Functional pilot | Material companion transitions create actor-attributed audit records plus immutable events; read/access audit and incident operations remain |
-| Export | Functional pilot | Authorized tenant/matter-scoped, checksummed R2 JSON manifest is downloadable; original PDF bytes and complete tenant export remain required |
+| Export | Tested partial-export control | Authorized tenant/matter-scoped, checksummed R2 manifest v2 includes record inventory, coverage ledger, audit/delivery/hold metadata, and an enforced partial label/header when original bytes are absent; complete archive packaging remains required |
 
 ## Module status matrix
 
@@ -89,7 +89,7 @@ Updated: 2026-08-20
 
 ## Next implementation slice
 
-1. Complete matter export including original bytes, retention inventory, and active-hold evidence.
+1. Complete archive packaging including original bytes and restoration verification; current manifests correctly block a complete label when bytes are absent.
 2. Obligation creation/completion and attorney-reviewed California rule/holiday content.
 3. Ethical-wall administration and negative end-to-end tests for search, AI retrieval, caches, jobs, and support access.
 4. Automated outbox scheduling plus external consumer idempotency and reconciliation after provider approval.

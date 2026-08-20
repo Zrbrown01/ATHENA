@@ -37,3 +37,7 @@ R2 keys begin with the tenant ID. Original uploads use `<tenant>/<matter-or-unas
 ## Migration rule
 
 Every D1 schema change is generated through Drizzle, inspected for backward compatibility, committed, packaged, and applied by Sites. Indexes follow actual tenant/matter/run query predicates and each migration ends with `PRAGMA optimize` after index changes.
+
+## Export completeness
+
+`export_jobs` records the tenant, matter, run, object identity, checksum, byte size, format, manifest version, creator, and immutable completeness assessment. `completeness=complete` is permitted only when every required category is actually bundled. `missing_items` and the manifest coverage ledger make omissions machine-readable; a downloadable partial export is never labeled complete.

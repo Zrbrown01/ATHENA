@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCompanionExport } from "./export-manifest";
+import { assessExportCoverage, buildCompanionExport } from "./export-manifest";
 
 describe("buildCompanionExport", () => {
   it("includes provenance, history, limitations, and tenant scope", () => {
@@ -7,7 +7,14 @@ describe("buildCompanionExport", () => {
     expect(manifest.tenantId).toBe("tenant-a");
     expect(manifest.sourceLinkedFacts[0].page).toBe(27);
     expect(manifest.events).toHaveLength(1);
+    expect(manifest.completeness).toBe("partial");
+    expect(manifest.missingItems).toEqual(["original_document_bytes"]);
     expect(manifest.limitations.join(" ")).toContain("Original PDF bytes");
     expect(manifest.limitations.join(" ")).toContain("not represented as sent");
+  });
+
+  it("cannot claim completeness unless every source document byte stream is included", () => {
+    expect(assessExportCoverage({ sourceDocumentCount: 2, originalDocumentBytesIncluded: 1 }).completeness).toBe("partial");
+    expect(assessExportCoverage({ sourceDocumentCount: 2, originalDocumentBytesIncluded: 2 }).completeness).toBe("complete");
   });
 });

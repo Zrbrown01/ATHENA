@@ -11,14 +11,19 @@
 
 ## Current automated evidence
 
-Vitest covers PDF MIME/size/signature/safe-name validation; fact review roles, matter access, and cross-tenant denial; workflow action/role/tenant/matter authorization; the ordered companion state machine and honest Microsoft failure; versioned billing pass/warning/hard-stop; export provenance and limitation manifest; same-origin write protection; and accessible pilot workflow controls.
+Vitest covers PDF MIME/size/signature/safe-name validation; fact review roles, matter access, cross-tenant/object denial and ethical-wall precedence; workflow action/role/tenant/matter authorization; the ordered companion state machine and honest Microsoft failure; versioned billing pass/warning/hard-stop; outbox lease/retry/dead-letter/replay policy; retention/hold decisions; business-day calculation; export provenance, coverage, and completeness enforcement; same-origin write protection; and accessible pilot workflow controls.
 
 The local integration smoke executes all seven companion API transitions against migrated D1/R2, downloads the export, and verifies seven events plus limitations. The production build enumerates all application/API routes.
 
 ## Remaining gates
 
-Automated browser E2E/visual regression, database concurrency/idempotency integration, ethical-wall fixtures, outbox retry/replay, direct-object cross-tenant tests, full export with original bytes, retention/legal hold, deadline/business-day rules, AI grounding evaluation, migration reconciliation, performance budgets, and backup restore remain required before production.
+Automated browser E2E/visual regression, database concurrency/idempotency integration, persisted ethical-wall administration tests, automated outbox scheduling, full export archive with original bytes, attorney-reviewed deadline content, AI grounding evaluation, migration reconciliation, performance budgets, and backup restore remain required before production.
 
 ## Standard checks
 
 `npm run check` runs lint, TypeScript, Vitest, and the deployment build. `npm audit --audit-level=high` is the dependency gate. Migration SQL is inspected and applied to a clean/local database before release.
+
+## Export coverage evidence
+
+- Manifest coverage tests prove that one missing original byte stream forces `completeness=partial` and that completeness is possible only when included byte-stream count covers every source document.
+- Download responses expose the stored checksum and completeness classification.

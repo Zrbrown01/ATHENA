@@ -11,5 +11,5 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!result) return Response.json({ error: "Export not found" }, { status: 404 });
   try { await authorizePersistedTenantObject(pilotContext(actor), PILOT_TENANT_ID, result.job.matterId, result.job.objectKey); }
   catch { return Response.json({ error: "Access denied" }, { status: 403 }); }
-  return new Response(result.object.body, { headers: { "content-type": result.job.format, "content-disposition": `attachment; filename="athena-${result.job.matterId}-export.json"`, "x-content-type-options": "nosniff", "cache-control": "private, no-store", "x-athena-sha256": result.job.sha256 } });
+  return new Response(result.object.body, { headers: { "content-type": result.job.format, "content-disposition": `attachment; filename="athena-${result.job.matterId}-export.json"`, "x-content-type-options": "nosniff", "cache-control": "private, no-store", "x-athena-sha256": result.job.sha256, "x-athena-export-completeness": result.job.completeness } });
 }

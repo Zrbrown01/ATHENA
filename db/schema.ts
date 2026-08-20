@@ -272,6 +272,8 @@ export const exportJobs = sqliteTable("export_jobs", {
   byteSize: integer("byte_size").notNull(),
   format: text("format").notNull(),
   manifestVersion: integer("manifest_version").notNull(),
+  completeness: text("completeness", { enum: ["complete", "partial"] }).notNull().default("partial"),
+  missingItems: text("missing_items", { mode: "json" }).$type<string[]>().notNull().default([]),
   createdBy: text("created_by").notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [
