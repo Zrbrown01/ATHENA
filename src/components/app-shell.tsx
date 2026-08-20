@@ -16,17 +16,17 @@ import {
 import Link from "next/link";
 
 const navigation = [
-  ["My Work", Gauge],
-  ["Matters", BriefcaseBusiness],
-  ["Calendar", CalendarDays],
-  ["Documents", FileText],
-  ["Communications", Mail],
-  ["Billing", WalletCards],
-  ["Reports", Landmark],
-  ["Clients", Users],
+  ["My Work", Gauge, "/"],
+  ["Matters", BriefcaseBusiness, "/matters"],
+  ["Calendar", CalendarDays, "/"],
+  ["Documents", FileText, "/"],
+  ["Communications", Mail, "/"],
+  ["Billing", WalletCards, "/"],
+  ["Reports", Landmark, "/"],
+  ["Clients", Users, "/"],
 ] as const;
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children, active = "My Work" }: { children: React.ReactNode; active?: string }) {
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Primary navigation">
@@ -39,8 +39,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </Link>
 
         <nav className="nav-list">
-          {navigation.map(([label, Icon], index) => (
-            <Link className={index === 0 ? "nav-item active" : "nav-item"} href="/" key={label}>
+          {navigation.map(([label, Icon, href]) => (
+            <Link className={label === active ? "nav-item active" : "nav-item"} href={href} key={label} aria-current={label === active ? "page" : undefined}>
               <Icon aria-hidden="true" size={17} strokeWidth={1.8} />
               {label}
             </Link>

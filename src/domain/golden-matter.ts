@@ -1,4 +1,4 @@
-import type { CandidateFact, IntegrationHealth, MatterEvent, MatterSummary } from "./types";
+import type { CandidateFact, IntegrationHealth, MatterEvent, MatterInventoryItem, MatterSummary, WorkItem } from "./types";
 
 export const goldenMatter: MatterSummary = {
   id: "matter-golden-001",
@@ -91,4 +91,20 @@ export const integrationHealth: IntegrationHealth[] = [
   { name: "MerusCase", status: "not_connected", detail: "Provider access and endpoint verification required" },
   { name: "OCR", status: "not_connected", detail: "Provider security review and BAA required" },
   { name: "AI", status: "not_connected", detail: "Production regulated-data processing is disabled" },
+];
+
+export const workItems: WorkItem[] = [
+  { id: "work-001", priority: "Critical", caption: "Rivera v. Northstar Logistics", matterNumber: "NRL-2026-0042", client: "Summit Claims", action: "Verify QME findings", owner: "Maya Chen", due: "Today · 4:00 PM", overdue: false, reason: "Client report deadline starts after review", status: "Needs review", statusTone: "warning" },
+  { id: "work-002", priority: "Critical", caption: "Nguyen v. Arcadia Foods", matterNumber: "NRL-2026-0031", client: "Pacific TPA", action: "Resolve filing rejection", owner: "Docketing", due: "Overdue · 1 day", overdue: true, reason: "EAMS packet rejected: separator sheet", status: "Blocked", statusTone: "danger" },
+  { id: "work-003", priority: "High", caption: "Harris v. Westline Transit", matterNumber: "NRL-2025-0188", client: "Summit Claims", action: "Approve status report", owner: "Maya Chen", due: "Tomorrow", overdue: false, reason: "90-day client reporting obligation", status: "Draft ready", statusTone: "info" },
+  { id: "work-004", priority: "High", caption: "Cruz v. Ember Manufacturing", matterNumber: "NRL-2026-0019", client: "Vantage Casualty", action: "Request settlement authority", owner: "Maya Chen", due: "Aug 24", overdue: false, reason: "MSC is within 30 days", status: "Ready", statusTone: "success" },
+  { id: "work-005", priority: "Normal", caption: "Patel v. Bellwether Health", matterNumber: "NRL-2025-0154", client: "Pacific TPA", action: "Confirm candidate time", owner: "Maya Chen", due: "Today", overdue: false, reason: "Five activities totaling 1.7 hours", status: "9 entries", statusTone: "neutral" },
+];
+
+export const matterInventory: MatterInventoryItem[] = [
+  { ...goldenMatter, reportRisk: true },
+  { id: "matter-002", matterNumber: "NRL-2026-0031", caption: "Nguyen v. Arcadia Foods", client: "Pacific TPA", employer: "Arcadia Foods, LLC", applicant: "Minh Nguyen", claimNumber: "PTPA-413920", adjNumber: "ADJ18110382", injuryDate: "2025-09-17", assignedAttorney: "Maya Chen", status: "Open", nextEvent: "Deposition · Aug 27", reportDue: "Aug 25, 2026", authorityStatus: "None", exposure: 78000, unbilledHours: 2.2, reportRisk: false },
+  { id: "matter-003", matterNumber: "NRL-2025-0188", caption: "Harris v. Westline Transit", client: "Summit Claims Services", employer: "Westline Transit", applicant: "Jordan Harris", claimNumber: "SCS-CA-773102", adjNumber: "ADJ17642011", injuryDate: "2024-12-02", assignedAttorney: "Maya Chen", status: "Open", nextEvent: "QME · Sep 3", reportDue: "Tomorrow", authorityStatus: "$45,000", exposure: 92000, unbilledHours: 0.9, reportRisk: true },
+  { id: "matter-004", matterNumber: "NRL-2026-0019", caption: "Cruz v. Ember Manufacturing", client: "Vantage Casualty", employer: "Ember Manufacturing", applicant: "Sofia Cruz", claimNumber: "VC-992103", adjNumber: "ADJ17930844", injuryDate: "2025-06-21", assignedAttorney: "Noah Williams", status: "Open", nextEvent: "MSC · Sep 18", reportDue: "Sep 2, 2026", authorityStatus: "Requested", exposure: 134000, unbilledHours: 3.4, reportRisk: false },
+  { id: "matter-005", matterNumber: "NRL-2025-0154", caption: "Patel v. Bellwether Health", client: "Pacific TPA", employer: "Bellwether Health", applicant: "Ravi Patel", claimNumber: "PTPA-388410", adjNumber: "ADJ17123992", injuryDate: "2024-08-15", assignedAttorney: "Elena Torres", status: "Stayed", nextEvent: "Status conference · Oct 8", reportDue: "Sep 15, 2026", authorityStatus: "$85,000", exposure: 106000, unbilledHours: 1.7, reportRisk: false },
 ];

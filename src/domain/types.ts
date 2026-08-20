@@ -47,3 +47,22 @@ export interface IntegrationHealth {
   status: "connected" | "not_connected" | "degraded";
   detail: string;
 }
+
+export interface WorkItem {
+  id: string;
+  priority: "Critical" | "High" | "Normal";
+  caption: string;
+  matterNumber: string;
+  client: string;
+  action: string;
+  owner: string;
+  due: string;
+  overdue: boolean;
+  reason: string;
+  status: string;
+  statusTone: "success" | "warning" | "danger" | "neutral" | "info";
+}
+
+export interface MatterInventoryItem extends MatterSummary {
+  reportRisk: boolean;
+}
