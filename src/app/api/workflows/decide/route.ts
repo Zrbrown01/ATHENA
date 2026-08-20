@@ -4,6 +4,7 @@ import { requestActor } from "@/platform/request-actor";
 import { pilotContext } from "@/platform/pilot-context";
 import { AuthorizationError } from "@/platform/tenant-context";
 import { assertTrustedWriteOrigin, RequestSecurityError } from "@/platform/request-security";
+import { authorizePersistedMatter } from "@/platform/access-policy-persistence";
 
 export async function POST(request: Request) {
   try { assertTrustedWriteOrigin(request); }
@@ -12,6 +13,7 @@ export async function POST(request: Request) {
   if (!actor) return Response.json({ error: "Authentication required" }, { status: 401 });
   try {
     const { command, event } = decideWorkflow(pilotContext(actor), await request.json());
+    if (event.matterId) await authorizePersistedMatter(pilotContext(actor), event.tenantId, event.matterId);
     await persistWorkflowDecision({ workflowType: command.workflowType, aggregateId: command.aggregateId, action: command.action, reason: command.reason, actor, event });
     return Response.json({ event }, { status: 200 });
   } catch (error) {

@@ -55,6 +55,9 @@ export function AppShell({ children, active = "My Work" }: { children: React.Rea
           <Link className="nav-item" href="/admin/integrations">
             <Settings aria-hidden="true" size={17} /> Administration
           </Link>
+          <Link className="nav-item" href="/admin/platform">
+            <ShieldCheck aria-hidden="true" size={17} /> Platform ops
+          </Link>
           <Link className="nav-item" href="/operations/california">
             <Landmark aria-hidden="true" size={17} /> California ops
           </Link>

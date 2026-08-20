@@ -41,8 +41,8 @@ Updated: 2026-08-20
 | Human fact review | Functional | Confirm/reject command is authenticated, validated, persisted with actor/event/outbox, and has a visible failure state |
 | Human workflow gates | Functional pilot | Intake, authority, time, report, and filing decisions are validated and persisted with immutable event context |
 | Release 1 companion workflow | Tested pilot | Seven-stage persistent deterministic workflow proves import, source-linked QME analysis, Verbatim-shaped draft, attorney approval, honest Microsoft block, confirmed time, billing validation, audit/event/outbox, and export |
-| Event Ledger | Foundation | Canonical immutable event table and envelope |
-| Reliable event delivery | Foundation | Transactional outbox writes exist in D1; publisher/retry/reconciliation worker is not implemented |
+| Event Ledger | Functional pilot | Canonical immutable event table/envelope plus tenant-scoped internal delivery receipts |
+| Reliable event delivery | Tested pilot | Leases, recovery, exponential retry/dead-letter/replay policy, Athena-native publisher, and health projection; no external provider delivery is implied |
 | Tenant isolation | Pilot boundary | Owner-only site identity is required; keys and queries are tenant-scoped. Multi-tenant production policy/RLS remains |
 | Document ingestion | Quarantined pilot | PDF MIME/signature/size checks, SHA-256, R2 originals, D1 metadata, compensating delete, and quarantine state. Malware scanning/OCR remain disconnected |
 | Microsoft 365 | Externally blocked | Adapter foundation only; app registration, credentials, consent, scopes, and verification required |
@@ -71,7 +71,7 @@ Updated: 2026-08-20
 | Billing | Tested pilot | Confirmed time and versioned rule pass/warning/hard-stop tests; rates, expenses, prebills, invoices, LEDES, rejections, appeals, payments remain |
 | Reports | Functional pilot | Draft approval and source-linked companion work product; governed definitions, delivery, and automated schedules remain |
 | Client portal | Externally blocked | Access intentionally disabled; authorization/data-sharing design required before any external user |
-| Administration | Foundation | Integration health and activation requirements; users/roles/walls/holds/incidents/support/export/migration controls remain |
+| Administration | Functional pilot | Integration truth plus owner-only outbox, retention, and deadline operations; full users/roles/holds/incidents/support/export/migration controls remain |
 | Noted | Externally blocked | Adapter/lifecycle not implemented; no booking is claimed |
 | Verbatim | Tested sandbox slice | Deterministic source-linked work product and approval; audio/transcription/review provider lifecycle remains unavailable |
 | Search / Ask Athena | Not started / externally blocked | AI is disabled; secure structured/full-text search and source-grounded retrieval remain |
@@ -89,8 +89,8 @@ Updated: 2026-08-20
 
 ## Next implementation slice
 
-1. Outbox publisher with retry, dead-letter, replay, reconciliation, and operator health.
-2. Retention/legal-hold enforcement and complete matter export including original bytes.
-3. Durable governance obligations and California business-day/deadline tests.
-4. Multi-tenant/ethical-wall policy persistence and negative integration tests across objects, jobs, events, export, search, and AI.
+1. Complete matter export including original bytes, retention inventory, and active-hold evidence.
+2. Obligation creation/completion and attorney-reviewed California rule/holiday content.
+3. Ethical-wall administration and negative end-to-end tests for search, AI retrieval, caches, jobs, and support access.
+4. Automated outbox scheduling plus external consumer idempotency and reconciliation after provider approval.
 5. Approved malware scanning/OCR pipeline with quarantine release; complete backup/restore and incident exercises.

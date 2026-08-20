@@ -6,12 +6,15 @@ import { persistCompanionTransition, readCompanionRun } from "@/platform/compani
 import { GOLDEN_MATTER_ID, PILOT_TENANT_ID, pilotContext } from "@/platform/pilot-context";
 import { requestActor } from "@/platform/request-actor";
 import { assertTrustedWriteOrigin, RequestSecurityError } from "@/platform/request-security";
+import { authorizePersistedMatter } from "@/platform/access-policy-persistence";
 
 const requestSchema = z.object({ action: z.enum(companionActions), idempotencyKey: z.string().min(8).max(200) });
 
 export async function GET(request: Request) {
   const actor = requestActor(request);
   if (!actor) return Response.json({ error: "Authentication required" }, { status: 401 });
+  try { await authorizePersistedMatter(pilotContext(actor), PILOT_TENANT_ID, GOLDEN_MATTER_ID); }
+  catch { return Response.json({ error: "Access denied" }, { status: 403 }); }
   const run = await readCompanionRun(PILOT_TENANT_ID, GOLDEN_MATTER_ID);
   const stage: CompanionStage = run?.stage ?? "not_started";
   return Response.json({ run, stage, nextAction: nextCompanionAction(stage), fixture: { matter: companionFixture.matter, document: companionFixture.document, facts: companionFixture.facts } });
@@ -23,6 +26,7 @@ export async function POST(request: Request) {
   const actor = requestActor(request);
   if (!actor) return Response.json({ error: "Authentication required" }, { status: 401 });
   try {
+    await authorizePersistedMatter(pilotContext(actor), PILOT_TENANT_ID, GOLDEN_MATTER_ID);
     const body = requestSchema.parse(await request.json());
     const current = await readCompanionRun(PILOT_TENANT_ID, GOLDEN_MATTER_ID);
     const currentStage: CompanionStage = current?.stage ?? "not_started";

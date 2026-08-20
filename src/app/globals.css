@@ -343,6 +343,27 @@ td strong { color: var(--text); }
 .provenance-strip > svg { color: var(--navy); }
 .provenance-strip strong { font-size: 10.5px; }
 .provenance-strip p { margin: 4px 0 0; color: var(--secondary); font-size: 9.5px; line-height: 1.5; }
+.operator-load { display: flex; align-items: flex-start; gap: 14px; max-width: 720px; padding: 22px; }
+.operator-load > svg { color: var(--navy); flex: 0 0 auto; }
+.operator-load h2 { margin-bottom: 7px; }
+.operator-load p { color: var(--secondary); line-height: 1.5; }
+.operator-load .primary-action { margin-top: 4px; }
+.inline-message { margin: 10px 0 0 !important; color: var(--danger) !important; font-size: 10px; }
+.operator-grid { display: grid; grid-template-columns: 1.25fr .75fr; gap: 16px; }
+.operator-panel { padding: 20px; }
+.operator-panel:first-child { grid-row: span 2; }
+.operator-panel header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+.operator-panel header p { margin: 5px 0 0; color: var(--subdued); font-size: 9.5px; line-height: 1.45; }
+.operator-panel > p, .operator-panel li, .operator-panel > small { color: var(--secondary); font-size: 10px; line-height: 1.55; }
+.operator-panel dl { display: grid; grid-template-columns: repeat(4, 1fr); margin: 0 0 20px; }
+.operator-panel dl div { padding: 12px; border: 1px solid var(--border); border-right: 0; background: #f8fafc; }
+.operator-panel dl div:first-child { border-radius: 7px 0 0 7px; }
+.operator-panel dl div:last-child { border-right: 1px solid var(--border); border-radius: 0 7px 7px 0; }
+.operator-panel dt { color: var(--subdued); font-size: 9px; text-transform: uppercase; }
+.operator-panel dd { margin: 5px 0 0; color: var(--text); font-size: 18px; font-weight: 750; }
+.operator-actions { display: flex; gap: 8px; }
+.operator-panel ol { margin: 10px 0 0; padding-left: 18px; }
+.operator-message { grid-column: 1 / -1; margin: 0; padding: 11px 14px; color: var(--success); border: 1px solid #a7e2c2; border-radius: 7px; background: #f1fbf5; font-size: 10px; }
 
 @media (max-width: 1100px) {
   .app-shell { grid-template-columns: 70px minmax(0, 1fr); }
@@ -374,6 +395,8 @@ td strong { color: var(--text); }
   .module-two-column { grid-template-columns: 1fr; }
   .approval-strip { align-items: stretch; flex-direction: column; }
   .pilot-grid { grid-template-columns: 1fr; }
+  .operator-grid { grid-template-columns: 1fr; }
+  .operator-panel:first-child { grid-row: auto; }
   .pilot-control { position: static; }
   .provenance-strip { grid-template-columns: auto 1fr; }
 }

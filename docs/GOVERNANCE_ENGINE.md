@@ -20,6 +20,14 @@ Every generated obligation must identify what is required, why, rule/version, du
 
 Every accepted command records authenticated actor, event, audit record, idempotency key, and retention policy. Cross-tenant and unauthorized-matter commands fail before persistence.
 
+## Implemented platform layer
+
+- Versioned D1 governance-rule and obligation schemas.
+- Deterministic calendar/business-day calculation with supplied holiday sets, weekend skipping, next-business-day roll, rule/version/citation output, and calculation trace.
+- A persisted synthetic firm-policy rule demonstrates the engine without presenting an unreviewed legal deadline as authoritative.
+- Versioned retention policies, matter legal-hold schema, and a disposition evaluator that never deletes automatically and requires human review after the retention window.
+- Persisted matter-access policy schema; explicit denies and ethical walls override ordinary matter membership.
+
 ## Required next engine layer
 
-Persisted rule definitions, effective dates, obligation instances, business-day deadline calculation, exception/waiver workflow, escalation, completion evidence, client/matter overrides, rule simulation, version diff, and deterministic rebuild tests remain to be implemented.
+Attorney-reviewed California source content, holiday data operations, obligation creation/completion, exception/waiver workflow, escalation, completion evidence, client/matter overrides, rule simulation, version diff, and deterministic rebuild tests remain to be implemented.

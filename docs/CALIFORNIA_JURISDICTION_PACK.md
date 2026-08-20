@@ -18,4 +18,6 @@ Proceeding and settlement readiness evaluate issues, discovery, medical records,
 
 ## Current evidence and limitation
 
-The private pilot has California operations/docket views, source-linked QME facts, authority and filing approval gates, and an explicit EAMS-not-connected state. Versioned regulatory records, business-day rules, packet schemas, proof-of-service generation, third-party JET adapter, and return-status ingestion remain foundation work and require legal/content review before operational use.
+The private pilot has California operations/docket views, source-linked QME facts, authority and filing approval gates, an explicit EAMS-not-connected state, and a tested versioned business-day calculation kernel. Its seeded QME-review example is labeled synthetic firm policy; it is not a statement of statutory or regulatory timing.
+
+Attorney-reviewed regulatory records and holiday sources, service-method extensions, packet schemas, proof-of-service generation, third-party JET adapter, and return-status ingestion remain foundation work and require legal/content review before operational use.

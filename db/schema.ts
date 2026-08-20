@@ -46,11 +46,101 @@ export const previewOutbox = sqliteTable("preview_outbox", {
   eventId: text("event_id").notNull(),
   topic: text("topic").notNull(),
   payload: text("payload", { mode: "json" }).notNull(),
+  status: text("status", { enum: ["pending", "leased", "processed", "dead_letter"] }).notNull().default("pending"),
   attempts: integer("attempts").notNull().default(0),
   availableAt: integer("available_at", { mode: "timestamp_ms" }).notNull(),
+  leaseOwner: text("lease_owner"),
+  leaseExpiresAt: integer("lease_expires_at", { mode: "timestamp_ms" }),
+  lastError: text("last_error"),
   processedAt: integer("processed_at", { mode: "timestamp_ms" }),
   failedAt: integer("failed_at", { mode: "timestamp_ms" }),
-}, (table) => [index("idx_preview_outbox_ready").on(table.processedAt, table.availableAt)]);
+}, (table) => [
+  uniqueIndex("idx_preview_outbox_tenant_event_topic").on(table.tenantId, table.eventId, table.topic),
+  index("idx_preview_outbox_ready").on(table.tenantId, table.status, table.availableAt),
+  index("idx_preview_outbox_lease").on(table.status, table.leaseExpiresAt),
+]);
+
+export const outboxDeliveries = sqliteTable("outbox_deliveries", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  outboxId: text("outbox_id").notNull(),
+  eventId: text("event_id").notNull(),
+  destination: text("destination").notNull(),
+  outcome: text("outcome", { enum: ["delivered", "failed", "dead_lettered"] }).notNull(),
+  attempt: integer("attempt").notNull(),
+  detail: text("detail").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_outbox_delivery_outbox_attempt").on(table.outboxId, table.attempt),
+  index("idx_outbox_delivery_tenant_event").on(table.tenantId, table.eventId, table.createdAt),
+]);
+
+export const retentionPolicies = sqliteTable("retention_policies", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  code: text("code").notNull(),
+  version: integer("version").notNull(),
+  retainDays: integer("retain_days").notNull(),
+  disposition: text("disposition", { enum: ["review_required", "retain"] }).notNull(),
+  effectiveAt: integer("effective_at", { mode: "timestamp_ms" }).notNull(),
+  supersededAt: integer("superseded_at", { mode: "timestamp_ms" }),
+}, (table) => [
+  uniqueIndex("idx_retention_policy_version").on(table.tenantId, table.code, table.version),
+  index("idx_retention_policy_effective").on(table.tenantId, table.effectiveAt),
+]);
+
+export const legalHolds = sqliteTable("legal_holds", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  matterId: text("matter_id").notNull(),
+  name: text("name").notNull(),
+  reason: text("reason").notNull(),
+  status: text("status", { enum: ["active", "released"] }).notNull(),
+  placedBy: text("placed_by").notNull(),
+  placedAt: integer("placed_at", { mode: "timestamp_ms" }).notNull(),
+  releasedBy: text("released_by"),
+  releasedAt: integer("released_at", { mode: "timestamp_ms" }),
+}, (table) => [index("idx_legal_holds_tenant_matter").on(table.tenantId, table.matterId, table.status)]);
+
+export const governanceRules = sqliteTable("governance_rules", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  code: text("code").notNull(),
+  version: integer("version").notNull(),
+  authorityType: text("authority_type").notNull(),
+  authorityCitation: text("authority_citation").notNull(),
+  businessDays: integer("business_days").notNull(),
+  effectiveAt: integer("effective_at", { mode: "timestamp_ms" }).notNull(),
+  reviewBy: integer("review_by", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_governance_rule_version").on(table.tenantId, table.code, table.version)]);
+
+export const obligations = sqliteTable("obligations", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  matterId: text("matter_id").notNull(),
+  ruleId: text("rule_id").notNull(),
+  title: text("title").notNull(),
+  dueAt: integer("due_at", { mode: "timestamp_ms" }).notNull(),
+  ownerId: text("owner_id").notNull(),
+  status: text("status", { enum: ["open", "completed", "waived"] }).notNull(),
+  calculation: text("calculation", { mode: "json" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_obligations_tenant_due").on(table.tenantId, table.status, table.dueAt)]);
+
+export const matterAccessPolicies = sqliteTable("matter_access_policies", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  matterId: text("matter_id").notNull(),
+  userId: text("user_id").notNull(),
+  effect: text("effect", { enum: ["allow", "deny"] }).notNull(),
+  reason: text("reason").notNull(),
+  source: text("source").notNull(),
+  effectiveAt: integer("effective_at", { mode: "timestamp_ms" }).notNull(),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }),
+}, (table) => [
+  uniqueIndex("idx_matter_access_policy_identity").on(table.tenantId, table.matterId, table.userId, table.source),
+  index("idx_matter_access_policy_user").on(table.tenantId, table.userId, table.effect),
+]);
 
 export const documentIntakes = sqliteTable("document_intakes", {
   id: text("id").primaryKey(),

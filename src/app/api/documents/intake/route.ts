@@ -1,28 +1,29 @@
 import { createId } from "@paralleldrive/cuid2";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull, or } from "drizzle-orm";
 import { getDocumentBucket, getPreviewDb } from "../../../../../db";
 import { documentIntakes } from "../../../../../db/schema";
 import { createEvent } from "@/platform/events";
 import { persistDocumentIntake } from "@/platform/preview-persistence";
 import { requestActor } from "@/platform/request-actor";
 import { DocumentValidationError, safeDocumentName, validatePdfUpload } from "@/domain/documents/validate-upload";
-import { pilotContext } from "@/platform/pilot-context";
-import { AuthorizationError, authorizeMatter, requireRole } from "@/platform/tenant-context";
+import { GOLDEN_MATTER_ID, pilotContext } from "@/platform/pilot-context";
+import { AuthorizationError, requireRole } from "@/platform/tenant-context";
 import { assertTrustedWriteOrigin, RequestSecurityError } from "@/platform/request-security";
+import { authorizePersistedMatter } from "@/platform/access-policy-persistence";
 
 const TENANT_ID = "tenant-golden";
 
 export async function GET(request: Request) {
   const actor = requestActor(request);
   if (!actor) return Response.json({ error: "Authentication required" }, { status: 401 });
-  try { requireRole(pilotContext(actor), ["attorney", "partner", "paralegal", "records_specialist"]); }
+  try { requireRole(pilotContext(actor), ["attorney", "partner", "paralegal", "records_specialist"]); await authorizePersistedMatter(pilotContext(actor), TENANT_ID, GOLDEN_MATTER_ID); }
   catch { return Response.json({ error: "Access denied" }, { status: 403 }); }
   const db = getPreviewDb();
   const rows = await db.select({
     id: documentIntakes.id, title: documentIntakes.title, byteSize: documentIntakes.byteSize,
     mimeType: documentIntakes.mimeType, classification: documentIntakes.classification,
     status: documentIntakes.status, createdAt: documentIntakes.createdAt,
-  }).from(documentIntakes).where(eq(documentIntakes.tenantId, TENANT_ID))
+  }).from(documentIntakes).where(and(eq(documentIntakes.tenantId, TENANT_ID), or(eq(documentIntakes.matterId, GOLDEN_MATTER_ID), isNull(documentIntakes.matterId))))
     .orderBy(desc(documentIntakes.createdAt)).limit(25);
   return Response.json({ documents: rows });
 }
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
   try {
     const context = pilotContext(actor);
     requireRole(context, ["attorney", "partner", "paralegal", "records_specialist"]);
-    if (matterId) authorizeMatter(context, TENANT_ID, matterId);
+    if (matterId) await authorizePersistedMatter(context, TENANT_ID, matterId);
   } catch (error) {
     if (error instanceof AuthorizationError) return Response.json({ error: "Access denied" }, { status: 403 });
     throw error;

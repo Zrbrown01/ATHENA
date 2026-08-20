@@ -6,7 +6,7 @@
 - Canonical host: `www.athenacms.app`
 - Apex behavior: `https://athenacms.app` redirects permanently to the canonical `www` host.
 
-The application is deployed as an owner-only Sites pilot at `https://athena-cms.new-reign-ca-8518.chatgpt.site`. It contains synthetic data only and is not a production authorization. The canonical custom domain remains pending DNS verification.
+The application is deployed as an owner-only Sites pilot at `https://athena-cms.new-reign-ca-8518.chatgpt.site` and `https://www.athenacms.app`. The custom host, provider routing, and TLS certificate are active. It contains synthetic data only and is not a production authorization. The apex redirect is not yet configured.
 
 ## Required production configuration
 
@@ -82,3 +82,11 @@ TXT _cf-custom-hostname.www -> 62406762-1264-4515-b2b8-b8fe5874a50e
 7. Migration dry run, counts/checksums/exceptions, user acceptance, cutover, rollback, and legacy archive approved.
 8. Accessibility, performance, load, golden workflows, disaster recovery, and incident tabletop pass with recorded evidence.
 9. DNS/TLS/canonical redirects/callbacks/webhooks verified; production data is introduced only after named launch approval.
+
+## Event-delivery operations
+
+- Open `/admin/platform` as a partner or firm administrator and load tenant-scoped health.
+- `pending` messages may be published only to the Athena-native internal sink in this pilot. The receipt text explicitly disclaims external delivery.
+- A lease expires after 30 seconds so another worker can recover abandoned work. Retry policy uses capped exponential backoff and dead-letters at five attempts.
+- Investigate the last error before replay. Replay resets attempt state but does not alter the immutable source event or prior delivery receipts.
+- Do not label Microsoft, EAMS, MerusCase, OCR, AI, or other provider activity delivered without provider-native confirmation and reconciliation.

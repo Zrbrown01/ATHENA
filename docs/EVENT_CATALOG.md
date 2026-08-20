@@ -23,6 +23,8 @@ Every event contains event ID/type/version, tenant, aggregate type/ID, optional 
 | `time.confirmed` | attorney time confirmation | human authorization and stage transition |
 | `export.ready` | checksummed matter export | human authorization and stage transition |
 
-## Delivery guarantees and gaps
+## Delivery guarantees
 
-Event and outbox uniqueness is enforced per tenant/idempotency key. Consumer idempotency, retry/dead-letter processing, reconciliation dashboards, and provider-event replay remain incomplete and are tracked as platform risks. The timeline must ultimately project this ledger rather than maintain separate manual history.
+Event and outbox uniqueness is enforced per tenant/event/topic. The pilot outbox has explicit pending, leased, processed, and dead-letter states; expiring leases; exponential retry policy; a five-attempt ceiling; operator replay; tenant health projection; and immutable delivery receipts. The implemented sink is `athena_internal_event_bus` only and never represents Microsoft, EAMS, MerusCase, OCR, AI, or another external provider as delivered.
+
+Automated scheduling, provider-specific consumer idempotency, signed webhook delivery, high-volume partitioning, and reconciliation against external systems remain production work. The timeline must ultimately project this ledger rather than maintain separate fixture history.
