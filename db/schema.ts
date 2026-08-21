@@ -4498,3 +4498,141 @@ export const complianceRegistryDecisions = sqliteTable(
     ),
   ],
 );
+
+export const dispositionSandboxRecords = sqliteTable(
+  "disposition_sandbox_records",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    payload: text("payload").notNull(),
+    payloadSha256: text("payload_sha256").notNull(),
+    syntheticDisposable: integer("synthetic_disposable", {
+      mode: "boolean",
+    }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_disposition_sandbox_matter").on(table.tenantId, table.matterId),
+  ],
+);
+
+export const dispositionRequests = sqliteTable(
+  "disposition_requests",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    targetType: text("target_type", {
+      enum: ["synthetic_disposable_record"],
+    }).notNull(),
+    targetId: text("target_id").notNull(),
+    status: text("status", {
+      enum: [
+        "draft",
+        "blocked_by_hold",
+        "ready_for_approval",
+        "pending_second_approval",
+        "approved",
+        "executed",
+        "cancelled",
+      ],
+    }).notNull(),
+    reason: text("reason").notNull(),
+    legalHoldCount: integer("legal_hold_count").notNull(),
+    previewItemCount: integer("preview_item_count").notNull(),
+    immutableExclusions: text("immutable_exclusions", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    revision: integer("revision").notNull().default(1),
+    requestedBy: text("requested_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_disposition_request_status").on(
+      table.tenantId,
+      table.status,
+      table.updatedAt,
+    ),
+  ],
+);
+
+export const dispositionApprovals = sqliteTable(
+  "disposition_approvals",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    requestId: text("request_id").notNull(),
+    sequence: integer("sequence").notNull(),
+    outcome: text("outcome", { enum: ["approved", "rejected"] }).notNull(),
+    notes: text("notes").notNull(),
+    approverId: text("approver_id").notNull(),
+    approvedAt: integer("approved_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_disposition_approval_sequence").on(
+      table.tenantId,
+      table.requestId,
+      table.sequence,
+    ),
+    uniqueIndex("idx_disposition_approval_actor").on(
+      table.tenantId,
+      table.requestId,
+      table.approverId,
+    ),
+  ],
+);
+
+export const dispositionExecutions = sqliteTable(
+  "disposition_executions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    requestId: text("request_id").notNull(),
+    deletedItemCount: integer("deleted_item_count").notNull(),
+    deletedPayloadSha256: text("deleted_payload_sha256").notNull(),
+    auditRecordsPreserved: integer("audit_records_preserved", {
+      mode: "boolean",
+    }).notNull(),
+    eventRecordsPreserved: integer("event_records_preserved", {
+      mode: "boolean",
+    }).notNull(),
+    executedBy: text("executed_by").notNull(),
+    executedAt: integer("executed_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_disposition_execution_request").on(
+      table.tenantId,
+      table.requestId,
+    ),
+  ],
+);
+
+export const dispositionDecisions = sqliteTable(
+  "disposition_decisions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    requestId: text("request_id").notNull(),
+    action: text("action").notNull(),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_disposition_decision_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_disposition_decision_request").on(
+      table.tenantId,
+      table.requestId,
+      table.createdAt,
+    ),
+  ],
+);

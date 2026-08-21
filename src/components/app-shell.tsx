@@ -13,6 +13,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Sparkles,
+  Trash2,
   Users,
   UserCog,
   WalletCards,
@@ -88,6 +89,9 @@ export function AppShell({
           </Link>
           <Link className="nav-item" href="/admin/compliance">
             <BadgeCheck aria-hidden="true" size={17} /> Provider compliance
+          </Link>
+          <Link className="nav-item" href="/admin/disposition">
+            <Trash2 aria-hidden="true" size={17} /> Disposition control
           </Link>
           <Link className="nav-item" href="/admin/migration">
             <DatabaseZap aria-hidden="true" size={17} /> Migration center

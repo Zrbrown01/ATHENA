@@ -21,6 +21,8 @@ Directory tests prove firm/matter scope consistency, suspension-first offboardin
 
 Provider-compliance tests prove complete prerequisite evaluation, exact missing-requirement reporting, review expiry, executed-agreement effective dates, and tenant denial. The API proof preserved draft BAA/DPA status and produced a blocked assessment naming those two missing requirements while credential activation and provider connectivity remained false.
 
+Disposition tests prove legal-hold blocking, synthetic-target enforcement, requester self-approval denial, distinct dual approval, execution gating, and tenant denial. One API proof deleted exactly one dual-approved synthetic record while preserving its checksum and immutable audit/event evidence; a second persisted-hold proof retained its target and recorded `blocked_by_hold` before the synthetic hold was formally released.
+
 The local integration smoke executes all seven companion API transitions against migrated D1/R2, downloads the export, and verifies seven events plus limitations. The production build enumerates all application/API routes.
 
 ## Remaining gates

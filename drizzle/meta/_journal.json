@@ -232,6 +232,13 @@
       "when": 1787282661938,
       "tag": "0032_lyrical_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "6",
+      "when": 1787283089885,
+      "tag": "0033_nebulous_rictor",
+      "breakpoints": true
     }
   ]
 }

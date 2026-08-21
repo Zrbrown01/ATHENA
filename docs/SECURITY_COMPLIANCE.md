@@ -15,6 +15,7 @@ Athena is being designed to support HIPAA-regulated workflows and SOC 2 readines
 - Malware scanning, file type/size validation, quarantine, and SSRF-safe processing.
 - Immutable audit evidence for access and material actions.
 - Retention hierarchy, legal holds, export controls, and deletion workflows.
+- The deletion workflow currently executes only against a checksum-pinned synthetic disposable table. Active holds hard-stop preview, requesters cannot approve, two distinct approvers are mandatory, and audit/event/approval/decision evidence is excluded from deletion. Real matter, R2, provider, and tenant erasure remain disabled.
 - Dependency, secret, static, and container scanning.
 - Restore tests, incident response, access reviews, risk register, subprocessor and BAA registry.
 - No sensitive content in logs; use identifiers and correlated telemetry.
