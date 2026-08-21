@@ -57,3 +57,7 @@ A Worker scheduled handler is configured every five minutes to drain only the At
 ## Dictation
 
 `dictation.capture_session`, `dictation.attempt_transcription`, `dictation.materialize_synthetic_transcript`, `dictation.apply_template`, `dictation.submit_review`, `dictation.approve_work_product`, `dictation.confirm_time`, and `dictation.file_to_matter` record the full governed Verbatim-shaped lifecycle. Every event declares that the provider is disconnected and no provider call was attempted; attorney-only events declare human authorization.
+
+## Client portal
+
+`client_portal.request_access`, `client_portal.verify_identity`, `client_portal.approve_access`, `client_portal.evaluate_share_item`, `client_portal.attempt_activation`, and `client_portal.revoke_access` preserve the internal control lifecycle. Events explicitly record that external login and identity are disabled and no invitation was sent; share evaluation includes the server-side classification outcome.

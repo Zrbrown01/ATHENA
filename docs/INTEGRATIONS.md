@@ -14,6 +14,7 @@ Provider activation is also gated by the durable compliance registry. A current 
 | Noted | Native lifecycle functional; provider not connected | Athena persists request/governance/handoff/scheduling/calendar/completion/transcript-metadata/closure truth. Activation still requires vendor/service agreement, approved data use, credentials, verified booking/status/transcript/invoice contract, idempotency, and reconciliation. |
 | Verbatim | Native lifecycle functional; provider not connected and no provider call attempted | Athena persists synthetic audio metadata/consent, blocked handoff, checksum-pinned synthetic transcript, versioned template, review/approval, confirmed time, and matter filing. Activation requires an approved transcription/reviewer workflow, credentials, vocabulary/template controls, audio consent/retention and deletion policy, attachments, delivery contract, revocation, and reconciliation. |
 | Telephony/SMS | Not connected; recording disabled | number/provider, consent and HELP/STOP policy, delivery status, recording approval, retention |
+| Client portal identity | Native access-control lifecycle functional; external login and invitations disabled | approved external identity architecture, MFA/session/device policy, verified client roster, field-level authorization, secure notification delivery, revocation, and access reconciliation |
 
 ## Failure rules
 

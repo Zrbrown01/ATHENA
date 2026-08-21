@@ -5080,3 +5080,68 @@ export const dictationDecisions = sqliteTable(
     ),
   ],
 );
+
+export const clientPortalAccessRequests = sqliteTable(
+  "client_portal_access_requests",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    clientOrganizationId: text("client_organization_id").notNull(),
+    contactName: text("contact_name").notNull(),
+    contactEmail: text("contact_email").notNull(),
+    purpose: text("purpose").notNull(),
+    requestedExpiresAt: integer("requested_expires_at", { mode: "timestamp_ms" }).notNull(),
+    status: text("status", { enum: ["requested", "identity_verified", "approved", "activation_blocked", "revoked"] }).notNull(),
+    identityProviderMode: text("identity_provider_mode", { enum: ["not_connected", "human_verified_sandbox"] }).notNull(),
+    identityEvidence: text("identity_evidence"),
+    approvedBy: text("approved_by"),
+    approvedAt: integer("approved_at", { mode: "timestamp_ms" }),
+    revokedBy: text("revoked_by"),
+    revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
+    revocationReason: text("revocation_reason"),
+    revision: integer("revision").notNull().default(1),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [index("idx_portal_access_matter_status").on(table.tenantId, table.matterId, table.status)],
+);
+
+export const clientPortalShareItems = sqliteTable(
+  "client_portal_share_items",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    accessRequestId: text("access_request_id").notNull(),
+    resourceType: text("resource_type").notNull(),
+    resourceId: text("resource_id").notNull(),
+    title: text("title").notNull(),
+    labels: text("labels", { mode: "json" }).$type<string[]>().notNull(),
+    outcome: text("outcome", { enum: ["allow", "deny", "redact"] }).notNull(),
+    reasonCodes: text("reason_codes", { mode: "json" }).$type<string[]>().notNull(),
+    policyVersion: integer("policy_version").notNull(),
+    status: text("status", { enum: ["approved_for_share", "blocked", "revoked"] }).notNull(),
+    approvedBy: text("approved_by"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_portal_share_resource").on(table.tenantId, table.accessRequestId, table.resourceType, table.resourceId),
+    index("idx_portal_share_history").on(table.tenantId, table.accessRequestId, table.createdAt),
+  ],
+);
+
+export const clientPortalDecisions = sqliteTable(
+  "client_portal_decisions",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(),
+    accessRequestId: text("access_request_id").notNull(), action: text("action").notNull(), fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(), reason: text("reason").notNull(), actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_portal_decision_idempotency").on(table.tenantId, table.idempotencyKey),
+    index("idx_portal_decision_history").on(table.tenantId, table.accessRequestId, table.createdAt),
+  ],
+);
