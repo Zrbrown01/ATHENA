@@ -225,6 +225,13 @@
       "when": 1787282236784,
       "tag": "0031_rapid_electro",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "6",
+      "when": 1787282661938,
+      "tag": "0032_lyrical_stranger",
+      "breakpoints": true
     }
   ]
 }

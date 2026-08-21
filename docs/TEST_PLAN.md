@@ -19,6 +19,8 @@ Recovery tests prove exact five-category verification, mismatched restore failur
 
 Directory tests prove firm/matter scope consistency, suspension-first offboarding, self-offboarding denial, foreign-tenant denial, and explicit non-completion when session revocation is disconnected. The API proof persisted seven immutable roles with 17 permissions, a matter-scoped assignment, suspension, assignment revocation, six decisions/events/outbox records, and a `session_revocation_blocked` terminal pilot state.
 
+Provider-compliance tests prove complete prerequisite evaluation, exact missing-requirement reporting, review expiry, executed-agreement effective dates, and tenant denial. The API proof preserved draft BAA/DPA status and produced a blocked assessment naming those two missing requirements while credential activation and provider connectivity remained false.
+
 The local integration smoke executes all seven companion API transitions against migrated D1/R2, downloads the export, and verifies seven events plus limitations. The production build enumerates all application/API routes.
 
 ## Remaining gates

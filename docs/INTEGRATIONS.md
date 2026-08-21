@@ -8,6 +8,8 @@ All providers implement health, backfill, reconciliation, revocation, provider e
 | MerusCase | Not connected; deterministic shaped import only | provider relationship, endpoint documentation, OAuth, export samples, source-ID mapping, verified read/write behavior, reconciliation |
 | Malware scanning | Not connected; every upload remains quarantined | approved provider, contract/BAA as applicable, signature/version evidence, release and failure policy |
 | OCR/AI | Production disabled; deterministic fixed QME processor only | approved providers, security/privacy review, BAA/DPA where applicable, model/data-retention controls, source-grounding evaluation |
+
+Provider activation is also gated by the durable compliance registry. A current passing security review, executed BAA and DPA (or documented approved not-required bases), complete data-category authority, and prohibited training use may establish contractual eligibility only. Credentials, scopes, technical health, and reconciliation must still be verified separately before any connection is represented as live.
 | EAMS/JET | Not connected | approved manual/provider workflow or JET authority, versioned forms/titles, packet validation, status/rejection reconciliation |
 | Noted | Not connected | vendor/service agreement, client governance, booking/status/transcript/billing contract |
 | Verbatim | Not connected; deterministic work-product draft only | transcription/reviewer workflow, vocabulary/template controls, audio consent/retention, attachment and delivery reconciliation |

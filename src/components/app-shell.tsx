@@ -1,5 +1,6 @@
 import {
   BriefcaseBusiness,
+  BadgeCheck,
   CalendarDays,
   DatabaseZap,
   FileText,
@@ -84,6 +85,9 @@ export function AppShell({
           </Link>
           <Link className="nav-item" href="/admin/directory">
             <UserCog aria-hidden="true" size={17} /> Identity & roles
+          </Link>
+          <Link className="nav-item" href="/admin/compliance">
+            <BadgeCheck aria-hidden="true" size={17} /> Provider compliance
           </Link>
           <Link className="nav-item" href="/admin/migration">
             <DatabaseZap aria-hidden="true" size={17} /> Migration center

@@ -32,6 +32,7 @@ AI may propose facts, drafts, tasks, time, and form fields. It may not autonomou
 - Backup/restore and matter-export exercise.
 - Independent penetration test remediation.
 - Vendor security and contract review, including BAA where applicable.
+- The provider-compliance registry now persists subprocessor scope/region/training-use truth, checksum review evidence, BAA/DPA/MSA status, approved data-use purpose/categories/operations, and exact activation blockers. Synthetic review evidence and draft agreements do not authorize credentials or connectivity.
 - Support access, incident, retention, legal hold, and offboarding procedures.
 
 ## Implemented isolation slice

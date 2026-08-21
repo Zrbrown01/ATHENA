@@ -4313,3 +4313,188 @@ export const identityDecisions = sqliteTable(
     ),
   ],
 );
+
+export const subprocessors = sqliteTable(
+  "subprocessors",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    name: text("name").notNull(),
+    service: text("service").notNull(),
+    status: text("status", {
+      enum: [
+        "candidate",
+        "under_review",
+        "contractually_eligible",
+        "rejected",
+        "suspended",
+      ],
+    }).notNull(),
+    dataRegions: text("data_regions", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    dataCategories: text("data_categories", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    usesAi: integer("uses_ai", { mode: "boolean" }).notNull(),
+    trainingUse: text("training_use", {
+      enum: ["unknown", "prohibited", "allowed"],
+    }).notNull(),
+    providerConnected: integer("provider_connected", {
+      mode: "boolean",
+    }).notNull(),
+    revision: integer("revision").notNull().default(1),
+    ownerId: text("owner_id").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_subprocessor_name").on(table.tenantId, table.name),
+  ],
+);
+
+export const vendorSecurityReviews = sqliteTable(
+  "vendor_security_reviews",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    subprocessorId: text("subprocessor_id").notNull(),
+    outcome: text("outcome", {
+      enum: ["pass", "fail", "needs_remediation"],
+    }).notNull(),
+    controlsReviewed: text("controls_reviewed", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    evidenceRef: text("evidence_ref").notNull(),
+    evidenceSha256: text("evidence_sha256").notNull(),
+    validUntil: integer("valid_until", { mode: "timestamp_ms" }).notNull(),
+    reviewedBy: text("reviewed_by").notNull(),
+    reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_vendor_review_subprocessor").on(
+      table.tenantId,
+      table.subprocessorId,
+      table.reviewedAt,
+    ),
+  ],
+);
+
+export const complianceAgreements = sqliteTable(
+  "compliance_agreements",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    subprocessorId: text("subprocessor_id").notNull(),
+    agreementType: text("agreement_type", {
+      enum: ["baa", "dpa", "msa"],
+    }).notNull(),
+    status: text("status", {
+      enum: ["draft", "executed", "expired", "not_required"],
+    }).notNull(),
+    effectiveAt: integer("effective_at", { mode: "timestamp_ms" }),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }),
+    artifactRef: text("artifact_ref").notNull(),
+    artifactSha256: text("artifact_sha256").notNull(),
+    approvedBy: text("approved_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_compliance_agreement_type").on(
+      table.tenantId,
+      table.subprocessorId,
+      table.agreementType,
+    ),
+  ],
+);
+
+export const dataUseAuthorities = sqliteTable(
+  "data_use_authorities",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    subprocessorId: text("subprocessor_id").notNull(),
+    purpose: text("purpose").notNull(),
+    allowedDataCategories: text("allowed_data_categories", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    allowedOperations: text("allowed_operations", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    aiAllowed: integer("ai_allowed", { mode: "boolean" }).notNull(),
+    trainingUseProhibited: integer("training_use_prohibited", {
+      mode: "boolean",
+    }).notNull(),
+    status: text("status", {
+      enum: ["proposed", "approved", "revoked"],
+    }).notNull(),
+    approvedBy: text("approved_by").notNull(),
+    approvedAt: integer("approved_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_data_use_authority_subprocessor").on(
+      table.tenantId,
+      table.subprocessorId,
+      table.status,
+    ),
+  ],
+);
+
+export const providerActivationAssessments = sqliteTable(
+  "provider_activation_assessments",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    subprocessorId: text("subprocessor_id").notNull(),
+    outcome: text("outcome", {
+      enum: ["blocked", "contractually_eligible"],
+    }).notNull(),
+    missingRequirements: text("missing_requirements", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    credentialActivationAllowed: integer("credential_activation_allowed", {
+      mode: "boolean",
+    }).notNull(),
+    providerConnected: integer("provider_connected", {
+      mode: "boolean",
+    }).notNull(),
+    detail: text("detail").notNull(),
+    assessedBy: text("assessed_by").notNull(),
+    assessedAt: integer("assessed_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_provider_activation_subprocessor").on(
+      table.tenantId,
+      table.subprocessorId,
+      table.assessedAt,
+    ),
+  ],
+);
+
+export const complianceRegistryDecisions = sqliteTable(
+  "compliance_registry_decisions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    subprocessorId: text("subprocessor_id").notNull(),
+    action: text("action").notNull(),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_compliance_registry_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_compliance_registry_vendor").on(
+      table.tenantId,
+      table.subprocessorId,
+      table.createdAt,
+    ),
+  ],
+);
