@@ -278,7 +278,7 @@ export const sourceRecordLinks = sqliteTable("source_record_links", {
   id: text("id").primaryKey(),
   tenantId: text("tenant_id").notNull(),
   matterId: text("matter_id").notNull(),
-  entityType: text("entity_type", { enum: ["matter", "claim", "injury", "adjudication_case"] }).notNull(),
+  entityType: text("entity_type", { enum: ["matter", "claim", "injury", "adjudication_case", "person", "organization", "matter_party"] }).notNull(),
   entityId: text("entity_id").notNull(),
   sourceSystem: text("source_system").notNull(),
   sourceRecordId: text("source_record_id").notNull(),
@@ -345,6 +345,22 @@ export const conflictFindings = sqliteTable("conflict_findings", {
 export const intakeReviewDecisions = sqliteTable("intake_review_decisions", {
   id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), intakeCandidateId: text("intake_candidate_id").notNull(), action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason").notNull(), actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [uniqueIndex("idx_intake_review_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_intake_review_candidate").on(table.tenantId, table.intakeCandidateId, table.createdAt)]);
+
+export const persons = sqliteTable("persons", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), givenName: text("given_name").notNull(), familyName: text("family_name").notNull(), displayName: text("display_name").notNull(), normalizedName: text("normalized_name").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_person_normalized_name").on(table.tenantId, table.normalizedName)]);
+
+export const organizations = sqliteTable("organizations", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), name: text("name").notNull(), normalizedName: text("normalized_name").notNull(), organizationType: text("organization_type", { enum: ["carrier", "tpa", "employer", "insured", "law_firm", "medical_provider", "vendor", "other"] }).notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_organization_normalized_name").on(table.tenantId, table.normalizedName)]);
+
+export const partyAliases = sqliteTable("party_aliases", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), partyType: text("party_type", { enum: ["person", "organization"] }).notNull(), partyId: text("party_id").notNull(), alias: text("alias").notNull(), normalizedAlias: text("normalized_alias").notNull(), aliasType: text("alias_type", { enum: ["alternate", "former_name", "dba", "source_spelling"] }).notNull(), sourceLinkId: text("source_link_id").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_party_alias_identity").on(table.tenantId, table.partyType, table.partyId, table.normalizedAlias), index("idx_party_alias_lookup").on(table.tenantId, table.normalizedAlias)]);
+
+export const matterParties = sqliteTable("matter_parties", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), partyType: text("party_type", { enum: ["person", "organization"] }).notNull(), partyId: text("party_id").notNull(), role: text("role").notNull(), claimId: text("claim_id"), injuryId: text("injury_id"), adjudicationCaseId: text("adjudication_case_id"), status: text("status", { enum: ["active", "former"] }).notNull(), sourceLinkId: text("source_link_id").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_matter_party_identity").on(table.tenantId, table.matterId, table.partyType, table.partyId, table.role), index("idx_matter_party_role").on(table.tenantId, table.matterId, table.role)]);
 
 export const governanceRules = sqliteTable("governance_rules", {
   id: text("id").primaryKey(),

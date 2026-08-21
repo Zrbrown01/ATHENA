@@ -44,6 +44,7 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 | `intake_candidates` | preserved referral identity, proposed matter scope, extracted core identifiers, missing-field ledger, lifecycle status, and optimistic revision |
 | `intake_match_candidates`, `conflict_findings` | explainable possible-duplicate evidence and separately resolved, source-referenced conflict findings |
 | `intake_review_decisions` | immutable reviewer action, transition, reason, actor, event, and idempotency evidence |
+| `persons`, `organizations`, `party_aliases`, `matter_parties` | canonical people/organization identities, normalized alias lookup, role-compatible matter assignments, claim/injury/ADJ scope, and source-link provenance |
 
 ## Object keys
 

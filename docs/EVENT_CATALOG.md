@@ -18,6 +18,7 @@ Every event contains event ID/type/version, tenant, aggregate type/ID, optional 
 | `filing.*` | packet decision | action, reason, human authorization |
 | `matter.imported` | deterministic companion import | from/to stage and sandbox provider mode |
 | `matter.graph_materialized` | authorized normalized graph write | entity counts, deterministic provider mode, and explicit non-flattened state; no matter content |
+| `matter.party_roster_materialized` | authorized party graph write | person, organization, alias, role, and source-link counts only |
 | `medical.analysis_ready` | deterministic QME processor | from/to stage and sandbox provider mode |
 | `work_product.draft_created` | Verbatim-shaped deterministic draft | from/to stage and sandbox provider mode |
 | `report.approved` | attorney approval | human authorization and stage transition |
