@@ -17,6 +17,7 @@ Every event contains event ID/type/version, tenant, aggregate type/ID, optional 
 | `report.*` | report decision | action, reason, human authorization |
 | `filing.*` | packet decision | action, reason, human authorization |
 | `filing_packet.*` | packet assembly, validation, approval, handoff block, return status, correction | from/to state, validation outcome, correction identity, human authorization, false EAMS/external-operation flags |
+| `billing.*` | profile, expense, prebill, invoice, LEDES, submission, rejection, appeal, payment | from/to state, integer-cent amount, human authorization, provider connection and evidence mode |
 | `proceeding.*` | proceeding creation, readiness evidence, assessment | item, readiness state, human authorization, non-autonomous and EAMS connection flags |
 | `matter.imported` | deterministic companion import | from/to stage and sandbox provider mode |
 | `matter.graph_materialized` | authorized normalized graph write | entity counts, deterministic provider mode, and explicit non-flattened state; no matter content |
