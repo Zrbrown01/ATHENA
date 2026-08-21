@@ -23,6 +23,10 @@ Cost governance uses versioned tenant rate cards and immutable usage entries. Ra
 
 Athena does not use full event sourcing. The application writes queryable relational current state while also preserving immutable business events, fact observations, audit events, and historical ledgers. Business updates and outgoing events will commit together through the outbox pattern.
 
+## Request observability
+
+The global Worker boundary creates or accepts a syntactically bounded request ID, extracts a W3C trace ID when present, and returns both plus `Server-Timing` on every response. One structured request record contains method, safe route template, status, duration, application version, outcome, and a truncated SHA-256 actor reference when authenticated. It never includes URL queries, request/response bodies, auth tokens, email addresses, medical facts, work product, or error messages. Dynamic export identities are replaced with `:id`. The current record goes only to Worker logs; a governed external sink, retention/access policy, metrics/tracing backend, anomaly rules, and alert delivery remain required.
+
 ## Tenant isolation
 
 Every tenant-owned record carries `tenant_id`. Production queries must receive tenant context from verified identity claims, include tenant predicates, and use PostgreSQL row-level security as defense in depth. Isolation also applies to object keys, cache keys, jobs, search documents, events, logs, exports, and AI retrieval.

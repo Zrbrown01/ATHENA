@@ -15,6 +15,7 @@ NEXT_PUBLIC_APP_URL=https://www.athenacms.app
 AUTH_MODE=platform_headers
 ATHENA_PILOT_PARTNER_USER_IDS=<secret comma-separated Sites account user IDs>
 ATHENA_PILOT_SUPPORT_USER_IDS=<optional secret comma-separated support account user IDs>
+ATHENA_APP_VERSION=<exact deployed Git commit SHA>
 D1_BINDING=DB
 R2_BINDING=DOCUMENTS
 OCR_PROVIDER=<approved provider or disabled>
@@ -24,6 +25,8 @@ AI_PROVIDER=<approved provider or disabled>
 Never commit production values or credentials. Use the selected cloud’s managed secret service.
 
 The private Sites pilot stores `ATHENA_PILOT_PARTNER_USER_IDS` as a secret runtime value containing the sole allowed owner. Deploy a saved version after changing it so the new environment revision becomes active. Never infer an Athena role from the presence of platform authentication headers alone.
+
+Set `ATHENA_APP_VERSION` to the exact source commit before deploying that saved version. Smoke responses must include `x-athena-request-id`, `x-athena-trace-id`, and `server-timing`. Worker request records must use the same version and must not contain URL queries, bodies, tokens, raw identity headers, medical facts, email bodies, or settlement strategy.
 
 ## Domain activation checklist
 

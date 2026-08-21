@@ -20,6 +20,7 @@ Athena is being designed to support HIPAA-regulated workflows and SOC 2 readines
 - Dependency, secret, static, and container scanning.
 - Restore tests, incident response, access reviews, risk register, subprocessor and BAA registry.
 - No sensitive content in logs; use identifiers and correlated telemetry.
+- The Worker now emits one bounded JSON request record with request/trace IDs, a safe route template, status/latency, deployment version, and a 16-hex pseudonymous actor reference. Query strings, bodies, raw platform identities, tokens, legal/medical content, and error messages are excluded by construction; dynamic export IDs are templated.
 - Versioned data classification must govern access, search, AI, sharing, download, printing, retention, export, and logging. Deny wins; legal hold forces retention; authentication, ethical-wall, AI-restricted, and hold labels cannot be bypassed by a temporary override.
 
 ## AI controls

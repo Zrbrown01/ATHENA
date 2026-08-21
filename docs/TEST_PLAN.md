@@ -35,6 +35,8 @@ Deposition tests prove governance approval, ordered lifecycle states, an honest 
 
 Cost-governance tests prove exact safe-integer micro-dollar arithmetic, unique category/unit pricing, partner-only rate approval, approved-card and matching-rate gates, tenant/matter isolation, and rejection of false provider verification. The local API proof approved one synthetic card and recorded three estimated entries across QME intake and Verbatim workflows for 2,515,000 micros, five decisions/events/outbox records, and zero provider-verified entries.
 
+Request-observability tests prove valid request/W3C trace correlation, query exclusion, dynamic export-route templating, pseudonymous actor references, a bounded operational record, and response correlation/server-timing headers. A local Worker request preserved an explicit request ID, generated a 32-hex trace ID, returned a measured server-timing value, and retained the existing CSP.
+
 The local integration smoke executes all seven companion API transitions against migrated D1/R2, downloads the export, and verifies seven events plus limitations. The production build enumerates all application/API routes.
 
 ## Remaining gates

@@ -5,11 +5,13 @@ import {
 } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
 import { runScheduledInternalDelivery } from "../src/platform/outbox-scheduler";
+import { operationalRequestRecord, pseudonymousActorRef, requestTelemetryContext, withObservabilityHeaders } from "../src/platform/request-observability";
 
 interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
   DB: D1Database;
   DOCUMENTS: R2Bucket;
+  ATHENA_APP_VERSION?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -38,27 +40,23 @@ function withSecurityHeaders(response: Response): Response {
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const startedAt = performance.now();
+    const telemetry = requestTelemetryContext(request);
+    const actorRef = await pseudonymousActorRef(request);
     const url = new URL(request.url);
-
-    if (url.pathname === "/_vinext/image") {
-      const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];
-      const response = await handleImageOptimization(
-        request,
-        {
-          fetchAsset: (path) => env.ASSETS.fetch(new Request(new URL(path, request.url))),
-          transformImage: async (body, { width, format, quality }) => {
-            const result = await env.IMAGES.input(body)
-              .transform(width > 0 ? { width } : {})
-              .output({ format, quality });
-            return result.response();
-          },
-        },
-        allowedWidths,
-      );
-      return withSecurityHeaders(response);
+    try {
+      let response: Response;
+      if (url.pathname === "/_vinext/image") {
+        const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];
+        response = await handleImageOptimization(request, { fetchAsset: (path) => env.ASSETS.fetch(new Request(new URL(path, request.url))), transformImage: async (body, { width, format, quality }) => { const result = await env.IMAGES.input(body).transform(width > 0 ? { width } : {}).output({ format, quality }); return result.response(); } }, allowedWidths);
+      } else response = await handler.fetch(request, env, ctx);
+      const durationMs = performance.now() - startedAt, status = response.status, outcome = status >= 500 ? "server_error" : status >= 400 ? "client_error" : "success";
+      console.log(JSON.stringify(operationalRequestRecord({ context: telemetry, status, durationMs, appVersion: env.ATHENA_APP_VERSION ?? "unversioned", actorRef, outcome })));
+      return withObservabilityHeaders(withSecurityHeaders(response), telemetry, durationMs);
+    } catch (error) {
+      console.error(JSON.stringify(operationalRequestRecord({ context: telemetry, status: 500, durationMs: performance.now() - startedAt, appVersion: env.ATHENA_APP_VERSION ?? "unversioned", actorRef, outcome: "exception", errorName: error instanceof Error ? error.name : "UnknownError" })));
+      throw error;
     }
-
-    return withSecurityHeaders(await handler.fetch(request, env, ctx));
   },
   scheduled(controller: { scheduledTime: number; cron: string }, _env: Env, ctx: ExecutionContext) {
     ctx.waitUntil(runScheduledInternalDelivery({ trigger: `cron:${controller.cron}`, scheduledAt: new Date(controller.scheduledTime) }));
