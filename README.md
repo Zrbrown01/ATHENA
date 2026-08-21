@@ -44,6 +44,15 @@ Run the complete local check:
 npm run check
 ```
 
+Install the pinned Chromium runtime once, then run the browser behavior and visual-regression gate:
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+Use `npm run test:e2e:update` only for intentional UI changes and visually inspect the regenerated baselines before committing them.
+
 Local and preview environments must contain synthetic data only.
 
 ## Repository map

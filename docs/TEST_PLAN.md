@@ -37,15 +37,17 @@ Cost-governance tests prove exact safe-integer micro-dollar arithmetic, unique c
 
 Request-observability tests prove valid request/W3C trace correlation, query exclusion, dynamic export-route templating, pseudonymous actor references, a bounded operational record, and response correlation/server-timing headers. A local Worker request preserved an explicit request ID, generated a 32-hex trace ID, returned a measured server-timing value, and retained the existing CSP.
 
+Playwright/Chromium E2E proves hydrated search-trigger operation, autofocus, Escape closure, focus restoration, the platform keyboard shortcut, and short-query status messaging. Approved full-page baselines cover the desktop My Work shell and initial cost-governance surface at a fixed 1440×1000 viewport with light theme, reduced motion, locale, and timezone pinned. Baseline review exposed sidebar overflow below the dark shell; the sidebar now owns bounded vertical scrolling and both visual comparisons pass.
+
 The local integration smoke executes all seven companion API transitions against migrated D1/R2, downloads the export, and verifies seven events plus limitations. The production build enumerates all application/API routes.
 
 ## Remaining gates
 
-Automated browser E2E/visual regression, adversarial database concurrency tests, independent multi-principal isolation validation, production cron-timestamp verification, external-provider reconciliation, attorney-reviewed deadline content and sourced holiday operations, AI grounding evaluation, migration reconciliation, performance budgets, and backup restore remain required before production.
+Broader browser E2E/visual/device coverage, adversarial database concurrency tests, independent multi-principal isolation validation, production cron-timestamp verification, external-provider reconciliation, attorney-reviewed deadline content and sourced holiday operations, AI grounding evaluation, migration reconciliation, performance budgets, and backup restore remain required before production.
 
 ## Standard checks
 
-`npm run check` runs lint, TypeScript, Vitest, and the deployment build. `npm audit --audit-level=high` is the dependency gate. Migration SQL is inspected and applied to a clean/local database before release.
+`npm run check` runs lint, TypeScript, Vitest, and the deployment build. `npm run test:e2e` runs the Chromium behavior and visual gate after `npx playwright install chromium`; intentional baseline changes use `npm run test:e2e:update` and require visual review. `npm audit --audit-level=high` is the dependency gate. Migration SQL is inspected and applied to a clean/local database before release.
 
 ## Export coverage evidence
 

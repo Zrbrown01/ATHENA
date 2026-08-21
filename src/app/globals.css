@@ -29,7 +29,7 @@ button:disabled { cursor: not-allowed; opacity: .58; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
 .app-shell { min-height: 100vh; display: grid; grid-template-columns: 232px minmax(0, 1fr); }
-.sidebar { position: sticky; top: 0; height: 100vh; padding: 24px 14px 18px; display: flex; flex-direction: column; color: #dbe5f4; background: var(--shell); border-right: 1px solid #202b3d; }
+.sidebar { position: sticky; top: 0; height: 100vh; padding: 24px 14px 18px; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; color: #dbe5f4; background: var(--shell); border-right: 1px solid #202b3d; }
 .brand { display: flex; align-items: center; gap: 11px; margin: 0 10px 31px; color: white; text-decoration: none; }
 .brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid color-mix(in srgb, var(--gold) 70%, transparent); border-radius: 9px; color: var(--gold); font: 600 19px/1 Georgia, serif; }
 .brand strong { display: block; font-size: 15px; letter-spacing: .15em; }

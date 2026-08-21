@@ -55,7 +55,7 @@ TXT _cf-custom-hostname.www -> 62406762-1264-4515-b2b8-b8fe5874a50e
 1. Confirm CI is green and the release commit is reviewed.
 2. Confirm migrations are backward compatible and a recovery point exists.
 3. Deploy to restricted staging with synthetic data.
-4. Run golden workflow, accessibility, authorization, isolation, migration, and security checks.
+4. Run golden workflow, accessibility, Playwright E2E/visual, authorization, isolation, migration, and security checks.
 5. Obtain named release and security approval.
 6. Deploy application code with external integrations disabled by default.
 7. Run migrations through the controlled release job.
