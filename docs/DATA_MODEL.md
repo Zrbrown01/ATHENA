@@ -31,6 +31,8 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 | `preview_outbox` | reliable outgoing work pending processing/reconciliation |
 | `governance_rules` | immutable tenant/code/version calculation content with explicit synthetic, pending-review, or attorney-approved status |
 | `obligations` | matter-scoped rule snapshot, trigger provenance, calculation trace, owner/revision, and completion or cancellation evidence |
+| `access_decision_events` | content-free immutable allow/deny evidence by tenant, actor, matter, data plane, reason code, request, and time |
+| `rate_limit_windows` | durable atomic per-actor/per-action fixed-window counters and expiry metadata |
 
 ## Object keys
 

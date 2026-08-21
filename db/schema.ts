@@ -76,6 +76,37 @@ export const outboxDeliveries = sqliteTable("outbox_deliveries", {
   index("idx_outbox_delivery_tenant_event").on(table.tenantId, table.eventId, table.createdAt),
 ]);
 
+export const accessDecisionEvents = sqliteTable("access_decision_events", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  actorId: text("actor_id").notNull(),
+  matterId: text("matter_id").notNull(),
+  plane: text("plane").notNull(),
+  outcome: text("outcome", { enum: ["allowed", "denied"] }).notNull(),
+  reasonCode: text("reason_code").notNull(),
+  requestId: text("request_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_access_decision_request").on(table.tenantId, table.requestId),
+  index("idx_access_decision_matter").on(table.tenantId, table.matterId, table.createdAt),
+  index("idx_access_decision_actor").on(table.tenantId, table.actorId, table.createdAt),
+]);
+
+export const rateLimitWindows = sqliteTable("rate_limit_windows", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  actorId: text("actor_id").notNull(),
+  action: text("action").notNull(),
+  windowStartedAt: integer("window_started_at", { mode: "timestamp_ms" }).notNull(),
+  count: integer("count").notNull().default(1),
+  limit: integer("limit").notNull(),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_rate_limit_expiry").on(table.tenantId, table.expiresAt),
+  index("idx_rate_limit_actor").on(table.tenantId, table.actorId, table.windowStartedAt),
+]);
+
 export const retentionPolicies = sqliteTable("retention_policies", {
   id: text("id").primaryKey(),
   tenantId: text("tenant_id").notNull(),

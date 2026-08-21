@@ -7,6 +7,7 @@ import { GOLDEN_MATTER_ID, PILOT_TENANT_ID, pilotContext } from "@/platform/pilo
 import { requestActor } from "@/platform/request-actor";
 import { assertTrustedWriteOrigin, RequestSecurityError } from "@/platform/request-security";
 import { authorizePersistedMatter } from "@/platform/access-policy-persistence";
+import { enforceRateLimit, RateLimitError, rateLimitResponse } from "@/platform/rate-limit-persistence";
 
 const requestSchema = z.object({ action: z.enum(companionActions), idempotencyKey: z.string().min(8).max(200) });
 
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
   const actor = requestActor(request);
   if (!actor) return Response.json({ error: "Authentication required" }, { status: 401 });
   try {
+    await enforceRateLimit({ tenantId: PILOT_TENANT_ID, actorId: actor.userId, action: "companion.transition" });
     await authorizePersistedMatter(pilotContext(actor), PILOT_TENANT_ID, GOLDEN_MATTER_ID);
     const body = requestSchema.parse(await request.json());
     const current = await readCompanionRun(PILOT_TENANT_ID, GOLDEN_MATTER_ID);
@@ -35,6 +37,7 @@ export async function POST(request: Request) {
     const run = await readCompanionRun(PILOT_TENANT_ID, GOLDEN_MATTER_ID);
     return Response.json({ run, stage: result.nextStage, nextAction: nextCompanionAction(result.nextStage), event: result.event });
   } catch (error) {
+    if (error instanceof RateLimitError) return rateLimitResponse(error);
     if (error instanceof AuthorizationError) return Response.json({ error: "Access denied" }, { status: 403 });
     if (error instanceof z.ZodError) return Response.json({ error: "Invalid workflow command", issues: error.issues }, { status: 400 });
     const message = error instanceof Error ? error.message : "Workflow transition failed";

@@ -10,6 +10,7 @@ import { GOLDEN_MATTER_ID, pilotContext } from "@/platform/pilot-context";
 import { AuthorizationError, requireRole } from "@/platform/tenant-context";
 import { assertTrustedWriteOrigin, RequestSecurityError } from "@/platform/request-security";
 import { authorizePersistedMatter } from "@/platform/access-policy-persistence";
+import { enforceRateLimit, RateLimitError, rateLimitResponse } from "@/platform/rate-limit-persistence";
 
 const TENANT_ID = "tenant-golden";
 
@@ -33,6 +34,8 @@ export async function POST(request: Request) {
   catch (error) { if (error instanceof RequestSecurityError) return Response.json({ error: "Untrusted request origin" }, { status: 403 }); throw error; }
   const actor = requestActor(request);
   if (!actor) return Response.json({ error: "Authentication required" }, { status: 401 });
+  try { await enforceRateLimit({ tenantId: TENANT_ID, actorId: actor.userId, action: "documents.intake", policy: { limit: 10, windowMs: 60_000 } }); }
+  catch (error) { if (error instanceof RateLimitError) return rateLimitResponse(error); throw error; }
 
   const form = await request.formData();
   const file = form.get("file");

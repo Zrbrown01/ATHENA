@@ -82,13 +82,14 @@ TXT _cf-custom-hostname.www -> 62406762-1264-4515-b2b8-b8fe5874a50e
 
 1. Security architecture, threat model, privacy/legal, vendor, BAA/DPA, and subprocessor reviews approved.
 2. Verified identity/MFA/session policy, role/context authorization, ethical walls, support access, access review, and break-glass audit tested.
-3. Tenant isolation proven across API, objects, search, cache, jobs, events, export, logs, and AI.
-4. Malware scanning, retention/legal hold, deletion, complete export, backup/restore, incident response, monitoring, rate limiting, CSP/origin controls, secrets, and vulnerability gates proven.
-5. Provider credentials/scopes/subscriptions/recovery/reconciliation verified individually; disabled integrations remain disabled.
-6. California content versions and client governance/billing profiles receive named legal/operational approval.
-7. Migration dry run, counts/checksums/exceptions, user acceptance, cutover, rollback, and legacy archive approved.
-8. Accessibility, performance, load, golden workflows, disaster recovery, and incident tabletop pass with recorded evidence.
-9. DNS/TLS/canonical redirects/callbacks/webhooks verified; production data is introduced only after named launch approval.
+3. Application rate-limit counters, 429/`Retry-After` behavior, access-decision evidence, and edge/WAF throttling validated under representative load.
+4. Tenant isolation proven across API, objects, search, cache, jobs, events, export, logs, and AI.
+5. Malware scanning, retention/legal hold, deletion, complete export, backup/restore, incident response, monitoring, rate limiting, CSP/origin controls, secrets, and vulnerability gates proven.
+6. Provider credentials/scopes/subscriptions/recovery/reconciliation verified individually; disabled integrations remain disabled.
+7. California content versions and client governance/billing profiles receive named legal/operational approval.
+8. Migration dry run, counts/checksums/exceptions, user acceptance, cutover, rollback, and legacy archive approved.
+9. Accessibility, performance, load, golden workflows, disaster recovery, and incident tabletop pass with recorded evidence.
+10. DNS/TLS/canonical redirects/callbacks/webhooks verified; production data is introduced only after named launch approval.
 
 ## Event-delivery operations
 

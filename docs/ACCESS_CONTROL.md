@@ -12,6 +12,10 @@ Only a partner or firm administrator with existing matter access may place or re
 
 The shared isolation boundary covers API reads/writes, object bytes, exports, jobs, events, search, AI retrieval, caches, and support. Search, AI retrieval, cache, and support products are not active; their adapters must call this boundary before lookup when implemented. Support additionally requires a current, partner-approved, matter-scoped grant. No standing support or break-glass grant exists in the pilot.
 
+Every persisted matter authorization records an immutable decision containing tenant, actor, matter, data plane, allowed/denied outcome, reason code, request ID, and timestamp. It does not copy document text, medical facts, work product, or other matter content into the control record.
+
+Authenticated write routes use durable, atomic, per-actor/per-action fixed windows. Ordinary commands permit 30 requests per 60 seconds; document intake and owner operations use a tighter 10-per-minute policy. Rejections return HTTP 429 with `Retry-After` and do not pretend the command was processed. Window rows expire logically and are indexed for later controlled cleanup.
+
 ## Pilot proof
 
 The administration UI uses a synthetic reviewer identity. Tests prove deny-overrides-membership across every defined data plane, cross-tenant cache/job rejection, support grant expiry/scope enforcement, self-wall prevention, stale-release rejection, and terminal placement/release state. This is software control evidence, not a completed access review or independent penetration test.

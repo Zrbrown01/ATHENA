@@ -6,6 +6,7 @@ import { listObligations, persistObligationDecision, readObligation, readObligat
 import { requestActor } from "@/platform/request-actor";
 import { assertTrustedWriteOrigin, RequestSecurityError } from "@/platform/request-security";
 import { AuthorizationError } from "@/platform/tenant-context";
+import { enforceRateLimit, RateLimitError, rateLimitResponse } from "@/platform/rate-limit-persistence";
 
 const PILOT_RULE = "firm-pilot-qme-review";
 const SYNTHETIC_CLOSURES = new Set(["2026-08-24"]);
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
     assertTrustedWriteOrigin(request);
     const actor = requestActor(request);
     if (!actor) return Response.json({ error: "Authentication required" }, { status: 401 });
+    await enforceRateLimit({ tenantId: PILOT_TENANT_ID, actorId: actor.userId, action: "obligations.command" });
     const context = pilotContext(actor);
     const command = obligationCommand.parse(await request.json());
     await authorizePersistedMatter(context, command.tenantId, command.matterId);
@@ -39,6 +41,7 @@ export async function POST(request: Request) {
     const persistence = await persistObligationDecision({ ...decision, actor, deadline, rule: rule ?? undefined });
     return Response.json({ event: decision.event, persistence, items: await listObligations(command.tenantId, command.matterId) });
   } catch (error) {
+    if (error instanceof RateLimitError) return rateLimitResponse(error);
     if (error instanceof RequestSecurityError) return Response.json({ error: "Untrusted request origin" }, { status: 403 });
     if (error instanceof AuthorizationError) return Response.json({ error: "Access denied" }, { status: 403 });
     return Response.json({ error: error instanceof Error ? error.message : "Obligation command failed" }, { status: 400 });

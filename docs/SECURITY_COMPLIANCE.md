@@ -38,6 +38,8 @@ AI may propose facts, drafts, tasks, time, and form fields. It may not autonomou
 
 Persisted ethical walls now support partner-authorized placement and release with deny-overrides-allow enforcement, reasons, actors, expiry, revisions, immutable restricted events, and outbox records. The shared negative-test contract covers API, object, export, job, event, search, AI retrieval, cache, and support planes. Search/AI/support remain disabled; no standing or break-glass support access is implied. See `docs/ACCESS_CONTROL.md`.
 
+Matter authorization decisions are recorded without matter content, and every current authenticated write route has a durable per-actor/per-action fixed-window limit. These controls reduce abuse risk but do not replace edge/WAF limits, independent penetration testing, anomaly detection, or a formal access-review program.
+
 ## Production origin
 
 The canonical application origin is `https://www.athenacms.app`. Production authentication callbacks, CORS/origin validation, content-security policy, secure cookies, email links, and provider webhooks must use an explicit allowlist based on that origin. The apex domain should redirect to the canonical `www` host. Preview deployments must use separate identity callbacks and must never receive production data.

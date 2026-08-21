@@ -9,7 +9,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const result = await getExportForActor(PILOT_TENANT_ID, id);
   if (!result) return Response.json({ error: "Export not found" }, { status: 404 });
-  try { await authorizePersistedTenantObject(pilotContext(actor), PILOT_TENANT_ID, result.job.matterId, result.job.objectKey); }
+  try { await authorizePersistedTenantObject(pilotContext(actor), PILOT_TENANT_ID, result.job.matterId, result.job.objectKey, "export"); }
   catch { return Response.json({ error: "Access denied" }, { status: 403 }); }
   const extension = result.job.format === "application/x-tar" ? "tar" : "json";
   return new Response(result.object.body, { headers: { "content-type": result.job.format, "content-disposition": `attachment; filename="athena-${result.job.matterId}-export.${extension}"`, "x-content-type-options": "nosniff", "cache-control": "private, no-store", "x-athena-sha256": result.job.sha256, "x-athena-export-completeness": result.job.completeness, "x-athena-restoration-verified": String(Boolean(result.job.restorationVerifiedAt)) } });
