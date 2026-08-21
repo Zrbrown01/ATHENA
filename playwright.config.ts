@@ -20,7 +20,7 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 1000 } } }],
   webServer: {
-    command: "ATHENA_PILOT_PARTNER_USER_IDS=user-maya-chen ATHENA_PILOT_SUPPORT_USER_IDS=support-e2e npm run dev",
+    command: "ATHENA_PILOT_PARTNER_USER_IDS=user-maya-chen,user-client-reviewer ATHENA_PILOT_SUPPORT_USER_IDS=support-e2e npm run dev",
     url: "http://localhost:3000",
     reuseExistingServer: true,
     timeout: 120_000,

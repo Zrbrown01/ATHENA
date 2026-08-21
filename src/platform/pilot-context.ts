@@ -10,7 +10,10 @@ export function pilotContext(actor: RequestActor): TenantContext {
   }
 
   const partnerUserIds = configuredUserIds("ATHENA_PILOT_PARTNER_USER_IDS");
-  if (process.env.NODE_ENV !== "production") partnerUserIds.add("user-maya-chen");
+  if (process.env.NODE_ENV !== "production") {
+    partnerUserIds.add("user-maya-chen");
+    partnerUserIds.add("user-client-reviewer");
+  }
 
   if (!partnerUserIds.has(actor.userId)) {
     return {

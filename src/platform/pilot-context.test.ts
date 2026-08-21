@@ -42,12 +42,15 @@ describe("pilot identity mapping", () => {
     });
   });
 
-  it("retains the deterministic local-development pilot identity", () => {
+  it("retains the deterministic local-development review identities", () => {
     vi.stubEnv("NODE_ENV", "test");
     expect(pilotContext(actor("user-maya-chen")).roles).toEqual([
       "attorney",
       "partner",
     ]);
+    expect(pilotContext(actor("user-client-reviewer")).roles).toEqual([
+      "attorney",
+      "partner",
+    ]);
   });
 });
-

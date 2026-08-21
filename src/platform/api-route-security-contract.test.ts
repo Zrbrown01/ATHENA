@@ -40,8 +40,8 @@ describe("API route security contract", () => {
   const routes = handlers();
 
   it("discovers every current API route handler", () => {
-    expect(routes).toHaveLength(94);
-    expect(new Set(routes.map(({ file }) => file)).size).toBe(50);
+    expect(routes).toHaveLength(96);
+    expect(new Set(routes.map(({ file }) => file)).size).toBe(51);
   });
 
   it.each(routes)("requires authenticated identity for $method $file", ({ source }) => {

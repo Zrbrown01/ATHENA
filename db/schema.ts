@@ -2063,6 +2063,9 @@ export const governancePolicyLayers = sqliteTable(
       .default("active"),
     revision: integer("revision").notNull().default(1),
     supersedesLayerId: text("supersedes_layer_id"),
+    sourceKind: text("source_kind", { enum: ["manual", "client_instruction"] }).notNull().default("manual"),
+    sourceId: text("source_id"),
+    sourceSha256: text("source_sha256"),
     reason: text("reason").notNull(),
     createdBy: text("created_by").notNull(),
     eventId: text("event_id").notNull(),
@@ -2085,6 +2088,30 @@ export const governancePolicyLayers = sqliteTable(
       table.scopeId,
     ),
   ],
+);
+
+export const clientInstructionSources = sqliteTable(
+  "client_instruction_sources",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), clientId: text("client_id").notNull(), evidenceId: text("evidence_id").notNull(),
+    code: text("code").notNull(), version: integer("version").notNull(), title: text("title").notNull(), sourceSha256: text("source_sha256").notNull(), sourceObjectKey: text("source_object_key").notNull(), sourceByteSize: integer("source_byte_size").notNull(),
+    businessDays: integer("business_days").notNull(), authorityCitation: text("authority_citation").notNull(), effectiveAt: integer("effective_at", { mode: "timestamp_ms" }).notNull(), reviewBy: integer("review_by", { mode: "timestamp_ms" }).notNull(),
+    sourceMode: text("source_mode", { enum: ["deterministic_sandbox", "verified_evidence"] }).notNull(), status: text("status", { enum: ["registered", "under_review", "ready_for_activation", "synthetic_active", "verified_active", "deactivated"] }).notNull(), revision: integer("revision").notNull().default(1),
+    activatedLayerId: text("activated_layer_id"), createdBy: text("created_by").notNull(), activatedBy: text("activated_by"), activatedAt: integer("activated_at", { mode: "timestamp_ms" }), deactivatedBy: text("deactivated_by"), deactivatedAt: integer("deactivated_at", { mode: "timestamp_ms" }), deactivationReason: text("deactivation_reason"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [uniqueIndex("idx_client_instruction_version").on(table.tenantId, table.clientId, table.code, table.version), index("idx_client_instruction_status").on(table.tenantId, table.clientId, table.status)],
+);
+
+export const clientInstructionReviews = sqliteTable(
+  "client_instruction_reviews",
+  { id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), instructionId: text("instruction_id").notNull(), reviewType: text("review_type", { enum: ["source_integrity", "instruction_scope"] }).notNull(), outcome: text("outcome", { enum: ["approved", "rejected"] }).notNull(), sourceSha256: text("source_sha256").notNull(), evidence: text("evidence").notNull(), reviewerId: text("reviewer_id").notNull(), eventId: text("event_id").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull() },
+  (table) => [uniqueIndex("idx_client_instruction_review_type").on(table.tenantId, table.instructionId, table.reviewType), index("idx_client_instruction_review_history").on(table.tenantId, table.instructionId, table.createdAt)],
+);
+
+export const clientInstructionDecisions = sqliteTable(
+  "client_instruction_decisions",
+  { id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), instructionId: text("instruction_id").notNull(), action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason"), actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull() },
+  (table) => [uniqueIndex("idx_client_instruction_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_client_instruction_decision_history").on(table.tenantId, table.instructionId, table.createdAt)],
 );
 
 export const governancePolicySimulations = sqliteTable(
