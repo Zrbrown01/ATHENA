@@ -68,7 +68,7 @@ Updated: 2026-08-20
 | Court/EAMS | Externally blocked | Packet approval and honest health; versioned forms/packet validation/status adapter remain |
 | Proceedings/readiness | Product foundation | California queue view; structured readiness evaluator remains |
 | Records/subpoenas | Functional golden lifecycle | Identified → prepared → human-recorded service/deadline → receipt → deficiency/cure → completeness review → internal delivery → cost/billing closure persists with revision, evidence, event/outbox, and idempotency. Process server, subpoena vendor, OCR, expert delivery, and billing providers remain disconnected |
-| Authority/settlement | Functional pilot | Matter-scoped human authority decision persists; full historical ledger/readiness/payment/closure effects remain |
+| Authority/settlement | Functional golden ledger | Source-linked candidates distinguish requests/recommendations/hypotheticals/quotes/third-party statements from grants. Only a complete attorney-verified grant creates active authority; amount, currency, structure, scope, includes/excludes, conditions, threshold, grantor, organization, effective/expiry, prior supersession, and terminal transitions persist. Connected email/client approval and full readiness/payment/closure effects remain |
 | Billing | Tested pilot | Confirmed time and versioned rule pass/warning/hard-stop tests; rates, expenses, prebills, invoices, LEDES, rejections, appeals, payments remain |
 | Reports | Functional pilot | Draft approval and source-linked companion work product; governed definitions, delivery, and automated schedules remain |
 | Client portal | Externally blocked | Access intentionally disabled; authorization/data-sharing design required before any external user |

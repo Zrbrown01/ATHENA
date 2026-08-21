@@ -21,6 +21,7 @@ Every event contains event ID/type/version, tenant, aggregate type/ID, optional 
 | `matter.party_roster_materialized` | authorized party graph write | person, organization, alias, role, and source-link counts only |
 | `task.*` | authorized task lifecycle | transition, incomplete-dependency count, and human authorization |
 | `records.*` | records/subpoena lifecycle | transition and human authorization; explicitly no external provider operation |
+| `authority.*` | candidate and historical ledger lifecycle | classification, human authorization, and historical-ledger marker; source content remains in the scoped candidate record |
 | `medical.analysis_ready` | deterministic QME processor | from/to stage and sandbox provider mode |
 | `work_product.draft_created` | Verbatim-shaped deterministic draft | from/to stage and sandbox provider mode |
 | `report.approved` | attorney approval | human authorization and stage transition |
