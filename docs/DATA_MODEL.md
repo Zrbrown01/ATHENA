@@ -37,6 +37,7 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 | `access_review_attestations` | defined review period, reviewer outcome/notes, and a count-only snapshot of active access controls and decisions |
 | `outbox_consumer_checkpoints` | one tenant/consumer/event processing checkpoint with outbox identity, payload hash, and processing time |
 | `outbox_reconciliation_runs` | trigger, processed/checkpoint/receipt counts, exception count, outcome, detail, and run timestamps |
+| `retention_disposition_reviews` | policy snapshot, hold state, evaluator outcome/reason, human conclusion/notes, reviewer, and time; never a deletion command |
 
 ## Object keys
 

@@ -2,7 +2,7 @@
 
 ## Required test layers
 
-- Unit: domain state machines, authorization, billing/deadline calculations, obligation lifecycle/content-status/revision gates, upload validation, retention/hold policy, provider retry, outbox reconciliation, source-grounding, and export manifests.
+- Unit: domain state machines, authorization, billing/deadline calculations, obligation lifecycle/content-status/revision gates, upload validation, retention evaluation and legal-hold/review controls, provider retry, outbox reconciliation, source-grounding, and export manifests.
 - Integration: D1 migrations, atomic state/event/outbox/audit writes, R2 compensation and downloads, idempotency, tenant predicates, and provider handoff recovery.
 - End to end: ten synthetic golden workflows, keyboard navigation, error recovery, and critical performance targets.
 - Security: cross-tenant API/object/export/job/event/search/AI/cache denials, persisted ethical walls, no-grant/wrong-matter/expired/revoked/walled support denials, review snapshots, immutable access-decision evidence, fixed-window 429/Retry-After behavior, origin/CSRF, injection/XSS/SSRF, content security, secrets, and dependency scanning.

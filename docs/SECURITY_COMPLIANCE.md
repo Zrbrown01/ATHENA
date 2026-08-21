@@ -42,6 +42,8 @@ Matter authorization decisions are recorded without matter content, and every cu
 
 Formal pilot support scopes are now time-boxed to 15–240 minutes, matter-specific, purpose/ticket-bound, revocable, and subordinate to ethical walls. The synthetic support identity has no ordinary matter membership, and the only support endpoint returns authorization metadata rather than matter content. Count-only access-review attestations are durable; enterprise-directory reconciliation and real support staffing remain unavailable.
 
+Legal holds now have durable placement/release state, actor evidence, reasons, revisions, immutable events, and outbox records. The retention evaluator always gives an active hold precedence. Human reviews may continue retention or escalate an eligible record for a separate disposition review; no code path deletes a database row or R2 original.
+
 ## Production origin
 
 The canonical application origin is `https://www.athenacms.app`. Production authentication callbacks, CORS/origin validation, content-security policy, secure cookies, email links, and provider webhooks must use an explicit allowlist based on that origin. The apex domain should redirect to the canonical `www` host. Preview deployments must use separate identity callbacks and must never receive production data.

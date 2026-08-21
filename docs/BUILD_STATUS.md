@@ -42,7 +42,7 @@ Updated: 2026-08-20
 | Human workflow gates | Functional pilot | Intake, authority, time, report, and filing decisions are validated and persisted with immutable event context |
 | Release 1 companion workflow | Tested pilot | Seven-stage persistent deterministic workflow proves import, source-linked QME analysis, Verbatim-shaped draft, attorney approval, honest Microsoft block, confirmed time, billing validation, audit/event/outbox, and export |
 | Event Ledger | Functional pilot | Canonical immutable event table/envelope plus tenant-scoped internal delivery receipts |
-| Reliable event delivery | Tested internal slice | Leases, recovery, exponential retry/dead-letter/replay, five-minute Worker handler, consumer event checkpoints, legacy checkpoint backfill, reconciliation runs, and operator fallback for the Athena-native sink. Sites cron activation requires timestamp verification; no external provider delivery is implied |
+| Reliable event delivery | Tested internal slice / cron externally blocked | Leases, recovery, exponential retry/dead-letter/replay, locally verified five-minute Worker handler, consumer checkpoints, legacy backfill, reconciliation, and owner fallback for the Athena-native sink. Sites produced no row after the next tick, so automated cron is not active; no external provider delivery is implied |
 | Tenant isolation | Pilot boundary | Owner-only site identity is required; keys and queries are tenant-scoped. Multi-tenant production policy/RLS remains |
 | Document ingestion | Quarantined pilot | PDF MIME/signature/size checks, SHA-256, R2 originals, D1 metadata, compensating delete, and quarantine state. Malware scanning/OCR remain disconnected |
 | Microsoft 365 | Externally blocked | Adapter foundation only; app registration, credentials, consent, scopes, and verification required |
@@ -71,7 +71,7 @@ Updated: 2026-08-20
 | Billing | Tested pilot | Confirmed time and versioned rule pass/warning/hard-stop tests; rates, expenses, prebills, invoices, LEDES, rejections, appeals, payments remain |
 | Reports | Functional pilot | Draft approval and source-linked companion work product; governed definitions, delivery, and automated schedules remain |
 | Client portal | Externally blocked | Access intentionally disabled; authorization/data-sharing design required before any external user |
-| Administration | Functional pilot | Integration truth plus owner-only outbox, retention, deadline, and ethical-wall placement/release operations with immutable evidence. Full users/roles/holds/incidents/support/export/migration controls remain |
+| Administration | Functional pilot | Integration truth plus owner-only outbox/reconciliation, retention review, legal-hold, deadline, ethical-wall, support-scope, and access-review operations with immutable evidence. Full enterprise users/roles, incidents, tenant export, and migration controls remain |
 | Noted | Externally blocked | Adapter/lifecycle not implemented; no booking is claimed |
 | Verbatim | Tested sandbox slice | Deterministic source-linked work product and approval; audio/transcription/review provider lifecycle remains unavailable |
 | Search / Ask Athena | Not started / externally blocked | AI is disabled; secure structured/full-text search and source-grounded retrieval remain |
@@ -84,7 +84,7 @@ Updated: 2026-08-20
 1. Local development uses an explicit synthetic identity; hosted production-mode requests require platform-authenticated identity headers.
 2. D1 does not provide PostgreSQL RLS; multi-tenant production policy enforcement and isolation testing remain required.
 3. Uploaded PDFs remain quarantined because malware scanning and OCR are not connected; deterministic fixture processing never releases an uploaded file.
-4. Enterprise directory/role reconciliation, retention/legal-hold enforcement, edge/WAF throttling, and complete tenant export are not implemented. Application support scopes, write throttles, review attestations, and ethical-wall enforcement are persisted and tested, but independent validation remains required.
+4. Enterprise directory/role reconciliation, deletion execution/approval, edge/WAF throttling, and complete tenant export are not implemented. Retention reviews, legal holds, support scopes, write throttles, review attestations, and ethical-wall enforcement are persisted and tested, but independent validation remains required.
 5. AI and external integrations are disabled and must remain so until approved.
 
 ## Next implementation slice

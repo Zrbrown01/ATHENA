@@ -192,7 +192,27 @@ export const legalHolds = sqliteTable("legal_holds", {
   placedAt: integer("placed_at", { mode: "timestamp_ms" }).notNull(),
   releasedBy: text("released_by"),
   releasedAt: integer("released_at", { mode: "timestamp_ms" }),
-}, (table) => [index("idx_legal_holds_tenant_matter").on(table.tenantId, table.matterId, table.status)]);
+  releaseReason: text("release_reason"),
+  revision: integer("revision").notNull().default(1),
+}, (table) => [
+  uniqueIndex("idx_legal_hold_identity").on(table.tenantId, table.matterId, table.name),
+  index("idx_legal_holds_tenant_matter").on(table.tenantId, table.matterId, table.status),
+]);
+
+export const retentionDispositionReviews = sqliteTable("retention_disposition_reviews", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  matterId: text("matter_id").notNull(),
+  policyCode: text("policy_code").notNull(),
+  policyVersion: integer("policy_version").notNull(),
+  evaluationOutcome: text("evaluation_outcome", { enum: ["retain", "held", "eligible_for_review"] }).notNull(),
+  evaluationReason: text("evaluation_reason").notNull(),
+  activeLegalHold: integer("active_legal_hold", { mode: "boolean" }).notNull(),
+  conclusion: text("conclusion", { enum: ["continue_retention", "escalate_for_disposition_review"] }).notNull(),
+  notes: text("notes").notNull(),
+  reviewedBy: text("reviewed_by").notNull(),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_retention_review_matter").on(table.tenantId, table.matterId, table.reviewedAt)]);
 
 export const governanceRules = sqliteTable("governance_rules", {
   id: text("id").primaryKey(),
