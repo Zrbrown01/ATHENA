@@ -65,3 +65,7 @@ A Worker scheduled handler is configured every five minutes to drain only the At
 ## Telephony and SMS
 
 `telephony.configure_contact`, `telephony.record_consents`, `telephony.draft_sms`, `telephony.approve_sms`, `telephony.attempt_sms_delivery`, `telephony.record_help`, `telephony.record_stop`, `telephony.record_call_metadata`, `telephony.associate_call`, `telephony.confirm_time`, and `telephony.close` preserve the provider-neutral lifecycle. Every event declares provider/dispatched/recording truth; STOP declares immediate SMS suppression.
+
+## Structured authority approval
+
+`authority_approval.create_request`, `authority_approval.approve_request`, `authority_approval.attempt_delivery`, `authority_approval.record_human_response`, and `authority_approval.confirm_response` preserve the request-to-ledger chain. Events declare secure-page/delivery truth, human verification, and the settlement-readiness recalculation trigger.

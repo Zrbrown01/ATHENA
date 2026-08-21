@@ -5185,3 +5185,42 @@ export const telephonyDecisions = sqliteTable(
   },
   (table) => [uniqueIndex("idx_telephony_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_telephony_decision_history").on(table.tenantId, table.contactId, table.createdAt)],
 );
+
+export const authorityApprovalRequests = sqliteTable(
+  "authority_approval_requests",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(),
+    requestedAmountCents: integer("requested_amount_cents").notNull(), currency: text("currency").notNull(), settlementStructure: text("settlement_structure").notNull(), scope: text("scope").notNull(),
+    includes: text("includes", { mode: "json" }).$type<string[]>().notNull(), excludes: text("excludes", { mode: "json" }).$type<string[]>().notNull(), conditions: text("conditions", { mode: "json" }).$type<string[]>().notNull(),
+    examinerName: text("examiner_name").notNull(), examinerEmail: text("examiner_email").notNull(), examinerOrganization: text("examiner_organization").notNull(),
+    requestedExpiresAt: integer("requested_expires_at", { mode: "timestamp_ms" }).notNull(),
+    status: text("status", { enum: ["draft", "approved_for_delivery", "delivery_blocked", "response_recorded", "declined", "confirmed"] }).notNull(),
+    providerMode: text("provider_mode", { enum: ["not_connected", "human_verified_external"] }).notNull(),
+    approvedBy: text("approved_by"), approvedAt: integer("approved_at", { mode: "timestamp_ms" }), responseId: text("response_id"), ledgerId: text("ledger_id"),
+    revision: integer("revision").notNull().default(1), createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [index("idx_authority_approval_request_matter").on(table.tenantId, table.matterId, table.status)],
+);
+
+export const authorityApprovalResponses = sqliteTable(
+  "authority_approval_responses",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), requestId: text("request_id").notNull(),
+    outcome: text("outcome", { enum: ["approved", "modified", "declined"] }).notNull(), amountCents: integer("amount_cents"), currency: text("currency").notNull(), settlementStructure: text("settlement_structure"), scope: text("scope"),
+    includes: text("includes", { mode: "json" }).$type<string[]>().notNull(), excludes: text("excludes", { mode: "json" }).$type<string[]>().notNull(), conditions: text("conditions", { mode: "json" }).$type<string[]>().notNull(), negotiationThresholdCents: integer("negotiation_threshold_cents"),
+    responderName: text("responder_name").notNull(), responderRole: text("responder_role").notNull(), responderOrganization: text("responder_organization").notNull(),
+    effectiveAt: integer("effective_at", { mode: "timestamp_ms" }), expiresAt: integer("expires_at", { mode: "timestamp_ms" }), evidence: text("evidence").notNull(),
+    providerMode: text("provider_mode", { enum: ["human_verified_external"] }).notNull(), verifiedBy: text("verified_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [uniqueIndex("idx_authority_approval_response_request").on(table.tenantId, table.requestId)],
+);
+
+export const structuredAuthorityDecisions = sqliteTable(
+  "structured_authority_decisions",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), requestId: text("request_id").notNull(),
+    action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [uniqueIndex("idx_structured_authority_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_structured_authority_decision_history").on(table.tenantId, table.requestId, table.createdAt)],
+);

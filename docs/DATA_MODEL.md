@@ -82,7 +82,7 @@ Every D1 schema change is generated through Drizzle, inspected for backward comp
 
 The deterministic QME processor creates a valid synthetic PDF with a pinned SHA-256 and `trusted_synthetic_fixture` storage metadata. This generated fixture may enter `ready` without a malware provider because it contains fixed source-controlled text and no user bytes. User uploads remain `awaiting_scan` and are not given the same trust path.
 
-Tenant portability uses a separate TAR and manifest. The serializer discovers all Drizzle tables at runtime, requires a tenant column before inclusion, and serializes the full current schema into human-readable indexes and structured category records. It includes checksum-verified originals when present, lists per-entry SHA-256 values, and verifies the archive before persistence. Deposition, dictation, client-portal, and telephony migrations automatically increased coverage from 150 to 162 tables. Any future table without tenant context or missing/mismatched original forces `partial`.
+Tenant portability uses a separate TAR and manifest. The serializer discovers all Drizzle tables at runtime, requires a tenant column before inclusion, and serializes the full current schema into human-readable indexes and structured category records. It includes checksum-verified originals when present, lists per-entry SHA-256 values, and verifies the archive before persistence. Deposition, dictation, client-portal, telephony, and structured-authority migrations automatically increased coverage from 150 to 165 tables. Any future table without tenant context or missing/mismatched original forces `partial`.
 
 ## Verbatim dictation evidence
 
@@ -102,3 +102,9 @@ Tenant portability uses a separate TAR and manifest. The serializer discovers al
 - `telephony_contacts` stores tenant/contact numbers, matter association, current SMS/voice consent, a recording-disabled invariant, disconnected provider truth, lifecycle revision, and confirmed-time identity.
 - `telephony_interactions` stores checksum-pinned SMS drafts, human-recorded HELP/STOP evidence, delivery-attempt truth, and call metadata with recording explicitly disabled.
 - `telephony_decisions` preserves every actor, transition, reason, event, and idempotency key. Confirmed call time uses the existing `candidate_time_entries` ledger.
+
+## Structured authority approval
+
+- `authority_approval_requests` stores complete attorney-authored requested terms, examiner target, bounded expiry, approval, delivery truth, response/ledger identities, and optimistic revision.
+- `authority_approval_responses` stores approve/modify/decline outcome, complete resulting terms, negotiation threshold, verified responder/source evidence, and explicit human-verified external mode.
+- `structured_authority_decisions` preserves every transition. Final attorney confirmation materializes the ordinary candidate/ledger records, supersedes prior active authority, and creates a critical expiration-review task.
