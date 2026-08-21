@@ -17,13 +17,13 @@ export const metadata: Metadata = {
     url: "/",
     siteName: "Athena",
     type: "website",
-    images: [{ url: "/og.png", width: 1731, height: 909, alt: "Athena logo and workers’ compensation defense operating system" }],
+    images: [{ url: "/athena-social-card.png", width: 1731, height: 909, alt: "Athena logo and workers’ compensation defense operating system" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Athena · Workers’ Compensation Defense OS",
     description: "Know the file. See what comes next.",
-    images: ["/og.png"],
+    images: ["/athena-social-card.png"],
   },
 };
 
