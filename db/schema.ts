@@ -214,6 +214,97 @@ export const retentionDispositionReviews = sqliteTable("retention_disposition_re
   reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_retention_review_matter").on(table.tenantId, table.matterId, table.reviewedAt)]);
 
+export const matters = sqliteTable("matters", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  matterNumber: text("matter_number").notNull(),
+  caption: text("caption").notNull(),
+  status: text("status", { enum: ["intake", "open", "stayed", "closed"] }).notNull(),
+  clientName: text("client_name").notNull(),
+  employerName: text("employer_name").notNull(),
+  applicantName: text("applicant_name").notNull(),
+  assignedAttorneyId: text("assigned_attorney_id"),
+  revision: integer("revision").notNull().default(1),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_matters_tenant_number").on(table.tenantId, table.matterNumber),
+  index("idx_matters_tenant_status").on(table.tenantId, table.status, table.updatedAt),
+]);
+
+export const claims = sqliteTable("claims", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  matterId: text("matter_id").notNull(),
+  claimNumber: text("claim_number").notNull(),
+  carrierName: text("carrier_name"),
+  administratorName: text("administrator_name"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_claims_tenant_number").on(table.tenantId, table.claimNumber),
+  index("idx_claims_tenant_matter").on(table.tenantId, table.matterId),
+]);
+
+export const injuries = sqliteTable("injuries", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  matterId: text("matter_id").notNull(),
+  claimId: text("claim_id"),
+  injuryType: text("injury_type", { enum: ["specific", "cumulative", "occupational_disease", "other"] }).notNull(),
+  dateFrom: integer("date_from", { mode: "timestamp_ms" }).notNull(),
+  dateTo: integer("date_to", { mode: "timestamp_ms" }),
+  bodyParts: text("body_parts", { mode: "json" }).$type<string[]>().notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_injuries_tenant_matter").on(table.tenantId, table.matterId)]);
+
+export const adjudicationCases = sqliteTable("adjudication_cases", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  matterId: text("matter_id").notNull(),
+  adjNumber: text("adj_number").notNull(),
+  venue: text("venue"),
+  districtOffice: text("district_office"),
+  status: text("status", { enum: ["unfiled", "active", "stayed", "closed"] }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_adjudication_tenant_number").on(table.tenantId, table.adjNumber),
+  index("idx_adjudication_tenant_matter").on(table.tenantId, table.matterId),
+]);
+
+export const sourceRecordLinks = sqliteTable("source_record_links", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  matterId: text("matter_id").notNull(),
+  entityType: text("entity_type", { enum: ["matter", "claim", "injury", "adjudication_case"] }).notNull(),
+  entityId: text("entity_id").notNull(),
+  sourceSystem: text("source_system").notNull(),
+  sourceRecordId: text("source_record_id").notNull(),
+  providerMode: text("provider_mode").notNull(),
+  importedAt: integer("imported_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_source_record_identity").on(table.tenantId, table.sourceSystem, table.sourceRecordId),
+  index("idx_source_record_entity").on(table.tenantId, table.entityType, table.entityId),
+]);
+
+export const matterRelationships = sqliteTable("matter_relationships", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  matterId: text("matter_id").notNull(),
+  fromEntityType: text("from_entity_type").notNull(),
+  fromEntityId: text("from_entity_id").notNull(),
+  relationshipType: text("relationship_type").notNull(),
+  toEntityType: text("to_entity_type").notNull(),
+  toEntityId: text("to_entity_id").notNull(),
+  sourceLinkId: text("source_link_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_matter_relationship_identity").on(table.tenantId, table.fromEntityType, table.fromEntityId, table.relationshipType, table.toEntityType, table.toEntityId),
+  index("idx_matter_relationship_matter").on(table.tenantId, table.matterId),
+]);
+
 export const governanceRules = sqliteTable("governance_rules", {
   id: text("id").primaryKey(),
   tenantId: text("tenant_id").notNull(),

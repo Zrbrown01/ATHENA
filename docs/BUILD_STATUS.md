@@ -20,7 +20,7 @@ Updated: 2026-08-20
 |---|---|---|
 | Experience foundation | Semantic tokens, shell, queue/table floorplans, focus/reduced-motion styles, responsive layout | Functional foundation; density, command palette, context-panel focus management, and automated accessibility proof remain |
 | Platform foundation | Authenticated headers, tenant-scoped D1/R2, immutable events, durable outbox, internal scheduler/checkpoints/reconciliation, access evidence, rate limits, verified matter archives, and local backup evidence | Partial; PostgreSQL RLS, edge policy, external provider consumers, full restore evidence, and independent validation remain |
-| Domain foundation | Matter/Claim/Injury/ADJ separation, evidence facts, human decision records | Partial; live pilot data is narrower than canonical target model |
+| Domain foundation | Matter/Claim/Injury/ADJ separation, typed graph edges, source-record provenance, evidence facts, human decision records | Functional golden graph slice; broader parties, coverage, proceedings, benefits, and financial posture remain |
 | Release 1 golden loop | Durable seven-stage companion, source-linked fixture analysis, draft approval, blocked delivery handoff, time/billing, audit/event/outbox writes, downloadable export | Complete as a deterministic owner-only pilot; live provider activation and production-scale controls remain explicitly outside this proof |
 | Native core and California operations | Coherent screens and selected approval commands | Product-shaped foundation; most records are synthetic fixtures, not complete vertical slices |
 | External providers | Disabled adapters and visible not-connected health | Correctly externally blocked; deterministic sandboxes still required for full golden tests |
@@ -36,7 +36,7 @@ Updated: 2026-08-20
 |---|---|---|
 | Application shell and Matter Workspace | Functional | Desktop-first shell, sticky matter header, overview, work queue, timeline, responsive mode |
 | Operational modules | Functional pilot | Intake, conflicts, docket, documents, communications, billing, reports, clients, California operations, and resolution views |
-| Matter Graph kernel | Foundation | Typed PostgreSQL tables keep Matter, Claim, Injury, and ADJ separate; pilot fixtures exercise the graph |
+| Matter Graph kernel | Functional golden slice | PostgreSQL target and live D1 keep Matter, Claim, Injury, and ADJ separate; the authenticated command validates endpoints/provenance and atomically persists graph, event, and outbox |
 | Evidence and provenance | Foundation | Documents and fact observations include original identity, page/excerpt, method, confidence, review, conflicts, and supersession |
 | Human fact review | Functional | Confirm/reject command is authenticated, validated, persisted with actor/event/outbox, and has a visible failure state |
 | Human workflow gates | Functional pilot | Intake, authority, time, report, and filing decisions are validated and persisted with immutable event context |
@@ -59,7 +59,7 @@ Updated: 2026-08-20
 | Module | Status | Test/evidence and remaining scope |
 |---|---|---|
 | Intake and conflicts | Functional pilot | Approval persists; extraction, duplicate/alias/relationship search, secured matters, and deadline generation remain fixture-only |
-| Native Matter Graph | Foundation | Target schema separates Matter/Claim/Injury/ADJ; live D1 workflow does not yet persist the full graph |
+| Native Matter Graph | Functional golden slice | D1 persists separate Matter/Claim/Injury/ADJ rows, typed relationships, and per-entity deterministic source links; provider imports and the wider case graph remain |
 | Medical and med-legal | Functional pilot | Exact-page QME candidates and review are tested; provider/OCR and full QME/AME cycle remain blocked/incomplete |
 | Documents/evidence | Tested quarantine slice | PDF security tests, tenant R2 keys, checksums, metadata, and compensation; scanning/release, versions, preview, processing, and full export remain |
 | Communications | Externally blocked | Retryable Microsoft handoff is persisted and never labeled sent; Graph connection/sync/delivery remain unavailable |

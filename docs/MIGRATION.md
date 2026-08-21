@@ -17,7 +17,7 @@ Source inventory → immutable export package → source-record registration →
 
 ## Current deterministic adapter
 
-The Release 1 pilot imports one synthetic MerusCase-shaped record with a stable source ID and emits `matter.imported`. This proves the adapter boundary and durable workflow stage only. It does not validate an actual MerusCase endpoint or historical package.
+The Release 1 pilot imports one synthetic MerusCase-shaped record with stable entity-level source IDs and emits `matter.imported`. A separate authenticated graph command now persists Matter, Claim, Injury, and ADJ rows plus typed, provenanced relationships and emits `matter.graph_materialized`. Repeating an idempotency key cannot duplicate the event/outbox write. This proves the normalized adapter boundary only; it does not validate an actual MerusCase endpoint, historical package, transformation ledger, or source-to-target reconciliation.
 
 ## Commands
 

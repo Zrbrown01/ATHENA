@@ -11,7 +11,7 @@
 
 ## Current automated evidence
 
-Vitest covers PDF MIME/size/signature/safe-name validation; fact review roles, matter access, cross-tenant/object denial and ethical-wall precedence; workflow action/role/tenant/matter authorization; the ordered companion state machine and honest Microsoft failure; versioned billing pass/warning/hard-stop; outbox lease/retry/dead-letter/replay policy; retention/hold decisions; business-day calculation; export provenance, coverage, and completeness enforcement; same-origin write protection; and accessible pilot workflow controls.
+Vitest covers PDF MIME/size/signature/safe-name validation; fact review roles, matter access, cross-tenant/object denial and ethical-wall precedence; non-flattened matter graph identity, endpoint, claim-link, and provenance invariants; workflow action/role/tenant/matter authorization; the ordered companion state machine and honest Microsoft failure; versioned billing pass/warning/hard-stop; outbox lease/retry/dead-letter/replay policy; retention/hold decisions; business-day calculation; export provenance, coverage, and completeness enforcement; same-origin write protection; and accessible pilot workflow controls.
 
 The local integration smoke executes all seven companion API transitions against migrated D1/R2, downloads the export, and verifies seven events plus limitations. The production build enumerates all application/API routes.
 

@@ -38,6 +38,9 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 | `outbox_consumer_checkpoints` | one tenant/consumer/event processing checkpoint with outbox identity, payload hash, and processing time |
 | `outbox_reconciliation_runs` | trigger, processed/checkpoint/receipt counts, exception count, outcome, detail, and run timestamps |
 | `retention_disposition_reviews` | policy snapshot, hold state, evaluator outcome/reason, human conclusion/notes, reviewer, and time; never a deletion command |
+| `matters`, `claims`, `injuries`, `adjudication_cases` | separate tenant-scoped identities for the live golden matter graph; claims, injuries, and WCAB cases are never convenience fields on Matter |
+| `source_record_links` | entity-level source system/record identity, provider mode, and import time for provenance and idempotent reconciliation |
+| `matter_relationships` | typed graph edges whose endpoints and source provenance are validated before persistence |
 
 ## Object keys
 
