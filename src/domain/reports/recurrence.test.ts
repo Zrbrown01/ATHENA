@@ -1,0 +1,19 @@
+import { describe, expect, it } from "vitest";
+import { decideReportRecurrence, planReportRecurrenceWindow, type ReportRecurrenceState } from "./recurrence";
+const context = { tenantId: "t", userId: "attorney-1", roles: ["attorney" as const], matterAccess: new Set(["m"]) };
+const templates = ["matter_identity", "current_posture", "medical_status", "authority", "upcoming_events", "legal_spend"].map((sectionCode, index) => ({ sectionCode: sectionCode as "matter_identity" | "current_posture" | "medical_status" | "authority" | "upcoming_events" | "legal_spend", title: `Section ${index + 1}`, body: `Source-linked deterministic report section body number ${index + 1}.`, sourceRecordIds: [`source-${index + 1}`] }));
+const series: ReportRecurrenceState = { id: "series-1", status: "active", revision: 3, definitionId: "def-1", definitionCode: "SUMMIT-RECURRING-STATUS", titlePattern: "Status report — {due_date}", recipientAddresses: ["examiner@example.test"], sectionTemplates: templates, cadence: "monthly", interval: 1, dayOfMonth: 31, startsOn: new Date("2026-01-31T12:00:00.000Z"), endsOn: null, occurrenceLimit: 12, materializedCount: 0, lastMaterializedThrough: null };
+const base = { tenantId: "t", matterId: "m", seriesId: series.id, idempotencyKey: "report-recurrence-test" };
+describe("report recurrence", () => {
+  it("requires the complete source-linked section template", () => expect(() => decideReportRecurrence({ context, raw: { ...base, action: "create_series", definitionId: "def-1", definitionCode: "SUMMIT-RECURRING-STATUS", titlePattern: "Status report — {due_date}", recipientAddresses: ["examiner@example.test"], sectionTemplates: [...templates.slice(0, 5), templates[0]], cadence: "monthly", interval: 1, dayOfMonth: 31, startsOn: "2026-01-31", endsOn: null, occurrenceLimit: 4, timezone: "America/Los_Angeles", sandboxAcknowledged: true } })).toThrow("every required section"));
+  it("blocks activation while definition content awaits attorney review", () => expect(() => decideReportRecurrence({ context, current: { ...series, status: "draft", revision: 1 }, definitionContentStatus: "pending_attorney_review", raw: { ...base, action: "activate_series", expectedRevision: 1, approval: "Attorney reviewed the schedule and source template." } })).toThrow("not approved"));
+  it("materializes at most six reports and preserves move/skip truth", () => {
+    const planned = planReportRecurrenceWindow(series, "2027-12-31", [{ nominalDueOn: new Date("2026-02-28T12:00:00.000Z"), action: "move", movedDueOn: new Date("2026-03-02T12:00:00.000Z") }, { nominalDueOn: new Date("2026-03-31T12:00:00.000Z"), action: "skip", movedDueOn: null }]);
+    expect(planned).toHaveLength(6); expect(planned[1]).toMatchObject({ nominalDueOn: "2026-02-28", effectiveDueOn: "2026-03-02", exceptionAction: "move" }); expect(planned[2]).toMatchObject({ reportInstanceId: null, status: "skipped" });
+  });
+  it("requires legal-reviewer activation and rejects stale materialization", () => {
+    expect(() => decideReportRecurrence({ context: { ...context, roles: ["paralegal"] }, current: { ...series, status: "draft", revision: 1 }, definitionContentStatus: "synthetic_sandbox", raw: { ...base, action: "activate_series", expectedRevision: 1, approval: "Attorney reviewed the schedule and source template." } })).toThrow("authorized legal reviewer");
+    expect(() => decideReportRecurrence({ context, current: series, raw: { ...base, action: "materialize_window", expectedRevision: 2, throughDate: "2026-06-30" } })).toThrow("changed");
+  });
+  it("records explicit disconnected automation and delivery truth", () => expect(decideReportRecurrence({ context, current: series, raw: { ...base, action: "materialize_window", expectedRevision: 3, throughDate: "2026-02-28" } }).event.payload).toMatchObject({ aiConnected: false, schedulerConnected: false, providerDeliveryAttempted: false }));
+});

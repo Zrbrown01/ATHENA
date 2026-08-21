@@ -13,6 +13,7 @@ export const taskRecurrenceCommand = z.discriminatedUnion("action", [
 ]);
 export type TaskRecurrenceCommand = z.infer<typeof taskRecurrenceCommand>;
 export type TaskRecurrenceState = { id: string; status: "draft" | "active" | "cancelled"; revision: number; cadence: "weekly" | "monthly"; interval: number; dayOfMonth: number | null; startsOn: Date; endsOn: Date | null; occurrenceLimit: number; materializedCount: number; lastMaterializedThrough: Date | null; title: string; taskType: string; priority: "critical" | "high" | "normal" | "low"; ownerId: string };
+export type RecurrenceSchedule = Pick<TaskRecurrenceState, "cadence" | "interval" | "dayOfMonth" | "startsOn" | "endsOn" | "occurrenceLimit">;
 export type RecurrenceException = { nominalDueOn: Date; action: "skip" | "move"; movedDueOn: Date | null };
 export type PlannedOccurrence = { id: string; taskId: string | null; sequence: number; nominalDueOn: string; effectiveDueOn: string | null; status: "materialized" | "skipped"; exceptionAction: "none" | "skip" | "move" };
 
@@ -21,7 +22,7 @@ const utcDate = (value: string) => new Date(`${value}T12:00:00.000Z`);
 const addDays = (date: Date, days: number) => new Date(date.getTime() + days * 86_400_000);
 function monthlyDate(year: number, month: number, day: number) { return new Date(Date.UTC(year, month, Math.min(day, new Date(Date.UTC(year, month + 1, 0)).getUTCDate()), 12)); }
 
-export function recurrenceNominalDates(series: Pick<TaskRecurrenceState, "cadence" | "interval" | "dayOfMonth" | "startsOn" | "endsOn" | "occurrenceLimit">, throughDate: string) {
+export function recurrenceNominalDates(series: RecurrenceSchedule, throughDate: string) {
   const through = utcDate(throughDate), result: string[] = [];
   if (series.cadence === "weekly") {
     for (let current = new Date(series.startsOn); current <= through && result.length < series.occurrenceLimit; current = addDays(current, 7 * series.interval)) {

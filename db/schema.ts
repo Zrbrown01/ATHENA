@@ -3611,6 +3611,37 @@ export const reportDecisions = sqliteTable(
   ],
 );
 
+export const reportRecurrenceSeries = sqliteTable(
+  "report_recurrence_series",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), definitionId: text("definition_id").notNull(), definitionCode: text("definition_code").notNull().default("SUMMIT-RECURRING-STATUS"),
+    titlePattern: text("title_pattern").notNull(), recipientAddresses: text("recipient_addresses", { mode: "json" }).$type<string[]>().notNull(),
+    sectionTemplates: text("section_templates", { mode: "json" }).$type<Array<{ sectionCode: "matter_identity" | "current_posture" | "medical_status" | "authority" | "upcoming_events" | "legal_spend"; title: string; body: string; sourceRecordIds: string[] }>>().notNull(),
+    cadence: text("cadence", { enum: ["weekly", "monthly"] }).notNull(), interval: integer("interval").notNull(), dayOfMonth: integer("day_of_month"), startsOn: integer("starts_on", { mode: "timestamp_ms" }).notNull(), endsOn: integer("ends_on", { mode: "timestamp_ms" }), occurrenceLimit: integer("occurrence_limit").notNull(), timezone: text("timezone").notNull(),
+    status: text("status", { enum: ["draft", "active", "cancelled"] }).notNull(), lastMaterializedThrough: integer("last_materialized_through", { mode: "timestamp_ms" }), materializedCount: integer("materialized_count").notNull().default(0), revision: integer("revision").notNull().default(1),
+    createdBy: text("created_by").notNull(), approvedBy: text("approved_by"), approvedAt: integer("approved_at", { mode: "timestamp_ms" }), cancelledBy: text("cancelled_by"), cancelledAt: integer("cancelled_at", { mode: "timestamp_ms" }), cancellationReason: text("cancellation_reason"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [index("idx_report_recurrence_series_matter").on(table.tenantId, table.matterId, table.status)],
+);
+
+export const reportRecurrenceExceptions = sqliteTable(
+  "report_recurrence_exceptions",
+  { id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), seriesId: text("series_id").notNull(), nominalDueOn: integer("nominal_due_on", { mode: "timestamp_ms" }).notNull(), action: text("action", { enum: ["skip", "move"] }).notNull(), movedDueOn: integer("moved_due_on", { mode: "timestamp_ms" }), reason: text("reason").notNull(), actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull() },
+  (table) => [uniqueIndex("idx_report_recurrence_exception_identity").on(table.tenantId, table.seriesId, table.nominalDueOn)],
+);
+
+export const reportRecurrenceOccurrences = sqliteTable(
+  "report_recurrence_occurrences",
+  { id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), seriesId: text("series_id").notNull(), reportInstanceId: text("report_instance_id"), sequence: integer("sequence").notNull(), nominalDueOn: integer("nominal_due_on", { mode: "timestamp_ms" }).notNull(), effectiveDueOn: integer("effective_due_on", { mode: "timestamp_ms" }), status: text("status", { enum: ["materialized", "skipped"] }).notNull(), exceptionAction: text("exception_action", { enum: ["none", "skip", "move"] }).notNull(), eventId: text("event_id").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull() },
+  (table) => [uniqueIndex("idx_report_recurrence_occurrence_identity").on(table.tenantId, table.seriesId, table.nominalDueOn), index("idx_report_recurrence_occurrence_series").on(table.tenantId, table.seriesId, table.sequence)],
+);
+
+export const reportRecurrenceDecisions = sqliteTable(
+  "report_recurrence_decisions",
+  { id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), seriesId: text("series_id").notNull(), action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), detail: text("detail"), actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull() },
+  (table) => [uniqueIndex("idx_report_recurrence_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_report_recurrence_decision_history").on(table.tenantId, table.seriesId, table.createdAt)],
+);
+
 export const matterBudgets = sqliteTable(
   "matter_budgets",
   {
