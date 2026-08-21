@@ -1,6 +1,7 @@
 import {
   BriefcaseBusiness,
   CalendarDays,
+  DatabaseZap,
   FileText,
   FlaskConical,
   Gauge,
@@ -57,6 +58,9 @@ export function AppShell({ children, active = "My Work" }: { children: React.Rea
           </Link>
           <Link className="nav-item" href="/admin/platform">
             <ShieldCheck aria-hidden="true" size={17} /> Platform ops
+          </Link>
+          <Link className="nav-item" href="/admin/migration">
+            <DatabaseZap aria-hidden="true" size={17} /> Migration center
           </Link>
           <Link className="nav-item" href="/operations/california">
             <Landmark aria-hidden="true" size={17} /> California ops

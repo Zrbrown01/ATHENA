@@ -952,3 +952,80 @@ export const budgetDecisions = sqliteTable("budget_decisions", {
   uniqueIndex("idx_budget_decision_idempotency").on(table.tenantId, table.idempotencyKey),
   index("idx_budget_decision_budget").on(table.tenantId, table.budgetId, table.createdAt),
 ]);
+
+export const migrationSourceSystems = sqliteTable("migration_source_systems", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), name: text("name").notNull(),
+  provider: text("provider").notNull(), providerMode: text("provider_mode", { enum: ["deterministic_sandbox", "not_connected", "live"] }).notNull(),
+  status: text("status", { enum: ["registered", "connected", "retired"] }).notNull(), createdBy: text("created_by").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_migration_source_name").on(table.tenantId, table.name)]);
+
+export const migrationExportPackages = sqliteTable("migration_export_packages", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), sourceSystemId: text("source_system_id").notNull(),
+  fileName: text("file_name").notNull(), sha256: text("sha256").notNull(), byteSize: integer("byte_size").notNull(), recordCount: integer("record_count").notNull(),
+  objectKey: text("object_key"), custodyStatus: text("custody_status", { enum: ["checksum_registered", "quarantined", "released"] }).notNull(),
+  immutable: integer("immutable", { mode: "boolean" }).notNull(), createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_migration_package_checksum").on(table.tenantId, table.sha256)]);
+
+export const migrationMappingVersions = sqliteTable("migration_mapping_versions", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), sourceSystemId: text("source_system_id").notNull(),
+  version: integer("version").notNull(), status: text("status", { enum: ["draft", "validated", "approved"] }).notNull(),
+  entityMappings: text("entity_mappings", { mode: "json" }).$type<Record<string, string>>().notNull(),
+  preservesSeparateIdentities: integer("preserves_separate_identities", { mode: "boolean" }).notNull(), transformationChecksum: text("transformation_checksum").notNull(),
+  approvedBy: text("approved_by"), approvedAt: integer("approved_at", { mode: "timestamp_ms" }), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_migration_mapping_version").on(table.tenantId, table.sourceSystemId, table.version)]);
+
+export const migrationBatches = sqliteTable("migration_batches", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), sourceSystemId: text("source_system_id").notNull(), packageId: text("package_id").notNull(), mappingVersionId: text("mapping_version_id").notNull(),
+  status: text("status", { enum: ["package_registered", "validated", "staged_with_exceptions", "staged", "reconciled", "accepted", "frozen", "cutover", "archived"] }).notNull(),
+  sourceRecordCount: integer("source_record_count").notNull(), stagedRecordCount: integer("staged_record_count").notNull(), acceptedRecordCount: integer("accepted_record_count").notNull(), exceptionCount: integer("exception_count").notNull(),
+  sourceAggregateSha256: text("source_aggregate_sha256").notNull(), targetAggregateSha256: text("target_aggregate_sha256"), resumable: integer("resumable", { mode: "boolean" }).notNull(),
+  revision: integer("revision").notNull().default(1), createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_migration_batch_status").on(table.tenantId, table.status, table.updatedAt)]);
+
+export const migrationRecords = sqliteTable("migration_records", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), batchId: text("batch_id").notNull(), sourceSystemId: text("source_system_id").notNull(),
+  sourceRecordType: text("source_record_type").notNull(), sourceRecordId: text("source_record_id").notNull(), targetEntityType: text("target_entity_type").notNull(), targetEntityId: text("target_entity_id").notNull(),
+  status: text("status", { enum: ["staged", "rejected", "corrected", "accepted"] }).notNull(), sourceSha256: text("source_sha256").notNull(), transformedSha256: text("transformed_sha256"),
+  fileCustodyStatus: text("file_custody_status", { enum: ["not_file", "quarantined", "released"] }).notNull(), correctionEvidence: text("correction_evidence"), correctedBy: text("corrected_by"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_migration_record_source_once").on(table.tenantId, table.sourceSystemId, table.sourceRecordType, table.sourceRecordId),
+  index("idx_migration_record_batch").on(table.tenantId, table.batchId, table.status),
+]);
+
+export const migrationExceptions = sqliteTable("migration_exceptions", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), batchId: text("batch_id").notNull(), migrationRecordId: text("migration_record_id").notNull(),
+  code: text("code").notNull(), severity: text("severity", { enum: ["warning", "blocking"] }).notNull(), detail: text("detail").notNull(),
+  status: text("status", { enum: ["open", "resolved"] }).notNull(), resolution: text("resolution"), resolvedBy: text("resolved_by"), resolvedAt: integer("resolved_at", { mode: "timestamp_ms" }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_migration_exception_batch").on(table.tenantId, table.batchId, table.status)]);
+
+export const migrationReconciliations = sqliteTable("migration_reconciliations", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), batchId: text("batch_id").notNull(),
+  sourceCount: integer("source_count").notNull(), targetCount: integer("target_count").notNull(), openExceptionCount: integer("open_exception_count").notNull(),
+  sourceAggregateSha256: text("source_aggregate_sha256").notNull(), targetAggregateSha256: text("target_aggregate_sha256").notNull(),
+  outcome: text("outcome", { enum: ["matched", "exceptions"] }).notNull(), detail: text("detail").notNull(), createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_migration_reconciliation_batch").on(table.tenantId, table.batchId, table.createdAt)]);
+
+export const migrationAcceptances = sqliteTable("migration_acceptances", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), batchId: text("batch_id").notNull(),
+  outcome: text("outcome", { enum: ["accepted", "rejected"] }).notNull(), scope: text("scope").notNull(), evidence: text("evidence").notNull(),
+  acceptedBy: text("accepted_by").notNull(), acceptedAt: integer("accepted_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_migration_acceptance_batch").on(table.tenantId, table.batchId, table.acceptedAt)]);
+
+export const migrationCutovers = sqliteTable("migration_cutovers", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), batchId: text("batch_id").notNull(),
+  status: text("status", { enum: ["frozen", "cutover", "archived"] }).notNull(), rollbackPlan: text("rollback_plan").notNull(),
+  sourceWriteFrozen: integer("source_write_frozen", { mode: "boolean" }).notNull(), legacyArchiveReadOnly: integer("legacy_archive_read_only", { mode: "boolean" }).notNull(),
+  authorizedBy: text("authorized_by").notNull(), authorizedAt: integer("authorized_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_migration_cutover_batch").on(table.tenantId, table.batchId, table.authorizedAt)]);
+
+export const migrationDecisions = sqliteTable("migration_decisions", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), batchId: text("batch_id").notNull(), action: text("action").notNull(),
+  fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason"), actorId: text("actor_id").notNull(),
+  eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_migration_decision_idempotency").on(table.tenantId, table.idempotencyKey),
+  index("idx_migration_decision_batch").on(table.tenantId, table.batchId, table.createdAt),
+]);

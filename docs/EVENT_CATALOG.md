@@ -14,6 +14,7 @@ Every event contains event ID/type/version, tenant, aggregate type/ID, optional 
 | `calendar.*` | synthetic docket materialization, reminder acknowledgement, conflict resolution, sync block | local recurrence marker, transition identity, human authorization, and explicit false Microsoft/provider-write flags |
 | `reporting.*` | source-linked draft materialization, governed validation, attorney approval, blocked delivery | transition identity, source-linked/non-AI markers, human authorization, and explicit false Microsoft/provider-delivery flags |
 | `billing_planning.*` | budget materialization/approval, accrual, profitability snapshot | transition identity, human authorization, integer-cent arithmetic marker, and explicit false accounting-provider connection |
+| `migration.*` | package registration/validation, stage, exception correction, reconciliation, UAT, freeze, cutover, archive | transition identity, resumability/source-ID preservation, human authorization, quarantine marker, and explicit false external-provider connection |
 | `fact.verified` / `fact.rejected` | human fact review | decision, edit/reason, human authorization |
 | `intake.*` | intake decision | action, reason, human authorization |
 | `intake.candidate_created` / `intake.match_resolved` / `intake.conflict_cleared` / `intake.information_supplied` / `intake.matter_opened` | durable intake lifecycle | content-free transition, gate counts, human authorization, and deterministic provider mode |
