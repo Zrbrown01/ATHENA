@@ -4,6 +4,8 @@
 
 Athena authorizes the tenant, ordinary matter membership, and then persisted matter restrictions before reading metadata or object bytes. An active `deny` always wins. Expired or formally released policies no longer deny access, but their placement/release evidence remains in the immutable event ledger and transactional outbox.
 
+Hosted authentication is necessary but not sufficient for application access. Production maps only account IDs in the secret `ATHENA_PILOT_PARTNER_USER_IDS` runtime value to the pilot attorney/partner role and golden-matter membership. Unknown authenticated identities receive an empty role set and no matter membership. Support identities use the separate `ATHENA_PILOT_SUPPORT_USER_IDS` mapping and still require a current persisted support grant. The deterministic `user-maya-chen` partner fixture exists only outside production.
+
 ## Ethical-wall administration
 
 Only a partner or firm administrator with existing matter access may place or release a wall. Commands require a target user, documented reason, idempotency key, and optimistic revision on release. Administrators cannot wall their own active session. The current policy row retains placement/release actors, timestamps, reasons, status, expiry, and revision; the immutable events preserve every transition.
@@ -26,4 +28,4 @@ Authenticated write routes use durable, atomic, per-actor/per-action fixed windo
 
 ## Pilot proof
 
-The administration UI uses synthetic reviewer and support identities. Tests prove deny-overrides-membership across every defined data plane, cross-tenant cache/job rejection, no-grant/wrong-matter/expired/revoked/walled support denial, self-wall prevention, stale-release rejection, and terminal placement/release state. This is software control evidence, not an independent penetration test.
+The administration UI uses synthetic reviewer and support identities. Tests prove fail-closed production identity mapping, distinct partner/support principals, deny-overrides-membership across every defined data plane, cross-tenant cache/job rejection, no-grant/wrong-matter/expired/revoked/walled support denial, self-wall prevention, stale-release rejection, and terminal placement/release state. A source-level contract discovers all 80 handlers in 43 API routes and requires authenticated identity plus an authorization boundary on each; every mutation must also invoke same-origin enforcement and durable rate limiting. This is software control evidence, not an independent penetration test.

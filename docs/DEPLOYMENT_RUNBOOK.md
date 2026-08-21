@@ -13,6 +13,8 @@ The application is deployed as an owner-only Sites pilot at `https://athena-cms.
 ```text
 NEXT_PUBLIC_APP_URL=https://www.athenacms.app
 AUTH_MODE=platform_headers
+ATHENA_PILOT_PARTNER_USER_IDS=<secret comma-separated Sites account user IDs>
+ATHENA_PILOT_SUPPORT_USER_IDS=<optional secret comma-separated support account user IDs>
 D1_BINDING=DB
 R2_BINDING=DOCUMENTS
 OCR_PROVIDER=<approved provider or disabled>
@@ -20,6 +22,8 @@ AI_PROVIDER=<approved provider or disabled>
 ```
 
 Never commit production values or credentials. Use the selected cloud’s managed secret service.
+
+The private Sites pilot stores `ATHENA_PILOT_PARTNER_USER_IDS` as a secret runtime value containing the sole allowed owner. Deploy a saved version after changing it so the new environment revision becomes active. Never infer an Athena role from the presence of platform authentication headers alone.
 
 ## Domain activation checklist
 

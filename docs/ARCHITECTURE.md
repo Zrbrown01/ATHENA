@@ -27,7 +27,7 @@ Every tenant-owned record carries `tenant_id`. Production queries must receive t
 
 After tenant/matter authorization, the resource-classification boundary evaluates a versioned label set against the requested data plane. The pilot persists policy versions, active resource labels, bounded overrides, and immutable decisions. Search, export creation, and archive download are representative wired adapters; remaining planes are proven in the governed fixture but not yet globally intercepted.
 
-Hosted pilot requests require platform-authenticated identity headers and the site is owner-only. Local development uses an explicit synthetic identity. Neither is the final multi-tenant identity/RLS design, and the distinction is intentionally called out in build status.
+Hosted pilot requests require platform-authenticated identity headers and the site is owner-only. A secret runtime allowlist maps only the configured Sites account ID to pilot attorney/partner privileges; authenticated identities without an explicit mapping receive no roles and no matter access. Support uses a separate allowlist and still requires a matter-scoped persisted grant. Local development uses an explicit synthetic identity. These controls are fail-closed pilot boundaries, not the final multi-tenant directory, session-revocation, or PostgreSQL RLS design.
 
 ## Domain boundaries
 
