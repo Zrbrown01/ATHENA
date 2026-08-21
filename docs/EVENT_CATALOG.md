@@ -23,6 +23,7 @@ Every event contains event ID/type/version, tenant, aggregate type/ID, optional 
 | `records.*` | records/subpoena lifecycle | transition and human authorization; explicitly no external provider operation |
 | `authority.*` | candidate and historical ledger lifecycle | classification, human authorization, and historical-ledger marker; source content remains in the scoped candidate record |
 | `closure.*` / `matter.closed` / `matter.reopened` | closure checklist and status lifecycle | checklist item, blocking-work count, human authorization, and history-preservation marker |
+| `readiness.settlement_assessed` / `readiness.settlement_reviewed` | immutable readiness snapshot and attorney review | conclusion/counts, non-autonomous marker, and explicit false human-settlement-decision flag |
 | `medical.analysis_ready` | deterministic QME processor | from/to stage and sandbox provider mode |
 | `work_product.draft_created` | Verbatim-shaped deterministic draft | from/to stage and sandbox provider mode |
 | `report.approved` | attorney approval | human authorization and stage transition |

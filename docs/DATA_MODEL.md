@@ -49,6 +49,7 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 | `record_requests`, `record_request_decisions` | custodian/scope/authority, human-recorded service and compliance deadline, receipt/completeness/deficiency, internal delivery, cost disposition, revision, and immutable decisions |
 | `authority_candidates`, `authority_ledger`, `authority_decisions` | source excerpt/classification proposal, amount/structure/scope/includes/excludes/conditions/threshold/grantor/effective/expiry fields, attorney verification, supersession-preserving history, and decisions |
 | `matter_closure_checklists`, `matter_status_history`, `closure_decisions` | settlement/final-report/billing/retention/lien evidence gates, optimistic closure/reopening state, immutable status transitions, source/reason, and reviewer decisions |
+| `readiness_assessments`, `readiness_findings`, `readiness_reviews` | immutable point-in-time non-autonomous conclusion/counts, categorized check/evidence/explanation rows, and attorney acknowledgement/work-required review |
 
 ## Object keys
 
