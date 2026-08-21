@@ -100,6 +100,7 @@ for (const path of [
   "/admin/costs",
   "/admin/directory",
   "/admin/exports",
+  "/admin/platform",
   "/calendar",
   "/clients",
 ]) {

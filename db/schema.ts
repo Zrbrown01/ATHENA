@@ -1991,6 +1991,105 @@ export const governanceRules = sqliteTable(
   ],
 );
 
+export const governancePolicyLayers = sqliteTable(
+  "governance_policy_layers",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    code: text("code").notNull(),
+    version: integer("version").notNull(),
+    scopeType: text("scope_type", {
+      enum: ["firm", "client", "matter_type", "matter"],
+    }).notNull(),
+    scopeId: text("scope_id").notNull(),
+    businessDays: integer("business_days").notNull(),
+    dayKind: text("day_kind", { enum: ["business"] })
+      .notNull()
+      .default("business"),
+    rollConvention: text("roll_convention", {
+      enum: ["next_business_day"],
+    })
+      .notNull()
+      .default("next_business_day"),
+    authorityCitation: text("authority_citation").notNull(),
+    effectiveAt: integer("effective_at", { mode: "timestamp_ms" }).notNull(),
+    reviewBy: integer("review_by", { mode: "timestamp_ms" }).notNull(),
+    contentStatus: text("content_status", {
+      enum: [
+        "synthetic_sandbox",
+        "pending_attorney_review",
+        "attorney_approved",
+      ],
+    }).notNull(),
+    status: text("status", { enum: ["active", "superseded"] })
+      .notNull()
+      .default("active"),
+    revision: integer("revision").notNull().default(1),
+    supersedesLayerId: text("supersedes_layer_id"),
+    reason: text("reason").notNull(),
+    createdBy: text("created_by").notNull(),
+    eventId: text("event_id").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_governance_policy_layer_version").on(
+      table.tenantId,
+      table.code,
+      table.scopeType,
+      table.scopeId,
+      table.version,
+    ),
+    index("idx_governance_policy_layer_resolution").on(
+      table.tenantId,
+      table.code,
+      table.status,
+      table.scopeType,
+      table.scopeId,
+    ),
+  ],
+);
+
+export const governancePolicySimulations = sqliteTable(
+  "governance_policy_simulations",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    code: text("code").notNull(),
+    triggerAt: integer("trigger_at", { mode: "timestamp_ms" }).notNull(),
+    asOf: integer("as_of", { mode: "timestamp_ms" }).notNull(),
+    clientId: text("client_id").notNull(),
+    matterType: text("matter_type").notNull(),
+    selectedLayerId: text("selected_layer_id").notNull(),
+    selectedScopeType: text("selected_scope_type", {
+      enum: ["firm", "client", "matter_type", "matter"],
+    }).notNull(),
+    selectedVersion: integer("selected_version").notNull(),
+    dueAt: integer("due_at", { mode: "timestamp_ms" }).notNull(),
+    applicableLayerIds: text("applicable_layer_ids", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    selectedLayerSnapshot: text("selected_layer_snapshot", { mode: "json" })
+      .$type<Record<string, unknown>>()
+      .notNull(),
+    calculation: text("calculation", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    createdBy: text("created_by").notNull(),
+    eventId: text("event_id").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_governance_policy_simulation_matter").on(
+      table.tenantId,
+      table.matterId,
+      table.createdAt,
+    ),
+  ],
+);
+
 export const obligations = sqliteTable(
   "obligations",
   {
