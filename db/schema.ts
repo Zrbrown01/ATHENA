@@ -5257,3 +5257,46 @@ export const scaleDecisions = sqliteTable(
   },
   (table) => [uniqueIndex("idx_scale_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_scale_decision_history").on(table.tenantId, table.assessmentId, table.createdAt)],
 );
+
+export const costRateCards = sqliteTable(
+  "cost_rate_cards",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), name: text("name").notNull(), currency: text("currency").notNull(),
+    sourceType: text("source_type", { enum: ["synthetic_estimate", "provider_contract", "client_agreement"] }).notNull(), sourceRef: text("source_ref").notNull(),
+    status: text("status", { enum: ["draft", "approved", "superseded"] }).notNull(), effectiveAt: integer("effective_at", { mode: "timestamp_ms" }).notNull(),
+    revision: integer("revision").notNull().default(1), approvedBy: text("approved_by"), approvedAt: integer("approved_at", { mode: "timestamp_ms" }),
+    createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [index("idx_cost_rate_card_status").on(table.tenantId, table.status, table.effectiveAt)],
+);
+
+export const costRateItems = sqliteTable(
+  "cost_rate_items",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), rateCardId: text("rate_card_id").notNull(), category: text("category").notNull(),
+    unit: text("unit").notNull(), unitRateMicros: integer("unit_rate_micros").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [uniqueIndex("idx_cost_rate_item_unique").on(table.tenantId, table.rateCardId, table.category, table.unit)],
+);
+
+export const usageCostEntries = sqliteTable(
+  "usage_cost_entries",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id"), workflowId: text("workflow_id").notNull(),
+    category: text("category").notNull(), unit: text("unit").notNull(), quantity: integer("quantity").notNull(), unitRateMicros: integer("unit_rate_micros").notNull(),
+    costMicros: integer("cost_micros").notNull(), pricingState: text("pricing_state", { enum: ["estimated", "provider_verified", "not_billable"] }).notNull(),
+    rateCardId: text("rate_card_id").notNull(), providerName: text("provider_name").notNull(), sourceType: text("source_type").notNull(), sourceId: text("source_id").notNull(),
+    evidence: text("evidence").notNull(), occurredAt: integer("occurred_at", { mode: "timestamp_ms" }).notNull(), recordedBy: text("recorded_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [index("idx_usage_cost_tenant_workflow").on(table.tenantId, table.workflowId, table.occurredAt), index("idx_usage_cost_tenant_category").on(table.tenantId, table.category, table.occurredAt)],
+);
+
+export const costGovernanceDecisions = sqliteTable(
+  "cost_governance_decisions",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), rateCardId: text("rate_card_id").notNull(), usageEntryId: text("usage_entry_id"),
+    action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [uniqueIndex("idx_cost_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_cost_decision_history").on(table.tenantId, table.rateCardId, table.createdAt)],
+);

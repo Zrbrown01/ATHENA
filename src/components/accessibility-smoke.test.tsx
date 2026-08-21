@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { accessibilityViolations } from "@/test/accessibility";
 import { AppShell } from "./app-shell";
 import { ClientPortalOperations } from "./client-portal-operations";
+import { CostGovernanceOperations } from "./cost-governance-operations";
 import { ScaleOperations } from "./scale-operations";
 import { TenantExportOperations } from "./tenant-export-operations";
 
@@ -12,6 +13,7 @@ const operatorSurfaces = [
   ["client portal controls", <ClientPortalOperations key="portal" />],
   ["scale evidence", <ScaleOperations key="scale" />],
   ["tenant exports", <TenantExportOperations key="exports" />],
+  ["cost governance", <CostGovernanceOperations key="costs" />],
 ] as const;
 
 describe("automated accessibility smoke coverage", () => {
@@ -33,4 +35,3 @@ describe("automated accessibility smoke coverage", () => {
     },
   );
 });
-

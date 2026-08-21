@@ -17,6 +17,8 @@ The current owner-only pilot runs on Sites with a Cloudflare Worker, D1, and R2.
 
 Tenant portability archives are assembled server-side by discovering every Drizzle table and requiring its tenant column. Table reads use 500-row pages with global 50,000-row and 64 MiB estimated/final TAR ceilings. A ceiling stops before R2 persistence and writes durable failed-job/decision/event/outbox evidence; successful archives are stored under `<tenant>/exports/tenant/<export>/` and committed to D1 only after R2 creation and archive read-back verification. Database failure triggers compensating object deletion. Schema-table and original-object coverage are machine-readable completeness gates. TAR construction remains in-memory rather than streaming.
 
+Cost governance uses versioned tenant rate cards and immutable usage entries. Rates and computed totals are stored as integer micro-dollars to prevent floating-point accounting errors; usage remains attributable to workflow and optional matter scope. `estimated`, `provider_verified`, and `not_billable` are distinct states. A synthetic rate card can never produce provider-verified cost, and the current pilot has no provider invoice, client charge, or accounting posting adapter.
+
 ## Current state plus history
 
 Athena does not use full event sourcing. The application writes queryable relational current state while also preserving immutable business events, fact observations, audit events, and historical ledgers. Business updates and outgoing events will commit together through the outbox pattern.
