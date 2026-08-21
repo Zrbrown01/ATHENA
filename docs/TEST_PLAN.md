@@ -5,7 +5,7 @@
 - Unit: domain state machines, authorization, billing/deadline calculations, obligation lifecycle/content-status/revision gates, upload validation, retention/hold policy, provider retry, source-grounding, and export manifests.
 - Integration: D1 migrations, atomic state/event/outbox/audit writes, R2 compensation and downloads, idempotency, tenant predicates, and provider handoff recovery.
 - End to end: ten synthetic golden workflows, keyboard navigation, error recovery, and critical performance targets.
-- Security: cross-tenant UI/API/object/export/job/event/search/AI denials, ethical walls, origin/CSRF, injection/XSS/SSRF, rate limit, content security, secrets, and dependency scanning.
+- Security: cross-tenant API/object/export/job/event/search/AI/cache denials, persisted ethical walls, support-grant scope/expiry, origin/CSRF, injection/XSS/SSRF, rate limit, content security, secrets, and dependency scanning.
 - Accessibility: WCAG 2.2 AA semantics, focus, tables, errors, reduced motion, high contrast, and assistive-technology operation.
 - Operations: backup/restore, export/import verification, dead-letter replay, incident evidence, and rollback.
 
@@ -17,7 +17,7 @@ The local integration smoke executes all seven companion API transitions against
 
 ## Remaining gates
 
-Automated browser E2E/visual regression, adversarial database concurrency tests, persisted ethical-wall administration tests, automated outbox scheduling, attorney-reviewed deadline content and sourced holiday operations, AI grounding evaluation, migration reconciliation, performance budgets, and backup restore remain required before production.
+Automated browser E2E/visual regression, adversarial database concurrency tests, independent multi-principal isolation validation, automated outbox scheduling, attorney-reviewed deadline content and sourced holiday operations, AI grounding evaluation, migration reconciliation, performance budgets, and backup restore remain required before production.
 
 ## Standard checks
 

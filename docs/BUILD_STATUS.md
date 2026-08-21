@@ -71,7 +71,7 @@ Updated: 2026-08-20
 | Billing | Tested pilot | Confirmed time and versioned rule pass/warning/hard-stop tests; rates, expenses, prebills, invoices, LEDES, rejections, appeals, payments remain |
 | Reports | Functional pilot | Draft approval and source-linked companion work product; governed definitions, delivery, and automated schedules remain |
 | Client portal | Externally blocked | Access intentionally disabled; authorization/data-sharing design required before any external user |
-| Administration | Functional pilot | Integration truth plus owner-only outbox, retention, and deadline operations; full users/roles/holds/incidents/support/export/migration controls remain |
+| Administration | Functional pilot | Integration truth plus owner-only outbox, retention, deadline, and ethical-wall placement/release operations with immutable evidence. Full users/roles/holds/incidents/support/export/migration controls remain |
 | Noted | Externally blocked | Adapter/lifecycle not implemented; no booking is claimed |
 | Verbatim | Tested sandbox slice | Deterministic source-linked work product and approval; audio/transcription/review provider lifecycle remains unavailable |
 | Search / Ask Athena | Not started / externally blocked | AI is disabled; secure structured/full-text search and source-grounded retrieval remain |
@@ -84,12 +84,12 @@ Updated: 2026-08-20
 1. Local development uses an explicit synthetic identity; hosted production-mode requests require platform-authenticated identity headers.
 2. D1 does not provide PostgreSQL RLS; multi-tenant production policy enforcement and isolation testing remain required.
 3. Uploaded PDFs remain quarantined because malware scanning and OCR are not connected; deterministic fixture processing never releases an uploaded file.
-4. Rate limiting, ethical-wall persistence, support access, formal access review, retention/legal-hold enforcement, and complete tenant export are not implemented.
+4. Rate limiting, support-access grants, formal access review, retention/legal-hold enforcement, and complete tenant export are not implemented. Ethical-wall policy is persisted and deny enforcement is tested, but independent isolation validation remains required.
 5. AI and external integrations are disabled and must remain so until approved.
 
 ## Next implementation slice
 
-1. Ethical-wall administration and negative end-to-end tests for search, AI retrieval, caches, jobs, and support access.
+1. Formal support-access grants, access-review evidence, read/denial audit events, rate limiting, and independent isolation validation.
 2. Attorney-reviewed California rule/holiday content, exception/waiver controls, recurrence, chains, escalation, and readiness records.
 3. Automated outbox scheduling plus external consumer idempotency and reconciliation after provider approval.
 4. Approved malware scanning/OCR pipeline with quarantine release; full-environment restore and incident exercises.

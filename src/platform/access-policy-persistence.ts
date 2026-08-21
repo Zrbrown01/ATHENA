@@ -11,6 +11,7 @@ export async function authorizePersistedMatter(context: TenantContext, tenantId:
     eq(matterAccessPolicies.matterId, matterId),
     eq(matterAccessPolicies.userId, context.userId),
     eq(matterAccessPolicies.effect, "deny"),
+    eq(matterAccessPolicies.status, "active"),
     or(isNull(matterAccessPolicies.expiresAt), gt(matterAccessPolicies.expiresAt, now)),
   )).limit(1);
   if (deny) throw new AuthorizationError();
