@@ -6,7 +6,6 @@ import {
   Gauge,
   Landmark,
   Mail,
-  Search,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -14,6 +13,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import Link from "next/link";
+import { CommandPalette } from "./command-palette";
 
 const navigation = [
   ["My Work", Gauge, "/"],
@@ -69,11 +69,7 @@ export function AppShell({ children, active = "My Work" }: { children: React.Rea
 
       <div className="workspace">
         <header className="topbar">
-          <div className="command-search" role="search">
-            <Search size={17} aria-hidden="true" />
-            <span>Search matters, documents, people, or commands</span>
-            <kbd>⌘ K</kbd>
-          </div>
+          <CommandPalette />
           <div className="topbar-actions">
             <button className="ask-button" type="button" disabled title="AI provider is not connected">
               <Sparkles size={16} aria-hidden="true" /> Ask Athena
