@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     url: "/",
     siteName: "Athena",
     type: "website",
-    images: [{ url: "/og.png", width: 1730, height: 909, alt: "Athena workers’ compensation defense operating system" }],
+    images: [{ url: "/og.png", width: 1731, height: 909, alt: "Athena logo and workers’ compensation defense operating system" }],
   },
   twitter: {
     card: "summary_large_image",
