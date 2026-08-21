@@ -4844,3 +4844,133 @@ export const tenantExportDecisions = sqliteTable(
     ),
   ],
 );
+
+export const depositions = sqliteTable(
+  "depositions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    deponentName: text("deponent_name").notNull(),
+    depositionType: text("deposition_type", {
+      enum: ["applicant", "witness", "expert", "person_most_knowledgeable"],
+    }).notNull(),
+    requestedStartsAt: integer("requested_starts_at", {
+      mode: "timestamp_ms",
+    }).notNull(),
+    timezone: text("timezone").notNull(),
+    locationMode: text("location_mode", {
+      enum: ["remote", "in_person", "hybrid"],
+    }).notNull(),
+    reporterRequired: integer("reporter_required", {
+      mode: "boolean",
+    }).notNull(),
+    videoRequired: integer("video_required", { mode: "boolean" }).notNull(),
+    interpreterRequired: integer("interpreter_required", {
+      mode: "boolean",
+    }).notNull(),
+    realtimeRequired: integer("realtime_required", {
+      mode: "boolean",
+    }).notNull(),
+    clientApprovalRequired: integer("client_approval_required", {
+      mode: "boolean",
+    }).notNull(),
+    status: text("status", {
+      enum: [
+        "requested",
+        "pending_approval",
+        "ready_for_handoff",
+        "handoff_blocked",
+        "scheduled",
+        "completed",
+        "transcript_received",
+        "closed",
+      ],
+    }).notNull(),
+    provider: text("provider").notNull(),
+    providerMode: text("provider_mode", {
+      enum: [
+        "not_connected",
+        "deterministic_sandbox",
+        "human_verified_external",
+      ],
+    }).notNull(),
+    externalBookingId: text("external_booking_id"),
+    scheduledAt: integer("scheduled_at", { mode: "timestamp_ms" }),
+    revision: integer("revision").notNull().default(1),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_deposition_matter_status").on(
+      table.tenantId,
+      table.matterId,
+      table.status,
+    ),
+  ],
+);
+
+export const depositionArtifacts = sqliteTable(
+  "deposition_artifacts",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    depositionId: text("deposition_id").notNull(),
+    artifactType: text("artifact_type", {
+      enum: [
+        "notice",
+        "proof_of_service",
+        "exhibit_index",
+        "rough_transcript",
+        "final_transcript",
+        "errata",
+      ],
+    }).notNull(),
+    title: text("title").notNull(),
+    sha256: text("sha256").notNull(),
+    providerMode: text("provider_mode", {
+      enum: ["deterministic_sandbox", "human_verified_external"],
+    }).notNull(),
+    status: text("status", { enum: ["preserved", "verified"] }).notNull(),
+    verifiedBy: text("verified_by"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_deposition_artifact_history").on(
+      table.tenantId,
+      table.depositionId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const depositionDecisions = sqliteTable(
+  "deposition_decisions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    depositionId: text("deposition_id").notNull(),
+    action: text("action").notNull(),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_deposition_decision_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_deposition_decision_history").on(
+      table.tenantId,
+      table.depositionId,
+      table.createdAt,
+    ),
+  ],
+);

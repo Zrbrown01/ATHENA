@@ -11,7 +11,7 @@ All providers implement health, backfill, reconciliation, revocation, provider e
 
 Provider activation is also gated by the durable compliance registry. A current passing security review, executed BAA and DPA (or documented approved not-required bases), complete data-category authority, and prohibited training use may establish contractual eligibility only. Credentials, scopes, technical health, and reconciliation must still be verified separately before any connection is represented as live.
 | EAMS/JET | Not connected | approved manual/provider workflow or JET authority, versioned forms/titles, packet validation, status/rejection reconciliation |
-| Noted | Not connected | vendor/service agreement, client governance, booking/status/transcript/billing contract |
+| Noted | Native lifecycle functional; provider not connected | Athena persists request/governance/handoff/scheduling/calendar/completion/transcript-metadata/closure truth. Activation still requires vendor/service agreement, approved data use, credentials, verified booking/status/transcript/invoice contract, idempotency, and reconciliation. |
 | Verbatim | Not connected; deterministic work-product draft only | transcription/reviewer workflow, vocabulary/template controls, audio consent/retention, attachment and delivery reconciliation |
 | Telephony/SMS | Not connected; recording disabled | number/provider, consent and HELP/STOP policy, delivery status, recording approval, retention |
 

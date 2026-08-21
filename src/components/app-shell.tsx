@@ -18,6 +18,7 @@ import {
   Trash2,
   Users,
   UserCog,
+  Video,
   WalletCards,
 } from "lucide-react";
 import Link from "next/link";
@@ -32,6 +33,7 @@ const navigation = [
   ["Billing", WalletCards, "/billing"],
   ["Reports", Landmark, "/reports"],
   ["Clients", Users, "/clients"],
+  ["Noted", Video, "/depositions"],
 ] as const;
 
 export function AppShell({
