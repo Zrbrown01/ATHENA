@@ -46,6 +46,7 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 | `intake_review_decisions` | immutable reviewer action, transition, reason, actor, event, and idempotency evidence |
 | `persons`, `organizations`, `party_aliases`, `matter_parties` | canonical people/organization identities, normalized alias lookup, role-compatible matter assignments, claim/injury/ADJ scope, and source-link provenance |
 | `matter_tasks`, `task_dependencies`, `task_decisions` | owner/due/priority/status task state, finish-to-start edges, optimistic revision, completion/cancellation evidence, and immutable transition history |
+| `record_requests`, `record_request_decisions` | custodian/scope/authority, human-recorded service and compliance deadline, receipt/completeness/deficiency, internal delivery, cost disposition, revision, and immutable decisions |
 
 ## Object keys
 

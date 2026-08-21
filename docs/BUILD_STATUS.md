@@ -67,7 +67,7 @@ Updated: 2026-08-20
 | Native tasks | Functional golden lifecycle | Matter-scoped create/start/block/unblock/reassign/complete/cancel transitions persist with owner, due date, priority, dependencies, optimistic revision, evidence, event/outbox, and idempotency. Cross-matter queues, recurrence, reminders, and provider calendar sync remain |
 | Court/EAMS | Externally blocked | Packet approval and honest health; versioned forms/packet validation/status adapter remain |
 | Proceedings/readiness | Product foundation | California queue view; structured readiness evaluator remains |
-| Records/subpoenas | Not started | Domain and end-to-end lifecycle remain |
+| Records/subpoenas | Functional golden lifecycle | Identified → prepared → human-recorded service/deadline → receipt → deficiency/cure → completeness review → internal delivery → cost/billing closure persists with revision, evidence, event/outbox, and idempotency. Process server, subpoena vendor, OCR, expert delivery, and billing providers remain disconnected |
 | Authority/settlement | Functional pilot | Matter-scoped human authority decision persists; full historical ledger/readiness/payment/closure effects remain |
 | Billing | Tested pilot | Confirmed time and versioned rule pass/warning/hard-stop tests; rates, expenses, prebills, invoices, LEDES, rejections, appeals, payments remain |
 | Reports | Functional pilot | Draft approval and source-linked companion work product; governed definitions, delivery, and automated schedules remain |
