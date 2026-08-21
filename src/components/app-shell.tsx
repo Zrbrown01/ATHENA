@@ -8,6 +8,7 @@ import {
   Landmark,
   Mail,
   Settings,
+  ShieldAlert,
   ShieldCheck,
   Sparkles,
   Users,
@@ -27,7 +28,13 @@ const navigation = [
   ["Clients", Users, "/clients"],
 ] as const;
 
-export function AppShell({ children, active = "My Work" }: { children: React.ReactNode; active?: string }) {
+export function AppShell({
+  children,
+  active = "My Work",
+}: {
+  children: React.ReactNode;
+  active?: string;
+}) {
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Primary navigation">
@@ -41,7 +48,12 @@ export function AppShell({ children, active = "My Work" }: { children: React.Rea
 
         <nav className="nav-list">
           {navigation.map(([label, Icon, href]) => (
-            <Link className={label === active ? "nav-item active" : "nav-item"} href={href} key={label} aria-current={label === active ? "page" : undefined}>
+            <Link
+              className={label === active ? "nav-item active" : "nav-item"}
+              href={href}
+              key={label}
+              aria-current={label === active ? "page" : undefined}
+            >
               <Icon aria-hidden="true" size={17} strokeWidth={1.8} />
               {label}
             </Link>
@@ -51,13 +63,19 @@ export function AppShell({ children, active = "My Work" }: { children: React.Rea
         <div className="sidebar-footer">
           <div className="trust-state">
             <ShieldCheck size={17} aria-hidden="true" />
-            <span><strong>Synthetic workspace</strong><small>No production data</small></span>
+            <span>
+              <strong>Synthetic workspace</strong>
+              <small>No production data</small>
+            </span>
           </div>
           <Link className="nav-item" href="/admin/integrations">
             <Settings aria-hidden="true" size={17} /> Administration
           </Link>
           <Link className="nav-item" href="/admin/platform">
             <ShieldCheck aria-hidden="true" size={17} /> Platform ops
+          </Link>
+          <Link className="nav-item" href="/admin/security">
+            <ShieldAlert aria-hidden="true" size={17} /> Security operations
           </Link>
           <Link className="nav-item" href="/admin/migration">
             <DatabaseZap aria-hidden="true" size={17} /> Migration center
@@ -75,12 +93,20 @@ export function AppShell({ children, active = "My Work" }: { children: React.Rea
         <header className="topbar">
           <CommandPalette />
           <div className="topbar-actions">
-            <button className="ask-button" type="button" disabled title="AI provider is not connected">
+            <button
+              className="ask-button"
+              type="button"
+              disabled
+              title="AI provider is not connected"
+            >
               <Sparkles size={16} aria-hidden="true" /> Ask Athena
             </button>
             <div className="user-button" aria-label="Signed in pilot identity">
               <span className="avatar">MC</span>
-              <span><strong>Maya Chen</strong><small>Attorney · Pilot</small></span>
+              <span>
+                <strong>Maya Chen</strong>
+                <small>Attorney · Pilot</small>
+              </span>
             </div>
           </div>
         </header>

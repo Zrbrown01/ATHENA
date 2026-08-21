@@ -20,4 +20,4 @@ Detection time/source, severity, systems, tenants/matters, information categorie
 
 ## Pilot limitation
 
-There is not yet a persisted Incident workspace, automatic revocation, alerting, or production log/trace platform. The owner-only synthetic pilot must not receive production information.
+The owner-only pilot now has a persisted Incident workspace with revisioned scope, action/evidence chronology, privilege-restricted breach assessment, recovery/root-cause/closure gates, control evidence, and risk treatment. It is proven only with synthetic tabletop records. Automatic alert ingestion, identity-provider token/session revocation, external notification delivery, and a production log/trace platform remain disconnected; no real incident or legal conclusion may be inferred from a tabletop record, and the pilot must not receive production information.
