@@ -20,6 +20,7 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 | `document_intakes` | tenant/matter-scoped quarantined R2 original metadata and checksum |
 | `fact_reviews` | human fact verification/rejection decisions |
 | `workflow_decisions` | intake, authority, time, report, and filing approvals |
+| `proceedings`, `proceeding_readiness_items`, `proceeding_assessments`, `proceeding_findings`, `proceeding_decisions` | Proceeding identity, revisioned human evidence, immutable readiness snapshots/findings, and decision history; filing evidence is explicitly human-verified while EAMS is disconnected |
 | `companion_runs` | durable current stage of the deterministic Release 1 workflow |
 | `work_product_drafts` | source-linked Verbatim-shaped draft and approval state |
 | `integration_handoffs` | explicit external operation, provider mode, retryability, and activation requirement |
