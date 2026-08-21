@@ -15,7 +15,7 @@ The current owner-only pilot runs on Sites with a Cloudflare Worker, D1, and R2.
 5. **Durable workflows:** legal deadlines, approvals, QME cycles, filing, billing, migration, and other work that must survive restarts.
 6. **Integration control plane:** provider connections, subscriptions, cursors, idempotency, retries, dead letters, backfill, reconciliation, and revocation.
 
-Tenant portability archives are assembled server-side from an explicit tenant-scoped serializer, stored under `<tenant>/exports/tenant/<export>/`, and committed to D1 only after R2 creation and archive read-back verification. Database failure triggers compensating object deletion. Full-schema serialization remains a tracked completeness gate.
+Tenant portability archives are assembled server-side by discovering every Drizzle table and requiring its tenant column, stored under `<tenant>/exports/tenant/<export>/`, and committed to D1 only after R2 creation and archive read-back verification. Database failure triggers compensating object deletion. Schema-table and original-object coverage are machine-readable completeness gates.
 
 ## Current state plus history
 

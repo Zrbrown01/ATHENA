@@ -1,41 +1,23 @@
 import { createId } from "@paralleldrive/cuid2";
-import { and, asc, desc, eq } from "drizzle-orm";
-import type { AnySQLiteColumn, AnySQLiteTable } from "drizzle-orm/sqlite-core";
-import { getDocumentBucket, getPreviewDb } from "../../db";
 import {
-  accessDecisionEvents,
-  adjudicationCases,
-  auditRecords,
-  authorityLedger,
-  calendarEvents,
-  calendarReminders,
-  candidateTimeEntries,
-  claims,
-  classificationDecisions,
-  communicationAttachments,
-  communicationMessages,
-  communicationThreads,
-  documentDerivatives,
-  documentEvidenceRecords,
-  documentIntakes,
-  injuries,
-  invoicePayments,
-  invoices,
-  legalHolds,
-  matterParties,
-  matterRelationships,
-  matterTasks,
-  matters,
-  obligations,
-  organizations,
-  partyAliases,
-  persons,
-  prebills,
+  and,
+  asc,
+  desc,
+  eq,
+  getTableColumns,
+  getTableName,
+  is,
+} from "drizzle-orm";
+import {
+  SQLiteTable,
+  type AnySQLiteColumn,
+  type AnySQLiteTable,
+} from "drizzle-orm/sqlite-core";
+import { getDocumentBucket, getPreviewDb } from "../../db";
+import * as athenaSchema from "../../db/schema";
+import {
   previewEvents,
   previewOutbox,
-  productionSets,
-  resourceClassifications,
-  taskDependencies,
   tenantExportDecisions,
   tenantExportJobs,
   tenantExportScopeItems,
@@ -50,8 +32,6 @@ import {
 } from "@/domain/exports/tenant-portability";
 import type { EventEnvelope } from "./events";
 import type { RequestActor } from "./request-actor";
-
-const SOURCE_TABLE_COUNT = 150;
 
 export async function readTenantExport(tenantId: string, exportId: string) {
   const [row] = await getPreviewDb()
@@ -129,7 +109,7 @@ export async function persistTenantExport(input: {
         completeness: artifact.coverage.completeness,
         requiredCategoryCount: artifact.coverage.requiredCategoryCount,
         includedCategoryCount: artifact.coverage.includedCategoryCount,
-        sourceTableCount: SOURCE_TABLE_COUNT,
+        sourceTableCount: artifact.sourceTableCount,
         includedTableCount: artifact.includedTableCount,
         sourceOriginalCount: artifact.sourceOriginalCount,
         includedOriginalCount: artifact.includedOriginalCount,
@@ -213,23 +193,29 @@ async function buildTenantArtifact(
   actor: RequestActor,
 ) {
   const db = getPreviewDb();
+  const schemaTables = (Object.values(athenaSchema) as unknown[]).filter(
+    (value): value is AnySQLiteTable => is(value, SQLiteTable),
+  );
+  const tenantTables = schemaTables.flatMap((table) => {
+    const tenantColumn = getTableColumns(table).tenantId;
+    return tenantColumn ? [{ table, tenantColumn }] : [];
+  });
+  const tableRows = await Promise.all(
+    tenantTables.map(({ table, tenantColumn }) =>
+      rows(db, table, tenantColumn, command.tenantId),
+    ),
+  );
+  const tableData = new Map<string, unknown[]>(
+    tenantTables.map(({ table }, index) => [
+      getTableName(table),
+      tableRows[index],
+    ]),
+  );
+  const includedTableNames = [...tableData.keys()].sort();
   const categoryTables: Record<TenantExportCategory, string[]> = {
     original_files: ["document_intakes"],
     human_readable_indexes: ["matters"],
-    structured_data: [
-      "matters",
-      "claims",
-      "injuries",
-      "adjudication_cases",
-      "persons",
-      "organizations",
-      "party_aliases",
-      "matter_parties",
-      "matter_relationships",
-      "authority_ledger",
-      "obligations",
-      "legal_holds",
-    ],
+    structured_data: includedTableNames,
     document_metadata: [
       "document_intakes",
       "document_evidence_records",
@@ -259,90 +245,6 @@ async function buildTenantArtifact(
     checksums: [],
     export_manifest: [],
   };
-  const groups = await Promise.all([
-    rows(db, matters, matters.tenantId, command.tenantId),
-    rows(db, claims, claims.tenantId, command.tenantId),
-    rows(db, injuries, injuries.tenantId, command.tenantId),
-    rows(db, adjudicationCases, adjudicationCases.tenantId, command.tenantId),
-    rows(db, persons, persons.tenantId, command.tenantId),
-    rows(db, organizations, organizations.tenantId, command.tenantId),
-    rows(db, partyAliases, partyAliases.tenantId, command.tenantId),
-    rows(db, matterParties, matterParties.tenantId, command.tenantId),
-    rows(
-      db,
-      matterRelationships,
-      matterRelationships.tenantId,
-      command.tenantId,
-    ),
-    rows(db, authorityLedger, authorityLedger.tenantId, command.tenantId),
-    rows(db, obligations, obligations.tenantId, command.tenantId),
-    rows(db, legalHolds, legalHolds.tenantId, command.tenantId),
-    rows(db, documentIntakes, documentIntakes.tenantId, command.tenantId),
-    rows(
-      db,
-      documentEvidenceRecords,
-      documentEvidenceRecords.tenantId,
-      command.tenantId,
-    ),
-    rows(
-      db,
-      documentDerivatives,
-      documentDerivatives.tenantId,
-      command.tenantId,
-    ),
-    rows(db, productionSets, productionSets.tenantId, command.tenantId),
-    rows(
-      db,
-      resourceClassifications,
-      resourceClassifications.tenantId,
-      command.tenantId,
-    ),
-    rows(
-      db,
-      communicationThreads,
-      communicationThreads.tenantId,
-      command.tenantId,
-    ),
-    rows(
-      db,
-      communicationMessages,
-      communicationMessages.tenantId,
-      command.tenantId,
-    ),
-    rows(
-      db,
-      communicationAttachments,
-      communicationAttachments.tenantId,
-      command.tenantId,
-    ),
-    rows(db, calendarEvents, calendarEvents.tenantId, command.tenantId),
-    rows(db, calendarReminders, calendarReminders.tenantId, command.tenantId),
-    rows(db, matterTasks, matterTasks.tenantId, command.tenantId),
-    rows(db, taskDependencies, taskDependencies.tenantId, command.tenantId),
-    rows(db, previewEvents, previewEvents.tenantId, command.tenantId),
-    rows(
-      db,
-      candidateTimeEntries,
-      candidateTimeEntries.tenantId,
-      command.tenantId,
-    ),
-    rows(db, prebills, prebills.tenantId, command.tenantId),
-    rows(db, invoices, invoices.tenantId, command.tenantId),
-    rows(db, invoicePayments, invoicePayments.tenantId, command.tenantId),
-    rows(db, auditRecords, auditRecords.tenantId, command.tenantId),
-    rows(
-      db,
-      accessDecisionEvents,
-      accessDecisionEvents.tenantId,
-      command.tenantId,
-    ),
-    rows(
-      db,
-      classificationDecisions,
-      classificationDecisions.tenantId,
-      command.tenantId,
-    ),
-  ]);
   const entries = tenantExportCategories
     .filter(
       (category) =>
@@ -351,7 +253,7 @@ async function buildTenantArtifact(
     .map((category) => {
       const tables = categoryTables[category];
       const payload = Object.fromEntries(
-        tables.map((name) => [name, groups[allIncludedTables.indexOf(name)]]),
+        tables.map((name) => [name, tableData.get(name) ?? []]),
       );
       return {
         path:
@@ -366,7 +268,7 @@ async function buildTenantArtifact(
         ),
       };
     });
-  const documents = groups[12] as Array<{
+  const documents = (tableData.get("document_intakes") ?? []) as Array<{
     id: string;
     objectKey: string;
     sha256: string;
@@ -408,8 +310,8 @@ async function buildTenantArtifact(
   categoryRecordCounts.checksums = checksums.length;
   categoryRecordCounts.export_manifest = 1;
   const coverage = assessTenantExportCoverage({
-    sourceTableCount: SOURCE_TABLE_COUNT,
-    includedTableCount: allIncludedTables.length,
+    sourceTableCount: schemaTables.length,
+    includedTableCount: includedTableNames.length,
     sourceOriginalCount: documents.length,
     includedOriginalCount: originalEntries.length,
     categoryRecordCounts,
@@ -424,14 +326,14 @@ async function buildTenantArtifact(
     syntheticDataOnly: true,
     completeness: coverage.completeness,
     missingItems: coverage.missingItems,
-    sourceTableCount: SOURCE_TABLE_COUNT,
-    includedTableCount: allIncludedTables.length,
+    sourceTableCount: schemaTables.length,
+    includedTableCount: includedTableNames.length,
     sourceOriginalCount: documents.length,
     includedOriginalCount: originalEntries.length,
     coverage: coverage.items,
     limitations: [
       "Synthetic pilot data only.",
-      "The archive is partial until all tenant-owned tables and original objects are serialized and verified.",
+      "Completeness requires every schema table to carry tenant context and every original object to pass checksum verification.",
       "External provider data is not included while providers are disconnected.",
     ],
   };
@@ -460,47 +362,13 @@ async function buildTenantArtifact(
     sha256,
     coverage,
     sourceTables: categoryTables,
-    includedTableCount: allIncludedTables.length,
+    sourceTableCount: schemaTables.length,
+    includedTableCount: includedTableNames.length,
     sourceOriginalCount: documents.length,
     includedOriginalCount: originalEntries.length,
     archiveEntryCount: readTarArchive(archive).length,
   };
 }
-
-const allIncludedTables = [
-  "matters",
-  "claims",
-  "injuries",
-  "adjudication_cases",
-  "persons",
-  "organizations",
-  "party_aliases",
-  "matter_parties",
-  "matter_relationships",
-  "authority_ledger",
-  "obligations",
-  "legal_holds",
-  "document_intakes",
-  "document_evidence_records",
-  "document_derivatives",
-  "production_sets",
-  "resource_classifications",
-  "communication_threads",
-  "communication_messages",
-  "communication_attachments",
-  "calendar_events",
-  "calendar_reminders",
-  "matter_tasks",
-  "task_dependencies",
-  "preview_events",
-  "candidate_time_entries",
-  "prebills",
-  "invoices",
-  "invoice_payments",
-  "audit_records",
-  "access_decision_events",
-  "classification_decisions",
-];
 
 function rows(
   db: ReturnType<typeof getPreviewDb>,

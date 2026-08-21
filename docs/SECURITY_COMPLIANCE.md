@@ -16,7 +16,7 @@ Athena is being designed to support HIPAA-regulated workflows and SOC 2 readines
 - Immutable audit evidence for access and material actions.
 - Retention hierarchy, legal holds, export controls, and deletion workflows.
 - The deletion workflow currently executes only against a checksum-pinned synthetic disposable table. Active holds hard-stop preview, requesters cannot approve, two distinct approvers are mandatory, and audit/event/approval/decision evidence is excluded from deletion. Real matter, R2, provider, and tenant erasure remain disabled.
-- Tenant export creation is partner/security-admin restricted, checks every persisted matter through the export data plane, uses only server-selected tenant predicates/object keys, and preserves archive/category/checksum/decision/event evidence. The current 32-of-150-table archive is explicitly partial and is not complete portability evidence.
+- Tenant export creation is partner/security-admin restricted, checks every persisted matter through the export data plane, dynamically includes only tables with an explicit tenant column, uses server-selected object keys, and preserves archive/category/checksum/decision/event evidence. Any uncovered table or original forces `partial`; provider-held data and independent database restoration remain separate gates.
 - Dependency, secret, static, and container scanning.
 - Restore tests, incident response, access reviews, risk register, subprocessor and BAA registry.
 - No sensitive content in logs; use identifiers and correlated telemetry.

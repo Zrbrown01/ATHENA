@@ -164,7 +164,7 @@ export function TenantExportOperations() {
         ) : (
           <CheckCircle2 size={15} />
         )}
-        Create partial tenant archive
+        Create tenant archive
       </button>
       {message && (
         <p className="inline-message" role="status">
