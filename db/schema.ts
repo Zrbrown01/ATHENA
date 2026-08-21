@@ -808,6 +808,8 @@ export const matterTasks = sqliteTable(
     cancelledBy: text("cancelled_by"),
     cancelledAt: integer("cancelled_at", { mode: "timestamp_ms" }),
     cancellationReason: text("cancellation_reason"),
+    recurrenceSeriesId: text("recurrence_series_id"),
+    recurrenceOccurrenceId: text("recurrence_occurrence_id"),
     revision: integer("revision").notNull().default(1),
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
@@ -824,7 +826,41 @@ export const matterTasks = sqliteTable(
       table.matterId,
       table.status,
     ),
+    uniqueIndex("idx_matter_task_recurrence_occurrence").on(
+      table.tenantId,
+      table.recurrenceOccurrenceId,
+    ),
   ],
+);
+
+export const taskRecurrenceSeries = sqliteTable(
+  "task_recurrence_series",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(),
+    title: text("title").notNull(), taskType: text("task_type").notNull(), priority: text("priority", { enum: ["critical", "high", "normal", "low"] }).notNull(), ownerId: text("owner_id").notNull(),
+    cadence: text("cadence", { enum: ["weekly", "monthly"] }).notNull(), interval: integer("interval").notNull(), dayOfMonth: integer("day_of_month"), startsOn: integer("starts_on", { mode: "timestamp_ms" }).notNull(), endsOn: integer("ends_on", { mode: "timestamp_ms" }), occurrenceLimit: integer("occurrence_limit").notNull(), timezone: text("timezone").notNull(),
+    status: text("status", { enum: ["draft", "active", "cancelled"] }).notNull(), lastMaterializedThrough: integer("last_materialized_through", { mode: "timestamp_ms" }), materializedCount: integer("materialized_count").notNull().default(0), revision: integer("revision").notNull().default(1),
+    createdBy: text("created_by").notNull(), approvedBy: text("approved_by"), approvedAt: integer("approved_at", { mode: "timestamp_ms" }), cancelledBy: text("cancelled_by"), cancelledAt: integer("cancelled_at", { mode: "timestamp_ms" }), cancellationReason: text("cancellation_reason"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [index("idx_task_recurrence_series_matter").on(table.tenantId, table.matterId, table.status)],
+);
+
+export const taskRecurrenceExceptions = sqliteTable(
+  "task_recurrence_exceptions",
+  { id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), seriesId: text("series_id").notNull(), nominalDueOn: integer("nominal_due_on", { mode: "timestamp_ms" }).notNull(), action: text("action", { enum: ["skip", "move"] }).notNull(), movedDueOn: integer("moved_due_on", { mode: "timestamp_ms" }), reason: text("reason").notNull(), actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull() },
+  (table) => [uniqueIndex("idx_task_recurrence_exception_identity").on(table.tenantId, table.seriesId, table.nominalDueOn)],
+);
+
+export const taskRecurrenceOccurrences = sqliteTable(
+  "task_recurrence_occurrences",
+  { id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), seriesId: text("series_id").notNull(), taskId: text("task_id"), sequence: integer("sequence").notNull(), nominalDueOn: integer("nominal_due_on", { mode: "timestamp_ms" }).notNull(), effectiveDueOn: integer("effective_due_on", { mode: "timestamp_ms" }), status: text("status", { enum: ["materialized", "skipped"] }).notNull(), exceptionAction: text("exception_action", { enum: ["none", "skip", "move"] }).notNull(), eventId: text("event_id").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull() },
+  (table) => [uniqueIndex("idx_task_recurrence_occurrence_identity").on(table.tenantId, table.seriesId, table.nominalDueOn), index("idx_task_recurrence_occurrence_series").on(table.tenantId, table.seriesId, table.sequence)],
+);
+
+export const taskRecurrenceDecisions = sqliteTable(
+  "task_recurrence_decisions",
+  { id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), seriesId: text("series_id").notNull(), action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), detail: text("detail"), actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull() },
+  (table) => [uniqueIndex("idx_task_recurrence_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_task_recurrence_decision_history").on(table.tenantId, table.seriesId, table.createdAt)],
 );
 
 export const taskDependencies = sqliteTable(

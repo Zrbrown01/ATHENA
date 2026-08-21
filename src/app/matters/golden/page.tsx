@@ -4,6 +4,7 @@ import { MatterHeader } from "@/components/matter-header";
 import { MatterGraph } from "@/components/matter-graph";
 import { PartyRoster } from "@/components/party-roster";
 import { MatterTasks } from "@/components/matter-tasks";
+import { TaskRecurrenceOperations } from "@/components/task-recurrence-operations";
 import { MatterOverview } from "@/components/matter-overview";
 import { candidateFacts, goldenMatter, matterEvents } from "@/domain/golden-matter";
 
@@ -16,6 +17,7 @@ export default function GoldenMatterPage() {
         <MatterGraph />
         <PartyRoster />
         <MatterTasks />
+        <TaskRecurrenceOperations />
         <FactReview initialFacts={candidateFacts} />
       </div>
     </AppShell>

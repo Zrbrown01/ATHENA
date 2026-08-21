@@ -1,0 +1,30 @@
+"use client";
+import { CalendarClock, LoaderCircle, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { StatusPill } from "./status-pill";
+
+type Series = { id: string; title: string; cadence: "weekly" | "monthly"; interval: number; dayOfMonth: number | null; status: "draft" | "active" | "cancelled"; revision: number; occurrenceLimit: number; materializedCount: number };
+type Occurrence = { id: string; seriesId: string; sequence: number; nominalDueOn: string; effectiveDueOn: string | null; status: "materialized" | "skipped"; exceptionAction: "none" | "skip" | "move" };
+type Projection = { series: Series[]; occurrences: Occurrence[]; limitation: string; error?: string };
+const SERIES_ID = "task-series-client-report-001";
+const base = { tenantId: "tenant-golden", matterId: "matter-golden-001", seriesId: SERIES_ID };
+const date = (value: string) => new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+
+export function TaskRecurrenceOperations() {
+  const [data, setData] = useState<Projection | null>(null), [pending, setPending] = useState(false), [message, setMessage] = useState<string | null>(null);
+  async function load() { setPending(true); try { const response = await fetch("/api/tasks/recurrence"), next = await response.json() as Projection; if (!response.ok) throw new Error(next.error ?? "Recurring work could not be loaded"); setData(next); } catch (error) { setMessage(error instanceof Error ? error.message : "Load failed"); } finally { setPending(false); } }
+  async function act(action: "create_series" | "activate_series" | "set_exception" | "materialize_window" | "cancel_series") {
+    const series = data?.series.find(item => item.id === SERIES_ID);
+    const command = action === "create_series" ? { action, ...base, idempotencyKey: `recurrence-create-${crypto.randomUUID()}`, title: "Prepare recurring client status report", taskType: "client_reporting", priority: "high", ownerId: "user-maya-chen", cadence: "monthly", interval: 1, dayOfMonth: 15, startsOn: "2026-09-15", endsOn: "2026-12-31", occurrenceLimit: 4, timezone: "America/Los_Angeles" }
+      : action === "activate_series" ? { action, ...base, idempotencyKey: `recurrence-activate-${crypto.randomUUID()}`, expectedRevision: series?.revision, approval: "Attorney approved this bounded client-reporting schedule." }
+      : action === "set_exception" ? { action, ...base, idempotencyKey: `recurrence-exception-${crypto.randomUUID()}`, expectedRevision: series?.revision, nominalDueOn: "2026-10-15", exceptionAction: "move", movedDueOn: "2026-10-16", reason: "Move the report one day to incorporate the scheduled QME update." }
+      : action === "materialize_window" ? { action, ...base, idempotencyKey: `recurrence-materialize-${crypto.randomUUID()}`, expectedRevision: series?.revision, throughDate: "2026-12-31" }
+      : { action, ...base, idempotencyKey: `recurrence-cancel-${crypto.randomUUID()}`, expectedRevision: series?.revision, reason: "Demonstrate governed cancellation after preserving existing tasks." };
+    setPending(true); try { const response = await fetch("/api/tasks/recurrence", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(command) }), next = await response.json() as Projection; if (!response.ok) throw new Error(next.error ?? "Recurring work operation failed"); setData(next); setMessage("Recurring-work decision and event evidence recorded."); } catch (error) { setMessage(error instanceof Error ? error.message : "Operation failed"); } finally { setPending(false); }
+  }
+  if (!data) return <section className="panel operator-load"><CalendarClock size={22}/><div><h2>Governed recurring work</h2><p>Build bounded task series with attorney approval, exceptions, and durable occurrences.</p><button className="secondary-action" onClick={() => void load()} disabled={pending}>{pending ? <LoaderCircle className="spin" size={15}/> : <CalendarClock size={15}/>}Load recurring work</button>{message && <p className="inline-message">{message}</p>}</div></section>;
+  const series = data.series.find(item => item.id === SERIES_ID), occurrences = data.occurrences.filter(item => item.seriesId === SERIES_ID);
+  const nextAction = !series ? "create_series" : series.status === "draft" ? "activate_series" : series.status === "active" && !occurrences.length && series.revision === 2 ? "set_exception" : series.status === "active" && !occurrences.length ? "materialize_window" : series.status === "active" ? "cancel_series" : null;
+  const labels = { create_series: "Create draft series", activate_series: "Approve series", set_exception: "Move October occurrence", materialize_window: "Materialize bounded window", cancel_series: "Cancel future recurrence" } as const;
+  return <section className="panel operator-panel"><header><div><h2>Governed recurring work</h2><p>Monthly status reports · maximum four · America/Los_Angeles</p></div><StatusPill tone={series?.status === "active" ? "success" : series?.status === "cancelled" ? "neutral" : "warning"}>{series?.status ?? "not created"}</StatusPill></header>{series && <p><strong>{series.title}</strong> · day {series.dayOfMonth} every {series.interval} month · revision {series.revision} · {series.materializedCount}/{series.occurrenceLimit} governed</p>}{occurrences.length > 0 && <div className="evidence-list">{occurrences.map(item => <p key={item.id}><ShieldCheck size={14}/><strong>#{item.sequence}</strong> {date(item.nominalDueOn)}{item.exceptionAction === "move" && item.effectiveDueOn ? ` → ${date(item.effectiveDueOn)}` : ""} · {item.status}</p>)}</div>}{nextAction && <div className="operator-actions"><button className="primary-action" onClick={() => void act(nextAction)} disabled={pending}>{pending ? <LoaderCircle className="spin" size={15}/> : <CalendarClock size={15}/>} {labels[nextAction]}</button></div>}<p className="operator-note">{data.limitation}</p>{message && <p className="inline-message" role="status">{message}</p>}</section>;
+}
