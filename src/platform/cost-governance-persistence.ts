@@ -1,10 +1,11 @@
 import { createId } from "@paralleldrive/cuid2";
 import { and, asc, eq } from "drizzle-orm";
 import { getPreviewDb } from "../../db";
-import { costGovernanceDecisions, costRateCards, costRateItems, previewEvents, previewOutbox, usageCostEntries } from "../../db/schema";
+import { costGovernanceDecisions, costRateCards, costRateItems, optimisticWriteClaims, previewEvents, previewOutbox, usageCostEntries } from "../../db/schema";
 import type { CostGovernanceCommand } from "@/domain/platform/cost-governance";
 import type { EventEnvelope } from "./events";
 import type { RequestActor } from "./request-actor";
+import { rethrowOptimisticClaimConflict } from "./optimistic-concurrency";
 
 export async function readCostRateCard(tenantId: string, id: string) { const [row] = await getPreviewDb().select().from(costRateCards).where(and(eq(costRateCards.tenantId, tenantId), eq(costRateCards.id, id))).limit(1); return row ?? null; }
 export async function readCostRateItems(tenantId: string, rateCardId: string) { return getPreviewDb().select().from(costRateItems).where(and(eq(costRateItems.tenantId, tenantId), eq(costRateItems.rateCardId, rateCardId))); }
@@ -29,7 +30,15 @@ export async function persistCostGovernance(input: { command: CostGovernanceComm
   const outboxWrite = db.insert(previewOutbox).values({ id: createId(), tenantId: c.tenantId, eventId: input.event.eventId, topic: "athena.cost_governance", payload: input.event, attempts: 0, availableAt: now });
   const decisionWrite = db.insert(costGovernanceDecisions).values({ id: createId(), tenantId: c.tenantId, rateCardId: c.rateCardId, usageEntryId: c.action === "record_usage" ? c.usageEntryId : null, action: c.action, fromStatus: input.fromStatus, toStatus: input.toStatus, reason: c.action === "approve_rate_card" ? c.reason : c.action === "record_usage" ? c.evidence : c.sourceRef, actorId: input.actor.userId, eventId: input.event.eventId, idempotencyKey: c.idempotencyKey, createdAt: now });
   if (c.action === "create_rate_card") await db.batch([db.insert(costRateCards).values({ id: c.rateCardId, tenantId: c.tenantId, name: c.name, currency: c.currency, sourceType: c.sourceType, sourceRef: c.sourceRef, status: "draft", effectiveAt: new Date(c.effectiveAt), revision: 1, createdBy: input.actor.userId, createdAt: now, updatedAt: now }), ...c.rates.map((rate) => db.insert(costRateItems).values({ id: createId(), tenantId: c.tenantId, rateCardId: c.rateCardId, category: rate.category, unit: rate.unit, unitRateMicros: rate.unitRateMicros, createdAt: now })), decisionWrite, eventWrite, outboxWrite] as never);
-  else if (c.action === "approve_rate_card") await db.batch([db.update(costRateCards).set({ status: "approved", revision: c.expectedRevision + 1, approvedBy: input.actor.userId, approvedAt: now, updatedAt: now }).where(and(eq(costRateCards.tenantId, c.tenantId), eq(costRateCards.id, c.rateCardId), eq(costRateCards.revision, c.expectedRevision))), decisionWrite, eventWrite, outboxWrite]);
+  else if (c.action === "approve_rate_card") {
+    try {
+      await db.batch([
+        db.insert(optimisticWriteClaims).values({ id: createId(), tenantId: c.tenantId, aggregateType: "cost_rate_card", aggregateId: c.rateCardId, expectedRevision: c.expectedRevision, claimedRevision: c.expectedRevision + 1, actorId: input.actor.userId, eventId: input.event.eventId, idempotencyKey: c.idempotencyKey, createdAt: now }),
+        db.update(costRateCards).set({ status: "approved", revision: c.expectedRevision + 1, approvedBy: input.actor.userId, approvedAt: now, updatedAt: now }).where(and(eq(costRateCards.tenantId, c.tenantId), eq(costRateCards.id, c.rateCardId), eq(costRateCards.revision, c.expectedRevision))),
+        decisionWrite, eventWrite, outboxWrite,
+      ]);
+    } catch (error) { rethrowOptimisticClaimConflict(error); }
+  }
   else await db.batch([db.insert(usageCostEntries).values({ id: c.usageEntryId, tenantId: c.tenantId, matterId: c.matterId, workflowId: c.workflowId, category: c.category, unit: c.unit, quantity: c.quantity, unitRateMicros: input.unitRateMicros!, costMicros: input.costMicros!, pricingState: c.pricingState, rateCardId: c.rateCardId, providerName: c.providerName, sourceType: c.sourceType, sourceId: c.sourceId, evidence: c.evidence, occurredAt: new Date(c.occurredAt), recordedBy: input.actor.userId, createdAt: now }), decisionWrite, eventWrite, outboxWrite]);
   return { replayed: false, eventId: input.event.eventId };
 }

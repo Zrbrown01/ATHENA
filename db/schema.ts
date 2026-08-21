@@ -5300,3 +5300,13 @@ export const costGovernanceDecisions = sqliteTable(
   },
   (table) => [uniqueIndex("idx_cost_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_cost_decision_history").on(table.tenantId, table.rateCardId, table.createdAt)],
 );
+
+export const optimisticWriteClaims = sqliteTable(
+  "optimistic_write_claims",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), aggregateType: text("aggregate_type").notNull(), aggregateId: text("aggregate_id").notNull(),
+    expectedRevision: integer("expected_revision").notNull(), claimedRevision: integer("claimed_revision").notNull(), actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [uniqueIndex("idx_optimistic_write_claim").on(table.tenantId, table.aggregateType, table.aggregateId, table.expectedRevision), uniqueIndex("idx_optimistic_write_idempotency").on(table.tenantId, table.idempotencyKey)],
+);

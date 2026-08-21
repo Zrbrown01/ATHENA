@@ -4,6 +4,7 @@ import { PILOT_TENANT_ID, pilotContext } from "@/platform/pilot-context";
 import { enforceRateLimit, RateLimitError, rateLimitResponse } from "@/platform/rate-limit-persistence";
 import { requestActor } from "@/platform/request-actor";
 import { assertTrustedWriteOrigin, RequestSecurityError } from "@/platform/request-security";
+import { OptimisticConcurrencyError } from "@/platform/optimistic-concurrency";
 import { AuthorizationError, requireRole } from "@/platform/tenant-context";
 
 const limitation = "Synthetic planning rates and Athena-measured fixture usage only. No provider invoice, client charge, accounting posting, or production cost claim is represented.";
@@ -28,8 +29,8 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof RateLimitError) return rateLimitResponse(error);
     if (error instanceof RequestSecurityError) return Response.json({ error: "Untrusted request origin" }, { status: 403 });
+    if (error instanceof OptimisticConcurrencyError) return Response.json({ error: error.message }, { status: 409 });
     if (error instanceof AuthorizationError) return Response.json({ error: "Access denied" }, { status: 403 });
     return Response.json({ error: error instanceof Error ? error.message : "Cost governance command failed" }, { status: 400 });
   }
 }
-

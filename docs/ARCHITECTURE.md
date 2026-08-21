@@ -19,6 +19,8 @@ Tenant portability archives are assembled server-side by discovering every Drizz
 
 Cost governance uses versioned tenant rate cards and immutable usage entries. Rates and computed totals are stored as integer micro-dollars to prevent floating-point accounting errors; usage remains attributable to workflow and optional matter scope. `estimated`, `provider_verified`, and `not_billable` are distinct states. A synthetic rate card can never produce provider-verified cost, and the current pilot has no provider invoice, client charge, or accounting posting adapter.
 
+Revision checks are enforced both before decision construction and inside the atomic persistence batch. For cost-rate-card approval, Athena first inserts a unique tenant/aggregate/expected-revision claim in the same D1 batch as the guarded current-state update, immutable decision, business event, and outbox write. Two commands may read the same revision, but only one can claim it; the other batch rolls back and returns `409 Conflict`. This closes the read-check/write race for this financial control. Other revisioned aggregates still require equivalent adversarial database-concurrency proof before production authorization.
+
 ## Current state plus history
 
 Athena does not use full event sourcing. The application writes queryable relational current state while also preserving immutable business events, fact observations, audit events, and historical ledgers. Business updates and outgoing events will commit together through the outbox pattern.
