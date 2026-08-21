@@ -10,7 +10,7 @@ Every generated obligation must identify what is required, why, rule/version, du
 
 ## Implemented pilot gates
 
-- Intake opening: attorney, partner, or paralegal may approve a conflict-cleared candidate.
+- Intake opening: an attorney or partner may approve a conflict-cleared, duplicate-resolved, complete candidate. The same atomic decision creates the required exact-version synthetic opening-obligation bundle; a paralegal may prepare intake data but cannot open the matter.
 - Material fact review: attorney, partner, or paralegal with matter access.
 - Authority: attorney or partner with matter access.
 - Report approval and Microsoft handoff: attorney or partner.
@@ -28,6 +28,7 @@ Every accepted command records authenticated actor, event, audit record, idempot
 - Revisioned dependency edges, partner-decided due-date exceptions and waivers, business-day-relative dependent dates, blocking-predecessor completion, and attention/critical/breached escalation acknowledgements now persist atomically with event/outbox evidence. These controls remain explicitly synthetic until California content is attorney approved.
 - Active policy layers resolve the documented firm → client → matter-type → matter precedence chain. Partner-only creation and supersession preserve immutable versions and field-level diffs; deterministic simulations snapshot every applicable layer, the selected layer, calculation trace, and due date. Pending, expired, unacknowledged synthetic, and falsely attorney-approved content fail closed.
 - Full-matter rebuilds replay each obligation from its exact rule version, trigger, dependency chain, and approved exception/waiver. Immutable matched, drifted, and blocked findings require a single-winner partner review; rebuilds never mutate operational legal work.
+- Matter opening fails closed unless both acknowledged synthetic opening rules are present, effective, within review, and deterministically calculated. The assignment-acknowledgment and initial-report obligations preserve the intake candidate as trigger provenance, rule/version/citation, owner, due date, trace, individual event/outbox evidence, and the atomic opening correlation.
 - Versioned retention policies, matter legal-hold schema, and a disposition evaluator that never deletes automatically and requires human review after the retention window.
 - Persisted matter-access policy schema; explicit denies and ethical walls override ordinary matter membership.
 
