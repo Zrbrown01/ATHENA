@@ -10,7 +10,11 @@ Only a partner or firm administrator with existing matter access may place or re
 
 ## Data-plane contract
 
-The shared isolation boundary covers API reads/writes, object bytes, exports, jobs, events, search, AI retrieval, caches, and support. Search, AI retrieval, cache, and support products are not active; their adapters must call this boundary before lookup when implemented. Support additionally requires a current, partner-approved, matter-scoped grant. No standing support or break-glass grant exists in the pilot.
+The shared isolation boundary covers API reads/writes, object bytes, exports, jobs, events, search, AI retrieval, caches, and support. Search, AI retrieval, and cache products are not active; their adapters must call this boundary before lookup when implemented. Support additionally requires a current, partner-approved, matter-scoped grant.
+
+The synthetic support identity is denied ordinary pilot matter membership. A partner or firm administrator can grant 15–240 minutes for one matter, one purpose, and one ticket reference. Expiry is mandatory; revocation is immediate and revision-guarded. An active ethical wall still overrides the grant. The support endpoint returns scope metadata only—never matter facts, documents, work product, export bytes, or client information—and Sites remains owner-only.
+
+Access-review attestations snapshot counts of active walls, unexpired support grants, and allowed/denied decisions for a defined review period. The reviewer records a certified or exceptions-noted outcome and notes. This is control evidence, not proof that an external directory or customer roster was reviewed; directory integration is not connected.
 
 Every persisted matter authorization records an immutable decision containing tenant, actor, matter, data plane, allowed/denied outcome, reason code, request ID, and timestamp. It does not copy document text, medical facts, work product, or other matter content into the control record.
 
@@ -18,4 +22,4 @@ Authenticated write routes use durable, atomic, per-actor/per-action fixed windo
 
 ## Pilot proof
 
-The administration UI uses a synthetic reviewer identity. Tests prove deny-overrides-membership across every defined data plane, cross-tenant cache/job rejection, support grant expiry/scope enforcement, self-wall prevention, stale-release rejection, and terminal placement/release state. This is software control evidence, not a completed access review or independent penetration test.
+The administration UI uses synthetic reviewer and support identities. Tests prove deny-overrides-membership across every defined data plane, cross-tenant cache/job rejection, no-grant/wrong-matter/expired/revoked/walled support denial, self-wall prevention, stale-release rejection, and terminal placement/release state. This is software control evidence, not an independent penetration test.

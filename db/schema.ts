@@ -107,6 +107,38 @@ export const rateLimitWindows = sqliteTable("rate_limit_windows", {
   index("idx_rate_limit_actor").on(table.tenantId, table.actorId, table.windowStartedAt),
 ]);
 
+export const supportAccessGrants = sqliteTable("support_access_grants", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  matterId: text("matter_id").notNull(),
+  supportUserId: text("support_user_id").notNull(),
+  purpose: text("purpose").notNull(),
+  ticketReference: text("ticket_reference").notNull(),
+  status: text("status", { enum: ["active", "revoked"] }).notNull(),
+  approvedBy: text("approved_by").notNull(),
+  approvedAt: integer("approved_at", { mode: "timestamp_ms" }).notNull(),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  revokedBy: text("revoked_by"),
+  revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
+  revocationReason: text("revocation_reason"),
+  revision: integer("revision").notNull().default(1),
+}, (table) => [
+  uniqueIndex("idx_support_grant_scope").on(table.tenantId, table.matterId, table.supportUserId),
+  index("idx_support_grant_active").on(table.tenantId, table.status, table.expiresAt),
+]);
+
+export const accessReviewAttestations = sqliteTable("access_review_attestations", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  periodStartedAt: integer("period_started_at", { mode: "timestamp_ms" }).notNull(),
+  periodEndedAt: integer("period_ended_at", { mode: "timestamp_ms" }).notNull(),
+  outcome: text("outcome", { enum: ["certified", "exceptions_noted"] }).notNull(),
+  notes: text("notes").notNull(),
+  snapshot: text("snapshot", { mode: "json" }).$type<Record<string, number>>().notNull(),
+  reviewerId: text("reviewer_id").notNull(),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_access_review_period").on(table.tenantId, table.periodEndedAt)]);
+
 export const retentionPolicies = sqliteTable("retention_policies", {
   id: text("id").primaryKey(),
   tenantId: text("tenant_id").notNull(),

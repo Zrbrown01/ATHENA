@@ -40,6 +40,8 @@ Persisted ethical walls now support partner-authorized placement and release wit
 
 Matter authorization decisions are recorded without matter content, and every current authenticated write route has a durable per-actor/per-action fixed-window limit. These controls reduce abuse risk but do not replace edge/WAF limits, independent penetration testing, anomaly detection, or a formal access-review program.
 
+Formal pilot support scopes are now time-boxed to 15–240 minutes, matter-specific, purpose/ticket-bound, revocable, and subordinate to ethical walls. The synthetic support identity has no ordinary matter membership, and the only support endpoint returns authorization metadata rather than matter content. Count-only access-review attestations are durable; enterprise-directory reconciliation and real support staffing remain unavailable.
+
 ## Production origin
 
 The canonical application origin is `https://www.athenacms.app`. Production authentication callbacks, CORS/origin validation, content-security policy, secure cookies, email links, and provider webhooks must use an explicit allowlist based on that origin. The apex domain should redirect to the canonical `www` host. Preview deployments must use separate identity callbacks and must never receive production data.

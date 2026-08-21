@@ -77,19 +77,19 @@ Updated: 2026-08-20
 | Search / Ask Athena | Not started / externally blocked | AI is disabled; secure structured/full-text search and source-grounded retrieval remain |
 | Migration Center | Foundation | Deterministic source-ID import event and migration plan; historical adapter/reconciliation/cutover remain |
 | Trust control plane | Foundation | Disabled adapter contract, health states, events/outbox; retries/dead letters/cursors/subscriptions/replay remain |
-| Security/compliance | In progress | Auth headers, owner-only access, origin checks, CSP/secure headers, persisted ethical walls, content-free allow/deny evidence, and durable per-actor/action write throttles. PostgreSQL RLS, support grants, formal access review, edge/WAF limits, restore exercises, and penetration testing remain |
+| Security/compliance | In progress | Auth headers, owner-only access, origin checks, CSP/secure headers, persisted ethical walls, content-free allow/deny evidence, durable write throttles, time-boxed matter-scoped support grants, and count-only review attestations. PostgreSQL RLS, enterprise-directory reconciliation, edge/WAF limits, restore exercises, and penetration testing remain |
 
 ## Security risks requiring resolution
 
 1. Local development uses an explicit synthetic identity; hosted production-mode requests require platform-authenticated identity headers.
 2. D1 does not provide PostgreSQL RLS; multi-tenant production policy enforcement and isolation testing remain required.
 3. Uploaded PDFs remain quarantined because malware scanning and OCR are not connected; deterministic fixture processing never releases an uploaded file.
-4. Support-access grants, formal access review, retention/legal-hold enforcement, edge/WAF throttling, and complete tenant export are not implemented. Application write throttles and ethical-wall enforcement are persisted and tested, but independent validation remains required.
+4. Enterprise directory/role reconciliation, retention/legal-hold enforcement, edge/WAF throttling, and complete tenant export are not implemented. Application support scopes, write throttles, review attestations, and ethical-wall enforcement are persisted and tested, but independent validation remains required.
 5. AI and external integrations are disabled and must remain so until approved.
 
 ## Next implementation slice
 
-1. Formal support-access grants, access-review attestations, edge/WAF policy, and independent isolation validation.
+1. Enterprise directory/role reconciliation, edge/WAF policy, and independent isolation validation.
 2. Attorney-reviewed California rule/holiday content, exception/waiver controls, recurrence, chains, escalation, and readiness records.
 3. Automated outbox scheduling plus external consumer idempotency and reconciliation after provider approval.
 4. Approved malware scanning/OCR pipeline with quarantine release; full-environment restore and incident exercises.

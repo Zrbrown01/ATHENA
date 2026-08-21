@@ -33,6 +33,8 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 | `obligations` | matter-scoped rule snapshot, trigger provenance, calculation trace, owner/revision, and completion or cancellation evidence |
 | `access_decision_events` | content-free immutable allow/deny evidence by tenant, actor, matter, data plane, reason code, request, and time |
 | `rate_limit_windows` | durable atomic per-actor/per-action fixed-window counters and expiry metadata |
+| `support_access_grants` | one synthetic support identity, matter, purpose, ticket, mandatory expiry, approval/revocation actors, status, and revision |
+| `access_review_attestations` | defined review period, reviewer outcome/notes, and a count-only snapshot of active access controls and decisions |
 
 ## Object keys
 
