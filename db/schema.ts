@@ -5310,3 +5310,13 @@ export const optimisticWriteClaims = sqliteTable(
   },
   (table) => [uniqueIndex("idx_optimistic_write_claim").on(table.tenantId, table.aggregateType, table.aggregateId, table.expectedRevision), uniqueIndex("idx_optimistic_write_idempotency").on(table.tenantId, table.idempotencyKey)],
 );
+
+export const automationExecutionHeartbeats = sqliteTable(
+  "automation_execution_heartbeats",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), subsystem: text("subsystem").notNull(), trigger: text("trigger").notNull(),
+    scheduledFor: integer("scheduled_for", { mode: "timestamp_ms" }).notNull(), startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(), finishedAt: integer("finished_at", { mode: "timestamp_ms" }).notNull(),
+    outcome: text("outcome", { enum: ["succeeded", "failed"] }).notNull(), detail: text("detail").notNull(),
+  },
+  (table) => [index("idx_automation_heartbeat_latest").on(table.tenantId, table.subsystem, table.finishedAt)],
+);

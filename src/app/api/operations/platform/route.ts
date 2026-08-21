@@ -11,6 +11,8 @@ import { AuthorizationError, requireRole } from "@/platform/tenant-context";
 import { enforceRateLimit, RateLimitError, rateLimitResponse } from "@/platform/rate-limit-persistence";
 import { readSecurityControlHealth } from "@/platform/security-control-persistence";
 import { runScheduledInternalDelivery } from "@/platform/outbox-scheduler";
+import { assessAutomationHealth } from "@/domain/platform/automation-health";
+import { readLatestCronAutomationHeartbeat } from "@/platform/automation-heartbeat-persistence";
 
 const command = z.object({ action: z.enum(["publish_internal", "replay_dead_letters", "run_internal_cycle"]) });
 
@@ -51,6 +53,7 @@ async function projection() {
   return {
     outbox: await readOutboxHealth(PILOT_TENANT_ID),
     reconciliation: await readLatestOutboxReconciliation(PILOT_TENANT_ID),
+    scheduler: assessAutomationHealth(await readLatestCronAutomationHeartbeat(PILOT_TENANT_ID)),
     retention: evaluateRetention({ createdAt: new Date("2026-08-20T00:00:00.000Z"), asOf: new Date(), policy: policies.retention, activeLegalHold: policies.activeLegalHold }),
     deadline: calculateDeadline("2026-08-20", policies.deadlineRule, new Set(["2026-08-24"])),
     security: await readSecurityControlHealth(PILOT_TENANT_ID),

@@ -7,6 +7,7 @@ import { StatusPill } from "./status-pill";
 interface Projection {
   outbox: { pending: number; leased: number; processed: number; deadLetter: number; oldestReadyAt: string | null; lastError: string | null };
   reconciliation: { outcome: "matched" | "exceptions"; processedMessages: number; checkpoints: number; deliveryReceipts: number; exceptions: number; detail: string; finishedAt: string } | null;
+  scheduler: { status: "healthy" | "stale" | "failed" | "not_connected"; lastScheduledFor: string | null; lastFinishedAt: string | null; detail: string };
   retention: { outcome: "retain" | "held" | "eligible_for_review"; reason: string; policyCode: string; policyVersion: number };
   deadline: { dueDate: string; ruleCode: string; ruleVersion: number; authorityCitation: string; trace: string[] };
   security: { access: { allowed: number; denied: number }; rateLimit: { activeWindows: number; throttledRequests: number; policy: string } };
@@ -47,6 +48,7 @@ export function PlatformOperations() {
     <section className="panel operator-panel"><header><div><h2>Retention guard</h2><p>{data.retention.policyCode}@{data.retention.policyVersion}</p></div><StatusPill tone="success">{data.retention.outcome}</StatusPill></header><p>{data.retention.reason}</p><small>No automated deletion path exists; legal holds override eligibility.</small></section>
     <section className="panel operator-panel"><header><div><h2>Deadline proof</h2><p>{data.deadline.ruleCode}@{data.deadline.ruleVersion}</p></div><StatusPill tone="info">Due {data.deadline.dueDate}</StatusPill></header><p>{data.deadline.authorityCitation}</p><ol>{data.deadline.trace.map((entry) => <li key={entry}>{entry}</li>)}</ol></section>
     <section className="panel operator-panel"><header><div><h2>Access and throttling</h2><p>{data.security.rateLimit.policy}</p></div><StatusPill tone={data.security.access.denied || data.security.rateLimit.throttledRequests ? "warning" : "success"}>{data.security.rateLimit.throttledRequests ? "Throttled" : "Enforced"}</StatusPill></header><dl><div><dt>Allowed</dt><dd>{data.security.access.allowed}</dd></div><div><dt>Denied</dt><dd>{data.security.access.denied}</dd></div><div><dt>Active windows</dt><dd>{data.security.rateLimit.activeWindows}</dd></div><div><dt>Throttled</dt><dd>{data.security.rateLimit.throttledRequests}</dd></div></dl><small>Counts contain identifiers and decision codes only; no matter content is stored in these controls.</small></section>
+    <section className="panel operator-panel"><header><div><h2>Scheduled delivery</h2><p>Five-minute production automation heartbeat</p></div><StatusPill tone={data.scheduler.status === "healthy" ? "success" : data.scheduler.status === "failed" ? "danger" : "warning"}>{data.scheduler.status.replaceAll("_", " ")}</StatusPill></header><p>{data.scheduler.detail}</p><small>{data.scheduler.lastFinishedAt ? `Last finished ${new Date(data.scheduler.lastFinishedAt).toLocaleString()}.` : "A manual cycle never satisfies this production cron control."}</small></section>
     {message && <p className="operator-message" role="status">{message}</p>}
   </div>;
 }
