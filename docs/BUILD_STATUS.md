@@ -58,7 +58,7 @@ Updated: 2026-08-20
 
 | Module | Status | Test/evidence and remaining scope |
 |---|---|---|
-| Intake and conflicts | Functional pilot | Approval persists; extraction, duplicate/alias/relationship search, secured matters, and deadline generation remain fixture-only |
+| Intake and conflicts | Functional golden lifecycle | Preserved deterministic referral creates a durable candidate; possible duplicate, blocking conflict, and missing fields must be individually resolved before matter opening. Every revisioned review persists with event/outbox evidence. Mailbox/OCR/scanner/provider-backed conflict search and initial deadline generation remain blocked/incomplete |
 | Native Matter Graph | Functional golden slice | D1 persists separate Matter/Claim/Injury/ADJ rows, typed relationships, and per-entity deterministic source links; provider imports and the wider case graph remain |
 | Medical and med-legal | Functional pilot | Exact-page QME candidates and review are tested; provider/OCR and full QME/AME cycle remain blocked/incomplete |
 | Documents/evidence | Tested quarantine slice | PDF security tests, tenant R2 keys, checksums, metadata, and compensation; scanning/release, versions, preview, processing, and full export remain |

@@ -41,6 +41,9 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 | `matters`, `claims`, `injuries`, `adjudication_cases` | separate tenant-scoped identities for the live golden matter graph; claims, injuries, and WCAB cases are never convenience fields on Matter |
 | `source_record_links` | entity-level source system/record identity, provider mode, and import time for provenance and idempotent reconciliation |
 | `matter_relationships` | typed graph edges whose endpoints and source provenance are validated before persistence |
+| `intake_candidates` | preserved referral identity, proposed matter scope, extracted core identifiers, missing-field ledger, lifecycle status, and optimistic revision |
+| `intake_match_candidates`, `conflict_findings` | explainable possible-duplicate evidence and separately resolved, source-referenced conflict findings |
+| `intake_review_decisions` | immutable reviewer action, transition, reason, actor, event, and idempotency evidence |
 
 ## Object keys
 

@@ -305,6 +305,47 @@ export const matterRelationships = sqliteTable("matter_relationships", {
   index("idx_matter_relationship_matter").on(table.tenantId, table.matterId),
 ]);
 
+export const intakeCandidates = sqliteTable("intake_candidates", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  proposedMatterId: text("proposed_matter_id").notNull(),
+  sourceType: text("source_type").notNull(),
+  sourceRecordId: text("source_record_id").notNull(),
+  providerMode: text("provider_mode").notNull(),
+  caption: text("caption").notNull(),
+  clientName: text("client_name").notNull(),
+  employerName: text("employer_name").notNull(),
+  applicantName: text("applicant_name").notNull(),
+  claimNumber: text("claim_number"),
+  adjNumber: text("adj_number"),
+  injuryDate: integer("injury_date", { mode: "timestamp_ms" }),
+  missingFields: text("missing_fields", { mode: "json" }).$type<string[]>().notNull(),
+  status: text("status", { enum: ["conflict_review", "missing_information", "ready_to_open", "opened", "rejected"] }).notNull(),
+  revision: integer("revision").notNull().default(1),
+  openedBy: text("opened_by"),
+  openedAt: integer("opened_at", { mode: "timestamp_ms" }),
+  rejectedBy: text("rejected_by"),
+  rejectedAt: integer("rejected_at", { mode: "timestamp_ms" }),
+  rejectionReason: text("rejection_reason"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_intake_source_identity").on(table.tenantId, table.sourceType, table.sourceRecordId),
+  index("idx_intake_tenant_status").on(table.tenantId, table.status, table.updatedAt),
+]);
+
+export const intakeMatchCandidates = sqliteTable("intake_match_candidates", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), intakeCandidateId: text("intake_candidate_id").notNull(), existingMatterId: text("existing_matter_id").notNull(), matchType: text("match_type").notNull(), scoreBasisPoints: integer("score_basis_points").notNull(), evidence: text("evidence", { mode: "json" }).$type<string[]>().notNull(), disposition: text("disposition", { enum: ["possible_duplicate", "ruled_out", "confirmed_duplicate"] }).notNull(), reviewedBy: text("reviewed_by"), reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+}, (table) => [uniqueIndex("idx_intake_match_identity").on(table.tenantId, table.intakeCandidateId, table.existingMatterId)]);
+
+export const conflictFindings = sqliteTable("conflict_findings", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), intakeCandidateId: text("intake_candidate_id").notNull(), subjectName: text("subject_name").notNull(), conflictType: text("conflict_type").notNull(), severity: text("severity", { enum: ["review", "blocking"] }).notNull(), reason: text("reason").notNull(), sourceReference: text("source_reference").notNull(), status: text("status", { enum: ["open", "cleared", "confirmed"] }).notNull(), resolvedBy: text("resolved_by"), resolvedAt: integer("resolved_at", { mode: "timestamp_ms" }), resolutionReason: text("resolution_reason"),
+}, (table) => [index("idx_conflict_candidate_status").on(table.tenantId, table.intakeCandidateId, table.status)]);
+
+export const intakeReviewDecisions = sqliteTable("intake_review_decisions", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), intakeCandidateId: text("intake_candidate_id").notNull(), action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason").notNull(), actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_intake_review_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_intake_review_candidate").on(table.tenantId, table.intakeCandidateId, table.createdAt)]);
+
 export const governanceRules = sqliteTable("governance_rules", {
   id: text("id").primaryKey(),
   tenantId: text("tenant_id").notNull(),

@@ -11,6 +11,7 @@ Every event contains event ID/type/version, tenant, aggregate type/ID, optional 
 | `document.intake_received` | authorized PDF quarantine | title, size, MIME, checksum, classification, scan status |
 | `fact.verified` / `fact.rejected` | human fact review | decision, edit/reason, human authorization |
 | `intake.*` | intake decision | action, reason, human authorization |
+| `intake.candidate_created` / `intake.match_resolved` / `intake.conflict_cleared` / `intake.information_supplied` / `intake.matter_opened` | durable intake lifecycle | content-free transition, gate counts, human authorization, and deterministic provider mode |
 | `authority.*` | authority decision | action, reason, human authorization |
 | `time.*` | time decision | action, reason, human authorization |
 | `report.*` | report decision | action, reason, human authorization |
