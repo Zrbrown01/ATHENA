@@ -18,6 +18,7 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 | Table | Ownership and purpose |
 |---|---|
 | `document_intakes` | tenant/matter-scoped quarantined R2 original metadata and checksum |
+| `document_evidence_records`, `document_derivatives`, `bates_assignments`, `exhibit_assignments`, `production_sets`, `production_set_items`, `document_evidence_decisions` | Immutable original identity and checksum; versioned derivative lineage/page ranges; human approval; Bates/exhibit identity; ordered privilege/confidentiality-reviewed productions; checksummed R2 manifests; and immutable lifecycle decisions |
 | `fact_reviews` | human fact verification/rejection decisions |
 | `workflow_decisions` | intake, authority, time, report, and filing approvals |
 | `jurisdiction_form_definitions`, `filing_packets`, `filing_packet_documents`, `filing_packet_validations`, `filing_packet_decisions` | Versioned jurisdiction content envelope, correction-linked packet revisions, ordered checksum/signature evidence, immutable validation snapshots, and human decisions/status history |
@@ -56,7 +57,7 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 
 ## Object keys
 
-R2 keys begin with the tenant ID. Original uploads use `<tenant>/<matter-or-unassigned>/<document>/original.pdf`. Exports use `<tenant>/exports/<matter>/<export>/matter-archive.tar`. Authorization is checked before metadata lookup and download; object keys are never accepted from the browser.
+R2 keys begin with the tenant ID. Original uploads use `<tenant>/<matter-or-unassigned>/<document>/original.pdf`. Evidence derivatives use `<tenant>/<matter>/<evidence>/derivatives/<derivative>.pdf`; finalized production manifests use `<tenant>/<matter>/production-sets/<set>/manifest.json`, with the approved revision embedded in the checksummed content. Exports use `<tenant>/exports/<matter>/<export>/matter-archive.tar`. Authorization is checked before metadata lookup and download; object keys are never accepted from the browser.
 
 ## Migration rule
 
