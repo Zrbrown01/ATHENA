@@ -25,7 +25,7 @@ import {
 } from "@/platform/request-security";
 import { AuthorizationError } from "@/platform/tenant-context";
 const limitation =
-  "The role catalog, local fixture identity, scoped assignment, suspension, and offboarding evidence are Athena-native. Microsoft Entra SSO/SCIM, MFA claims, directory reconciliation, and automatic session/token revocation are not connected.";
+  "The role catalog, local fixture identity, scoped assignment, deterministic reconciliation, suspension, and offboarding evidence are Athena-native. Microsoft Entra SSO/SCIM, live MFA claims, delta synchronization, and automatic session/token revocation are not connected.";
 export async function GET(request: Request) {
   try {
     const actor = requestActor(request);

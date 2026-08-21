@@ -1,5 +1,11 @@
 "use client";
-import { CheckCircle2, LoaderCircle, UserCog } from "lucide-react";
+import {
+  CheckCircle2,
+  LoaderCircle,
+  RefreshCw,
+  ShieldAlert,
+  UserCog,
+} from "lucide-react";
 import { useState } from "react";
 import { StatusPill } from "./status-pill";
 type P = {
@@ -265,6 +271,236 @@ export function DirectoryOperations() {
           </p>
         )}
       </section>
+      <DirectoryReconciliationOperations
+        connectionId={data.connections[0]?.id ?? null}
+      />
     </div>
+  );
+}
+
+type ReconciliationProjection = {
+  reconciliations: Array<{
+    id: string;
+    status: "clean" | "findings_open" | "reviewed";
+    providerMode: string;
+    snapshotSha256: string;
+    localIdentityCount: number;
+    providerIdentityCount: number;
+    matchedIdentityCount: number;
+    findingCount: number;
+    blockingFindingCount: number;
+    revision: number;
+  }>;
+  reconciliationFindings: Array<{
+    id: string;
+    reconciliationId: string;
+    normalizedEmail: string;
+    code: string;
+    severity: string;
+    status: string;
+    explanation: string;
+  }>;
+  reconciliationReviews: Array<{
+    id: string;
+    reconciliationId: string;
+    outcome: string;
+    notes: string;
+  }>;
+  limitation?: string;
+  error?: string;
+};
+
+function DirectoryReconciliationOperations({
+  connectionId,
+}: {
+  connectionId: string | null;
+}) {
+  const [projection, setProjection] = useState<ReconciliationProjection | null>(
+    null,
+  );
+  const [pending, setPending] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function load() {
+    setPending(true);
+    try {
+      const response = await fetch("/api/admin/directory/reconciliation");
+      const body = (await response.json()) as ReconciliationProjection;
+      if (!response.ok)
+        throw new Error(body.error ?? "Reconciliation load failed");
+      setProjection(body);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Load failed");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function advance() {
+    if (!connectionId) {
+      setMessage("Register the deterministic directory fixture first.");
+      return;
+    }
+    const latest = projection?.reconciliations[0];
+    const body =
+      latest && latest.status !== "reviewed"
+        ? {
+            action: "review_reconciliation",
+            tenantId: "tenant-golden",
+            reconciliationId: latest.id,
+            expectedRevision: latest.revision,
+            outcome:
+              latest.blockingFindingCount > 0
+                ? "exceptions_noted"
+                : "certified",
+            notes:
+              latest.blockingFindingCount > 0
+                ? "Security review accepts these deterministic findings as unresolved exceptions only; no live directory state or remediation is claimed."
+                : "Security review certifies the deterministic snapshot as internally reconciled; no live directory state is claimed.",
+            idempotencyKey: `directory-reconciliation-review-${crypto.randomUUID()}`,
+          }
+        : {
+            action: "run_sandbox_reconciliation",
+            tenantId: "tenant-golden",
+            reconciliationId: `directory-reconciliation-${crypto.randomUUID()}`,
+            connectionId,
+            snapshotAsOf: new Date().toISOString(),
+            fixtureAcknowledged: true,
+            idempotencyKey: `directory-reconciliation-run-${crypto.randomUUID()}`,
+          };
+    setPending(true);
+    try {
+      const response = await fetch("/api/admin/directory/reconciliation", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const next = (await response.json()) as ReconciliationProjection;
+      if (!response.ok)
+        throw new Error(next.error ?? "Reconciliation action failed");
+      setProjection(next);
+      setMessage(
+        body.action === "run_sandbox_reconciliation"
+          ? "Deterministic reconciliation evidence recorded."
+          : "Human reconciliation review recorded.",
+      );
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Operation failed");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  if (!projection)
+    return (
+      <section className="panel operator-load">
+        <RefreshCw size={22} />
+        <div>
+          <h2>Identity and role reconciliation</h2>
+          <p>
+            Compare Athena identities, access state, MFA claims, and active
+            roles with a pinned Entra-shaped sandbox snapshot.
+          </p>
+          <button
+            className="secondary-action"
+            onClick={() => void load()}
+            disabled={pending}
+          >
+            {pending ? (
+              <LoaderCircle className="spin" size={15} />
+            ) : (
+              <RefreshCw size={15} />
+            )}
+            Load reconciliation evidence
+          </button>
+          {message && <p className="inline-message">{message}</p>}
+        </div>
+      </section>
+    );
+
+  const latest = projection.reconciliations[0];
+  const findings = latest
+    ? projection.reconciliationFindings.filter(
+        (finding) => finding.reconciliationId === latest.id,
+      )
+    : [];
+  const review = latest
+    ? projection.reconciliationReviews.find(
+        (item) => item.reconciliationId === latest.id,
+      )
+    : undefined;
+  return (
+    <section className="panel operator-panel">
+      <header>
+        <div>
+          <h2>Identity and role reconciliation</h2>
+          <p>Microsoft Entra · deterministic sandbox only</p>
+        </div>
+        <StatusPill
+          tone={
+            latest?.status === "clean"
+              ? "success"
+              : latest?.status === "reviewed"
+                ? "info"
+                : "danger"
+          }
+        >
+          {latest?.status ?? "not run"}
+        </StatusPill>
+      </header>
+      <p>{projection.limitation}</p>
+      {latest && (
+        <>
+          <p>
+            <strong>
+              {latest.matchedIdentityCount}/{latest.localIdentityCount} local
+              identities matched
+            </strong>{" "}
+            · {latest.providerIdentityCount} provider fixtures ·{" "}
+            {latest.blockingFindingCount} blocking findings
+            <br />
+            <small>
+              Snapshot SHA-256 {latest.snapshotSha256.slice(0, 20)}… · revision{" "}
+              {latest.revision}
+            </small>
+          </p>
+          {findings.map((finding) => (
+            <p key={finding.id}>
+              <ShieldAlert size={14} aria-hidden="true" />{" "}
+              <strong>{finding.code.replaceAll("_", " ")}</strong> ·{" "}
+              {finding.normalizedEmail} · {finding.severity} · {finding.status}
+              <br />
+              <small>{finding.explanation}</small>
+            </p>
+          ))}
+          {review && (
+            <p>
+              <strong>Review:</strong> {review.outcome}
+              <br />
+              <small>{review.notes}</small>
+            </p>
+          )}
+        </>
+      )}
+      <button
+        className="primary-action"
+        onClick={() => void advance()}
+        disabled={pending || !connectionId}
+      >
+        {pending ? (
+          <LoaderCircle className="spin" size={15} />
+        ) : (
+          <CheckCircle2 size={15} />
+        )}
+        {latest && latest.status !== "reviewed"
+          ? "Record human review"
+          : "Run deterministic reconciliation"}
+      </button>
+      {message && (
+        <p className="inline-message" role="status">
+          {message}
+        </p>
+      )}
+    </section>
   );
 }

@@ -85,7 +85,13 @@ test("tablet shell contains wide data surfaces", async ({ page }) => {
   expect(geometry.body).toBe(geometry.viewport);
 });
 
-for (const path of ["/", "/admin/costs", "/admin/exports", "/clients"]) {
+for (const path of [
+  "/",
+  "/admin/costs",
+  "/admin/directory",
+  "/admin/exports",
+  "/clients",
+]) {
   test(`rendered WCAG A/AA checks pass on ${path}`, async ({ page }) => {
     await page.goto(path);
     const results = await renderedAccessibility(page);

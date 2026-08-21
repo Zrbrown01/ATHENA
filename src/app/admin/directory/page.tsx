@@ -9,7 +9,7 @@ export default function DirectoryPage() {
         <ModuleHeader
           eyebrow="ADMINISTRATION"
           title="Identity and role administration"
-          description="Enterprise directory truth, immutable permissions, scoped assignments, immediate suspension, and evidence-backed offboarding."
+          description="Enterprise directory truth, immutable permissions, scoped assignments, drift reconciliation, immediate suspension, and evidence-backed offboarding."
           action={<UserCog size={20} />}
         />
         <DirectoryOperations />

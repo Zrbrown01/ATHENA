@@ -4314,6 +4314,110 @@ export const identityDecisions = sqliteTable(
   ],
 );
 
+export const directoryReconciliationRuns = sqliteTable(
+  "directory_reconciliation_runs",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    connectionId: text("connection_id").notNull(),
+    provider: text("provider", { enum: ["microsoft_entra"] }).notNull(),
+    providerMode: text("provider_mode", {
+      enum: ["deterministic_sandbox", "live"],
+    }).notNull(),
+    status: text("status", {
+      enum: ["clean", "findings_open", "reviewed"],
+    }).notNull(),
+    snapshotAsOf: integer("snapshot_as_of", { mode: "timestamp_ms" }).notNull(),
+    snapshotSha256: text("snapshot_sha256").notNull(),
+    localIdentityCount: integer("local_identity_count").notNull(),
+    providerIdentityCount: integer("provider_identity_count").notNull(),
+    matchedIdentityCount: integer("matched_identity_count").notNull(),
+    findingCount: integer("finding_count").notNull(),
+    blockingFindingCount: integer("blocking_finding_count").notNull(),
+    limitation: text("limitation").notNull(),
+    revision: integer("revision").notNull().default(1),
+    initiatedBy: text("initiated_by").notNull(),
+    eventId: text("event_id").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_directory_reconciliation_connection").on(
+      table.tenantId,
+      table.connectionId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const directoryReconciliationFindings = sqliteTable(
+  "directory_reconciliation_findings",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    reconciliationId: text("reconciliation_id").notNull(),
+    identityId: text("identity_id"),
+    externalObjectId: text("external_object_id"),
+    normalizedEmail: text("normalized_email").notNull(),
+    code: text("code", {
+      enum: [
+        "missing_provider_identity",
+        "unmanaged_provider_identity",
+        "status_drift",
+        "role_drift",
+        "mfa_claim_unverified",
+      ],
+    }).notNull(),
+    severity: text("severity", {
+      enum: ["medium", "high", "critical"],
+    }).notNull(),
+    blocking: integer("blocking", { mode: "boolean" }).notNull(),
+    localValue: text("local_value", { mode: "json" }).$type<unknown>(),
+    providerValue: text("provider_value", { mode: "json" }).$type<unknown>(),
+    explanation: text("explanation").notNull(),
+    status: text("status", { enum: ["open", "accepted_exception"] }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_directory_reconciliation_finding").on(
+      table.tenantId,
+      table.reconciliationId,
+      table.severity,
+    ),
+  ],
+);
+
+export const directoryReconciliationReviews = sqliteTable(
+  "directory_reconciliation_reviews",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    reconciliationId: text("reconciliation_id").notNull(),
+    outcome: text("outcome", {
+      enum: ["certified", "exceptions_noted"],
+    }).notNull(),
+    notes: text("notes").notNull(),
+    openFindingCount: integer("open_finding_count").notNull(),
+    acceptedExceptionCount: integer("accepted_exception_count").notNull(),
+    reviewedBy: text("reviewed_by").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_directory_reconciliation_review_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_directory_reconciliation_review_run").on(
+      table.tenantId,
+      table.reconciliationId,
+      table.reviewedAt,
+    ),
+  ],
+);
+
 export const subprocessors = sqliteTable(
   "subprocessors",
   {
@@ -5037,8 +5141,9 @@ export const dictationArtifacts = sqliteTable(
     providerMode: text("provider_mode", {
       enum: ["not_connected", "deterministic_sandbox"],
     }).notNull(),
-    status: text("status", { enum: ["preserved", "ready", "approved"] })
-      .notNull(),
+    status: text("status", {
+      enum: ["preserved", "ready", "approved"],
+    }).notNull(),
     approvedBy: text("approved_by"),
     approvedAt: integer("approved_at", { mode: "timestamp_ms" }),
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
@@ -5091,9 +5196,21 @@ export const clientPortalAccessRequests = sqliteTable(
     contactName: text("contact_name").notNull(),
     contactEmail: text("contact_email").notNull(),
     purpose: text("purpose").notNull(),
-    requestedExpiresAt: integer("requested_expires_at", { mode: "timestamp_ms" }).notNull(),
-    status: text("status", { enum: ["requested", "identity_verified", "approved", "activation_blocked", "revoked"] }).notNull(),
-    identityProviderMode: text("identity_provider_mode", { enum: ["not_connected", "human_verified_sandbox"] }).notNull(),
+    requestedExpiresAt: integer("requested_expires_at", {
+      mode: "timestamp_ms",
+    }).notNull(),
+    status: text("status", {
+      enum: [
+        "requested",
+        "identity_verified",
+        "approved",
+        "activation_blocked",
+        "revoked",
+      ],
+    }).notNull(),
+    identityProviderMode: text("identity_provider_mode", {
+      enum: ["not_connected", "human_verified_sandbox"],
+    }).notNull(),
     identityEvidence: text("identity_evidence"),
     approvedBy: text("approved_by"),
     approvedAt: integer("approved_at", { mode: "timestamp_ms" }),
@@ -5105,7 +5222,13 @@ export const clientPortalAccessRequests = sqliteTable(
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [index("idx_portal_access_matter_status").on(table.tenantId, table.matterId, table.status)],
+  (table) => [
+    index("idx_portal_access_matter_status").on(
+      table.tenantId,
+      table.matterId,
+      table.status,
+    ),
+  ],
 );
 
 export const clientPortalShareItems = sqliteTable(
@@ -5120,203 +5243,563 @@ export const clientPortalShareItems = sqliteTable(
     title: text("title").notNull(),
     labels: text("labels", { mode: "json" }).$type<string[]>().notNull(),
     outcome: text("outcome", { enum: ["allow", "deny", "redact"] }).notNull(),
-    reasonCodes: text("reason_codes", { mode: "json" }).$type<string[]>().notNull(),
+    reasonCodes: text("reason_codes", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
     policyVersion: integer("policy_version").notNull(),
-    status: text("status", { enum: ["approved_for_share", "blocked", "revoked"] }).notNull(),
+    status: text("status", {
+      enum: ["approved_for_share", "blocked", "revoked"],
+    }).notNull(),
     approvedBy: text("approved_by"),
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
   (table) => [
-    uniqueIndex("idx_portal_share_resource").on(table.tenantId, table.accessRequestId, table.resourceType, table.resourceId),
-    index("idx_portal_share_history").on(table.tenantId, table.accessRequestId, table.createdAt),
+    uniqueIndex("idx_portal_share_resource").on(
+      table.tenantId,
+      table.accessRequestId,
+      table.resourceType,
+      table.resourceId,
+    ),
+    index("idx_portal_share_history").on(
+      table.tenantId,
+      table.accessRequestId,
+      table.createdAt,
+    ),
   ],
 );
 
 export const clientPortalDecisions = sqliteTable(
   "client_portal_decisions",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(),
-    accessRequestId: text("access_request_id").notNull(), action: text("action").notNull(), fromStatus: text("from_status").notNull(),
-    toStatus: text("to_status").notNull(), reason: text("reason").notNull(), actorId: text("actor_id").notNull(),
-    eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    accessRequestId: text("access_request_id").notNull(),
+    action: text("action").notNull(),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
   (table) => [
-    uniqueIndex("idx_portal_decision_idempotency").on(table.tenantId, table.idempotencyKey),
-    index("idx_portal_decision_history").on(table.tenantId, table.accessRequestId, table.createdAt),
+    uniqueIndex("idx_portal_decision_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_portal_decision_history").on(
+      table.tenantId,
+      table.accessRequestId,
+      table.createdAt,
+    ),
   ],
 );
 
 export const telephonyContacts = sqliteTable(
   "telephony_contacts",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id"),
-    contactName: text("contact_name").notNull(), contactNumber: text("contact_number").notNull(), tenantNumber: text("tenant_number").notNull(),
-    smsConsentStatus: text("sms_consent_status", { enum: ["unknown", "opted_in", "opted_out"] }).notNull(),
-    voiceConsentStatus: text("voice_consent_status", { enum: ["unknown", "consented"] }).notNull(),
-    consentEvidence: text("consent_evidence"), recordingAllowed: integer("recording_allowed", { mode: "boolean" }).notNull().default(false),
-    provider: text("provider").notNull(), providerMode: text("provider_mode", { enum: ["not_connected", "human_verified_sandbox"] }).notNull(),
-    status: text("status", { enum: ["configured", "consented", "sms_draft", "sms_approved", "delivery_blocked", "opted_out", "call_logged", "matter_associated", "time_confirmed", "closed"] }).notNull(),
-    candidateTimeId: text("candidate_time_id"), revision: integer("revision").notNull().default(1), createdBy: text("created_by").notNull(),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id"),
+    contactName: text("contact_name").notNull(),
+    contactNumber: text("contact_number").notNull(),
+    tenantNumber: text("tenant_number").notNull(),
+    smsConsentStatus: text("sms_consent_status", {
+      enum: ["unknown", "opted_in", "opted_out"],
+    }).notNull(),
+    voiceConsentStatus: text("voice_consent_status", {
+      enum: ["unknown", "consented"],
+    }).notNull(),
+    consentEvidence: text("consent_evidence"),
+    recordingAllowed: integer("recording_allowed", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    provider: text("provider").notNull(),
+    providerMode: text("provider_mode", {
+      enum: ["not_connected", "human_verified_sandbox"],
+    }).notNull(),
+    status: text("status", {
+      enum: [
+        "configured",
+        "consented",
+        "sms_draft",
+        "sms_approved",
+        "delivery_blocked",
+        "opted_out",
+        "call_logged",
+        "matter_associated",
+        "time_confirmed",
+        "closed",
+      ],
+    }).notNull(),
+    candidateTimeId: text("candidate_time_id"),
+    revision: integer("revision").notNull().default(1),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [uniqueIndex("idx_telephony_contact_number").on(table.tenantId, table.contactNumber), index("idx_telephony_contact_status").on(table.tenantId, table.status, table.updatedAt)],
+  (table) => [
+    uniqueIndex("idx_telephony_contact_number").on(
+      table.tenantId,
+      table.contactNumber,
+    ),
+    index("idx_telephony_contact_status").on(
+      table.tenantId,
+      table.status,
+      table.updatedAt,
+    ),
+  ],
 );
 
 export const telephonyInteractions = sqliteTable(
   "telephony_interactions",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id"), contactId: text("contact_id").notNull(),
-    channel: text("channel", { enum: ["sms", "voice"] }).notNull(), direction: text("direction", { enum: ["inbound", "outbound"] }).notNull(),
-    interactionType: text("interaction_type", { enum: ["message", "help", "stop", "call_metadata"] }).notNull(),
-    body: text("body"), bodySha256: text("body_sha256"), durationSeconds: integer("duration_seconds"), recordingStatus: text("recording_status", { enum: ["not_applicable", "disabled"] }).notNull(),
-    status: text("status", { enum: ["draft", "approved", "blocked_not_connected", "preserved", "filed"] }).notNull(),
-    providerMode: text("provider_mode", { enum: ["not_connected", "human_verified_sandbox"] }).notNull(), deliveryAttempted: integer("delivery_attempted", { mode: "boolean" }).notNull().default(false),
-    approvedBy: text("approved_by"), occurredAt: integer("occurred_at", { mode: "timestamp_ms" }).notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id"),
+    contactId: text("contact_id").notNull(),
+    channel: text("channel", { enum: ["sms", "voice"] }).notNull(),
+    direction: text("direction", { enum: ["inbound", "outbound"] }).notNull(),
+    interactionType: text("interaction_type", {
+      enum: ["message", "help", "stop", "call_metadata"],
+    }).notNull(),
+    body: text("body"),
+    bodySha256: text("body_sha256"),
+    durationSeconds: integer("duration_seconds"),
+    recordingStatus: text("recording_status", {
+      enum: ["not_applicable", "disabled"],
+    }).notNull(),
+    status: text("status", {
+      enum: [
+        "draft",
+        "approved",
+        "blocked_not_connected",
+        "preserved",
+        "filed",
+      ],
+    }).notNull(),
+    providerMode: text("provider_mode", {
+      enum: ["not_connected", "human_verified_sandbox"],
+    }).notNull(),
+    deliveryAttempted: integer("delivery_attempted", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    approvedBy: text("approved_by"),
+    occurredAt: integer("occurred_at", { mode: "timestamp_ms" }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [index("idx_telephony_interaction_history").on(table.tenantId, table.contactId, table.occurredAt)],
+  (table) => [
+    index("idx_telephony_interaction_history").on(
+      table.tenantId,
+      table.contactId,
+      table.occurredAt,
+    ),
+  ],
 );
 
 export const telephonyDecisions = sqliteTable(
   "telephony_decisions",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id"), contactId: text("contact_id").notNull(),
-    action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason").notNull(),
-    actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id"),
+    contactId: text("contact_id").notNull(),
+    action: text("action").notNull(),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [uniqueIndex("idx_telephony_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_telephony_decision_history").on(table.tenantId, table.contactId, table.createdAt)],
+  (table) => [
+    uniqueIndex("idx_telephony_decision_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_telephony_decision_history").on(
+      table.tenantId,
+      table.contactId,
+      table.createdAt,
+    ),
+  ],
 );
 
 export const authorityApprovalRequests = sqliteTable(
   "authority_approval_requests",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(),
-    requestedAmountCents: integer("requested_amount_cents").notNull(), currency: text("currency").notNull(), settlementStructure: text("settlement_structure").notNull(), scope: text("scope").notNull(),
-    includes: text("includes", { mode: "json" }).$type<string[]>().notNull(), excludes: text("excludes", { mode: "json" }).$type<string[]>().notNull(), conditions: text("conditions", { mode: "json" }).$type<string[]>().notNull(),
-    examinerName: text("examiner_name").notNull(), examinerEmail: text("examiner_email").notNull(), examinerOrganization: text("examiner_organization").notNull(),
-    requestedExpiresAt: integer("requested_expires_at", { mode: "timestamp_ms" }).notNull(),
-    status: text("status", { enum: ["draft", "approved_for_delivery", "delivery_blocked", "response_recorded", "declined", "confirmed"] }).notNull(),
-    providerMode: text("provider_mode", { enum: ["not_connected", "human_verified_external"] }).notNull(),
-    approvedBy: text("approved_by"), approvedAt: integer("approved_at", { mode: "timestamp_ms" }), responseId: text("response_id"), ledgerId: text("ledger_id"),
-    revision: integer("revision").notNull().default(1), createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    requestedAmountCents: integer("requested_amount_cents").notNull(),
+    currency: text("currency").notNull(),
+    settlementStructure: text("settlement_structure").notNull(),
+    scope: text("scope").notNull(),
+    includes: text("includes", { mode: "json" }).$type<string[]>().notNull(),
+    excludes: text("excludes", { mode: "json" }).$type<string[]>().notNull(),
+    conditions: text("conditions", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    examinerName: text("examiner_name").notNull(),
+    examinerEmail: text("examiner_email").notNull(),
+    examinerOrganization: text("examiner_organization").notNull(),
+    requestedExpiresAt: integer("requested_expires_at", {
+      mode: "timestamp_ms",
+    }).notNull(),
+    status: text("status", {
+      enum: [
+        "draft",
+        "approved_for_delivery",
+        "delivery_blocked",
+        "response_recorded",
+        "declined",
+        "confirmed",
+      ],
+    }).notNull(),
+    providerMode: text("provider_mode", {
+      enum: ["not_connected", "human_verified_external"],
+    }).notNull(),
+    approvedBy: text("approved_by"),
+    approvedAt: integer("approved_at", { mode: "timestamp_ms" }),
+    responseId: text("response_id"),
+    ledgerId: text("ledger_id"),
+    revision: integer("revision").notNull().default(1),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [index("idx_authority_approval_request_matter").on(table.tenantId, table.matterId, table.status)],
+  (table) => [
+    index("idx_authority_approval_request_matter").on(
+      table.tenantId,
+      table.matterId,
+      table.status,
+    ),
+  ],
 );
 
 export const authorityApprovalResponses = sqliteTable(
   "authority_approval_responses",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), requestId: text("request_id").notNull(),
-    outcome: text("outcome", { enum: ["approved", "modified", "declined"] }).notNull(), amountCents: integer("amount_cents"), currency: text("currency").notNull(), settlementStructure: text("settlement_structure"), scope: text("scope"),
-    includes: text("includes", { mode: "json" }).$type<string[]>().notNull(), excludes: text("excludes", { mode: "json" }).$type<string[]>().notNull(), conditions: text("conditions", { mode: "json" }).$type<string[]>().notNull(), negotiationThresholdCents: integer("negotiation_threshold_cents"),
-    responderName: text("responder_name").notNull(), responderRole: text("responder_role").notNull(), responderOrganization: text("responder_organization").notNull(),
-    effectiveAt: integer("effective_at", { mode: "timestamp_ms" }), expiresAt: integer("expires_at", { mode: "timestamp_ms" }), evidence: text("evidence").notNull(),
-    providerMode: text("provider_mode", { enum: ["human_verified_external"] }).notNull(), verifiedBy: text("verified_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    requestId: text("request_id").notNull(),
+    outcome: text("outcome", {
+      enum: ["approved", "modified", "declined"],
+    }).notNull(),
+    amountCents: integer("amount_cents"),
+    currency: text("currency").notNull(),
+    settlementStructure: text("settlement_structure"),
+    scope: text("scope"),
+    includes: text("includes", { mode: "json" }).$type<string[]>().notNull(),
+    excludes: text("excludes", { mode: "json" }).$type<string[]>().notNull(),
+    conditions: text("conditions", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    negotiationThresholdCents: integer("negotiation_threshold_cents"),
+    responderName: text("responder_name").notNull(),
+    responderRole: text("responder_role").notNull(),
+    responderOrganization: text("responder_organization").notNull(),
+    effectiveAt: integer("effective_at", { mode: "timestamp_ms" }),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }),
+    evidence: text("evidence").notNull(),
+    providerMode: text("provider_mode", {
+      enum: ["human_verified_external"],
+    }).notNull(),
+    verifiedBy: text("verified_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [uniqueIndex("idx_authority_approval_response_request").on(table.tenantId, table.requestId)],
+  (table) => [
+    uniqueIndex("idx_authority_approval_response_request").on(
+      table.tenantId,
+      table.requestId,
+    ),
+  ],
 );
 
 export const structuredAuthorityDecisions = sqliteTable(
   "structured_authority_decisions",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), requestId: text("request_id").notNull(),
-    action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason").notNull(),
-    actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    requestId: text("request_id").notNull(),
+    action: text("action").notNull(),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [uniqueIndex("idx_structured_authority_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_structured_authority_decision_history").on(table.tenantId, table.requestId, table.createdAt)],
+  (table) => [
+    uniqueIndex("idx_structured_authority_decision_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_structured_authority_decision_history").on(
+      table.tenantId,
+      table.requestId,
+      table.createdAt,
+    ),
+  ],
 );
 
 export const scaleAssessments = sqliteTable(
   "scale_assessments",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), environment: text("environment").notNull(),
-    workloadProfile: text("workload_profile").notNull(), status: text("status", { enum: ["measured", "reviewed_with_gaps", "rejected"] }).notNull(),
-    overallOutcome: text("overall_outcome", { enum: ["conditional", "fail"] }).notNull(), blockingGaps: text("blocking_gaps", { mode: "json" }).$type<string[]>().notNull(),
-    maxPageSize: integer("max_page_size").notNull(), outboxBatchLimit: integer("outbox_batch_limit").notNull(), archiveByteLimit: integer("archive_byte_limit").notNull(), archiveRowLimit: integer("archive_row_limit").notNull(),
-    revision: integer("revision").notNull().default(1), reviewedBy: text("reviewed_by"), reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
-    createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    environment: text("environment").notNull(),
+    workloadProfile: text("workload_profile").notNull(),
+    status: text("status", {
+      enum: ["measured", "reviewed_with_gaps", "rejected"],
+    }).notNull(),
+    overallOutcome: text("overall_outcome", {
+      enum: ["conditional", "fail"],
+    }).notNull(),
+    blockingGaps: text("blocking_gaps", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    maxPageSize: integer("max_page_size").notNull(),
+    outboxBatchLimit: integer("outbox_batch_limit").notNull(),
+    archiveByteLimit: integer("archive_byte_limit").notNull(),
+    archiveRowLimit: integer("archive_row_limit").notNull(),
+    revision: integer("revision").notNull().default(1),
+    reviewedBy: text("reviewed_by"),
+    reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [index("idx_scale_assessment_history").on(table.tenantId, table.createdAt)],
+  (table) => [
+    index("idx_scale_assessment_history").on(table.tenantId, table.createdAt),
+  ],
 );
 
 export const scaleMeasurements = sqliteTable(
   "scale_measurements",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), assessmentId: text("assessment_id").notNull(), metricCode: text("metric_code").notNull(),
-    targetMs: integer("target_ms").notNull(), measuredMs: integer("measured_ms"), status: text("status", { enum: ["pass", "fail", "not_measured"] }).notNull(),
-    method: text("method").notNull(), sampleSize: integer("sample_size").notNull(), limitation: text("limitation"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    assessmentId: text("assessment_id").notNull(),
+    metricCode: text("metric_code").notNull(),
+    targetMs: integer("target_ms").notNull(),
+    measuredMs: integer("measured_ms"),
+    status: text("status", {
+      enum: ["pass", "fail", "not_measured"],
+    }).notNull(),
+    method: text("method").notNull(),
+    sampleSize: integer("sample_size").notNull(),
+    limitation: text("limitation"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [uniqueIndex("idx_scale_measurement_metric").on(table.tenantId, table.assessmentId, table.metricCode)],
+  (table) => [
+    uniqueIndex("idx_scale_measurement_metric").on(
+      table.tenantId,
+      table.assessmentId,
+      table.metricCode,
+    ),
+  ],
 );
 
 export const scaleDecisions = sqliteTable(
   "scale_decisions",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), assessmentId: text("assessment_id").notNull(), action: text("action").notNull(),
-    fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason").notNull(), actorId: text("actor_id").notNull(),
-    eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    assessmentId: text("assessment_id").notNull(),
+    action: text("action").notNull(),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [uniqueIndex("idx_scale_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_scale_decision_history").on(table.tenantId, table.assessmentId, table.createdAt)],
+  (table) => [
+    uniqueIndex("idx_scale_decision_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_scale_decision_history").on(
+      table.tenantId,
+      table.assessmentId,
+      table.createdAt,
+    ),
+  ],
 );
 
 export const costRateCards = sqliteTable(
   "cost_rate_cards",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), name: text("name").notNull(), currency: text("currency").notNull(),
-    sourceType: text("source_type", { enum: ["synthetic_estimate", "provider_contract", "client_agreement"] }).notNull(), sourceRef: text("source_ref").notNull(),
-    status: text("status", { enum: ["draft", "approved", "superseded"] }).notNull(), effectiveAt: integer("effective_at", { mode: "timestamp_ms" }).notNull(),
-    revision: integer("revision").notNull().default(1), approvedBy: text("approved_by"), approvedAt: integer("approved_at", { mode: "timestamp_ms" }),
-    createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    name: text("name").notNull(),
+    currency: text("currency").notNull(),
+    sourceType: text("source_type", {
+      enum: ["synthetic_estimate", "provider_contract", "client_agreement"],
+    }).notNull(),
+    sourceRef: text("source_ref").notNull(),
+    status: text("status", {
+      enum: ["draft", "approved", "superseded"],
+    }).notNull(),
+    effectiveAt: integer("effective_at", { mode: "timestamp_ms" }).notNull(),
+    revision: integer("revision").notNull().default(1),
+    approvedBy: text("approved_by"),
+    approvedAt: integer("approved_at", { mode: "timestamp_ms" }),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [index("idx_cost_rate_card_status").on(table.tenantId, table.status, table.effectiveAt)],
+  (table) => [
+    index("idx_cost_rate_card_status").on(
+      table.tenantId,
+      table.status,
+      table.effectiveAt,
+    ),
+  ],
 );
 
 export const costRateItems = sqliteTable(
   "cost_rate_items",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), rateCardId: text("rate_card_id").notNull(), category: text("category").notNull(),
-    unit: text("unit").notNull(), unitRateMicros: integer("unit_rate_micros").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    rateCardId: text("rate_card_id").notNull(),
+    category: text("category").notNull(),
+    unit: text("unit").notNull(),
+    unitRateMicros: integer("unit_rate_micros").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [uniqueIndex("idx_cost_rate_item_unique").on(table.tenantId, table.rateCardId, table.category, table.unit)],
+  (table) => [
+    uniqueIndex("idx_cost_rate_item_unique").on(
+      table.tenantId,
+      table.rateCardId,
+      table.category,
+      table.unit,
+    ),
+  ],
 );
 
 export const usageCostEntries = sqliteTable(
   "usage_cost_entries",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id"), workflowId: text("workflow_id").notNull(),
-    category: text("category").notNull(), unit: text("unit").notNull(), quantity: integer("quantity").notNull(), unitRateMicros: integer("unit_rate_micros").notNull(),
-    costMicros: integer("cost_micros").notNull(), pricingState: text("pricing_state", { enum: ["estimated", "provider_verified", "not_billable"] }).notNull(),
-    rateCardId: text("rate_card_id").notNull(), providerName: text("provider_name").notNull(), sourceType: text("source_type").notNull(), sourceId: text("source_id").notNull(),
-    evidence: text("evidence").notNull(), occurredAt: integer("occurred_at", { mode: "timestamp_ms" }).notNull(), recordedBy: text("recorded_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id"),
+    workflowId: text("workflow_id").notNull(),
+    category: text("category").notNull(),
+    unit: text("unit").notNull(),
+    quantity: integer("quantity").notNull(),
+    unitRateMicros: integer("unit_rate_micros").notNull(),
+    costMicros: integer("cost_micros").notNull(),
+    pricingState: text("pricing_state", {
+      enum: ["estimated", "provider_verified", "not_billable"],
+    }).notNull(),
+    rateCardId: text("rate_card_id").notNull(),
+    providerName: text("provider_name").notNull(),
+    sourceType: text("source_type").notNull(),
+    sourceId: text("source_id").notNull(),
+    evidence: text("evidence").notNull(),
+    occurredAt: integer("occurred_at", { mode: "timestamp_ms" }).notNull(),
+    recordedBy: text("recorded_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [index("idx_usage_cost_tenant_workflow").on(table.tenantId, table.workflowId, table.occurredAt), index("idx_usage_cost_tenant_category").on(table.tenantId, table.category, table.occurredAt)],
+  (table) => [
+    index("idx_usage_cost_tenant_workflow").on(
+      table.tenantId,
+      table.workflowId,
+      table.occurredAt,
+    ),
+    index("idx_usage_cost_tenant_category").on(
+      table.tenantId,
+      table.category,
+      table.occurredAt,
+    ),
+  ],
 );
 
 export const costGovernanceDecisions = sqliteTable(
   "cost_governance_decisions",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), rateCardId: text("rate_card_id").notNull(), usageEntryId: text("usage_entry_id"),
-    action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason").notNull(),
-    actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    rateCardId: text("rate_card_id").notNull(),
+    usageEntryId: text("usage_entry_id"),
+    action: text("action").notNull(),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [uniqueIndex("idx_cost_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_cost_decision_history").on(table.tenantId, table.rateCardId, table.createdAt)],
+  (table) => [
+    uniqueIndex("idx_cost_decision_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_cost_decision_history").on(
+      table.tenantId,
+      table.rateCardId,
+      table.createdAt,
+    ),
+  ],
 );
 
 export const optimisticWriteClaims = sqliteTable(
   "optimistic_write_claims",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), aggregateType: text("aggregate_type").notNull(), aggregateId: text("aggregate_id").notNull(),
-    expectedRevision: integer("expected_revision").notNull(), claimedRevision: integer("claimed_revision").notNull(), actorId: text("actor_id").notNull(),
-    eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    aggregateType: text("aggregate_type").notNull(),
+    aggregateId: text("aggregate_id").notNull(),
+    expectedRevision: integer("expected_revision").notNull(),
+    claimedRevision: integer("claimed_revision").notNull(),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
-  (table) => [uniqueIndex("idx_optimistic_write_claim").on(table.tenantId, table.aggregateType, table.aggregateId, table.expectedRevision), uniqueIndex("idx_optimistic_write_idempotency").on(table.tenantId, table.idempotencyKey)],
+  (table) => [
+    uniqueIndex("idx_optimistic_write_claim").on(
+      table.tenantId,
+      table.aggregateType,
+      table.aggregateId,
+      table.expectedRevision,
+    ),
+    uniqueIndex("idx_optimistic_write_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+  ],
 );
 
 export const automationExecutionHeartbeats = sqliteTable(
   "automation_execution_heartbeats",
   {
-    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), subsystem: text("subsystem").notNull(), trigger: text("trigger").notNull(),
-    scheduledFor: integer("scheduled_for", { mode: "timestamp_ms" }).notNull(), startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(), finishedAt: integer("finished_at", { mode: "timestamp_ms" }).notNull(),
-    outcome: text("outcome", { enum: ["succeeded", "failed"] }).notNull(), detail: text("detail").notNull(),
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    subsystem: text("subsystem").notNull(),
+    trigger: text("trigger").notNull(),
+    scheduledFor: integer("scheduled_for", { mode: "timestamp_ms" }).notNull(),
+    startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(),
+    finishedAt: integer("finished_at", { mode: "timestamp_ms" }).notNull(),
+    outcome: text("outcome", { enum: ["succeeded", "failed"] }).notNull(),
+    detail: text("detail").notNull(),
   },
-  (table) => [index("idx_automation_heartbeat_latest").on(table.tenantId, table.subsystem, table.finishedAt)],
+  (table) => [
+    index("idx_automation_heartbeat_latest").on(
+      table.tenantId,
+      table.subsystem,
+      table.finishedAt,
+    ),
+  ],
 );
