@@ -39,13 +39,13 @@ The cost-rate-card concurrency probe sends two approval commands concurrently af
 
 Request-observability tests prove valid request/W3C trace correlation, query exclusion, dynamic export-route templating, pseudonymous actor references, a bounded operational record, and response correlation/server-timing headers. A local Worker request preserved an explicit request ID, generated a 32-hex trace ID, returned a measured server-timing value, and retained the existing CSP.
 
-Playwright/Chromium E2E proves hydrated search-trigger operation, autofocus, Escape closure, focus restoration, the platform keyboard shortcut, and short-query status messaging. Approved full-page baselines cover the desktop My Work shell and initial cost-governance surface at a fixed 1440×1000 viewport with light theme, reduced motion, locale, and timezone pinned. Baseline review exposed sidebar overflow below the dark shell; the sidebar now owns bounded vertical scrolling and both visual comparisons pass.
+Playwright/Chromium E2E proves hydrated search-trigger operation, autofocus, Escape closure, focus restoration, the platform keyboard shortcut, and short-query status messaging. Approved full-page baselines cover the desktop My Work shell, initial cost-governance surface, and the 390-pixel phone shell with light theme, locale, and timezone pinned. The phone gate proves a hidden-by-default navigation drawer, keyboard Escape closure with trigger-focus restoration, contained wide-table scrolling, and zero page-level horizontal overflow; the tablet gate proves the same page boundary at 820 pixels. Rendered axe-core WCAG A/AA checks, including real color contrast, pass on My Work, cost governance, tenant exports, and clients. These gates found and fixed desktop sidebar overflow, phone rail/content overflow, and insufficient contrast on the shortcut and eyebrow text tokens.
 
 The local integration smoke executes all seven companion API transitions against migrated D1/R2, downloads the export, and verifies seven events plus limitations. The production build enumerates all application/API routes.
 
 ## Remaining gates
 
-Broader browser E2E/visual/device coverage, adversarial database concurrency tests for every remaining revisioned aggregate, independent multi-principal isolation validation, production cron-timestamp verification, external-provider reconciliation, attorney-reviewed deadline content and sourced holiday operations, AI grounding evaluation, migration reconciliation, performance budgets, and backup restore remain required before production.
+Broader browser E2E/visual/device coverage beyond the current desktop/phone/tablet critical surfaces, manual assistive-technology validation, adversarial database concurrency tests for every remaining revisioned aggregate, independent multi-principal isolation validation, production cron-timestamp verification, external-provider reconciliation, attorney-reviewed deadline content and sourced holiday operations, AI grounding evaluation, migration reconciliation, performance budgets, and backup restore remain required before production.
 
 ## Standard checks
 

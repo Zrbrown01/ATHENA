@@ -1,3 +1,5 @@
+"use client";
+
 import {
   BriefcaseBusiness,
   Archive,
@@ -11,6 +13,7 @@ import {
   HardDriveDownload,
   Landmark,
   Mail,
+  Menu,
   Mic2,
   Settings,
   ShieldAlert,
@@ -22,8 +25,10 @@ import {
   UserCog,
   Video,
   WalletCards,
+  X,
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { CommandPalette } from "./command-palette";
 
 const navigation = [
@@ -46,10 +51,33 @@ export function AppShell({
   children: React.ReactNode;
   active?: string;
 }) {
+  const [navigationOpen, setNavigationOpen] = useState(false);
+  const navigationTrigger = useRef<HTMLButtonElement>(null);
+
+  const closeNavigation = (restoreFocus = false) => {
+    setNavigationOpen(false);
+    if (restoreFocus) requestAnimationFrame(() => navigationTrigger.current?.focus());
+  };
+
+  useEffect(() => {
+    if (!navigationOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeNavigation(true);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [navigationOpen]);
+
   return (
     <div className="app-shell">
-      <aside className="sidebar" aria-label="Primary navigation">
-        <Link href="/" className="brand" aria-label="Athena home">
+      <aside className={navigationOpen ? "sidebar mobile-open" : "sidebar"} aria-label="Primary navigation" id="primary-navigation">
+        <div className="mobile-navigation-heading">
+          <span>Navigation</span>
+          <button type="button" aria-label="Close navigation" onClick={() => closeNavigation(true)}>
+            <X aria-hidden="true" size={19} />
+          </button>
+        </div>
+        <Link href="/" className="brand" aria-label="Athena home" onClick={() => closeNavigation()}>
           <span className="brand-mark">A</span>
           <span>
             <strong>ATHENA</strong>
@@ -64,6 +92,7 @@ export function AppShell({
               href={href}
               key={label}
               aria-current={label === active ? "page" : undefined}
+              onClick={() => closeNavigation()}
             >
               <Icon aria-hidden="true" size={17} strokeWidth={1.8} />
               {label}
@@ -79,50 +108,54 @@ export function AppShell({
               <small>No production data</small>
             </span>
           </div>
-          <Link className="nav-item" href="/admin/integrations">
+          <Link className="nav-item" href="/admin/integrations" onClick={() => closeNavigation()}>
             <Settings aria-hidden="true" size={17} /> Administration
           </Link>
-          <Link className="nav-item" href="/admin/platform">
+          <Link className="nav-item" href="/admin/platform" onClick={() => closeNavigation()}>
             <ShieldCheck aria-hidden="true" size={17} /> Platform ops
           </Link>
-          <Link className="nav-item" href="/admin/security">
+          <Link className="nav-item" href="/admin/security" onClick={() => closeNavigation()}>
             <ShieldAlert aria-hidden="true" size={17} /> Security operations
           </Link>
-          <Link className="nav-item" href="/admin/recovery">
+          <Link className="nav-item" href="/admin/recovery" onClick={() => closeNavigation()}>
             <HardDriveDownload aria-hidden="true" size={17} /> Recovery evidence
           </Link>
-          <Link className="nav-item" href="/admin/directory">
+          <Link className="nav-item" href="/admin/directory" onClick={() => closeNavigation()}>
             <UserCog aria-hidden="true" size={17} /> Identity & roles
           </Link>
-          <Link className="nav-item" href="/admin/compliance">
+          <Link className="nav-item" href="/admin/compliance" onClick={() => closeNavigation()}>
             <BadgeCheck aria-hidden="true" size={17} /> Provider compliance
           </Link>
-          <Link className="nav-item" href="/admin/classification">
+          <Link className="nav-item" href="/admin/classification" onClick={() => closeNavigation()}>
             <Tags aria-hidden="true" size={17} /> Data classification
           </Link>
-          <Link className="nav-item" href="/admin/exports">
+          <Link className="nav-item" href="/admin/exports" onClick={() => closeNavigation()}>
             <Archive aria-hidden="true" size={17} /> Tenant exports
           </Link>
-          <Link className="nav-item" href="/admin/costs">
+          <Link className="nav-item" href="/admin/costs" onClick={() => closeNavigation()}>
             <BadgeDollarSign aria-hidden="true" size={17} /> Cost governance
           </Link>
-          <Link className="nav-item" href="/admin/disposition">
+          <Link className="nav-item" href="/admin/disposition" onClick={() => closeNavigation()}>
             <Trash2 aria-hidden="true" size={17} /> Disposition control
           </Link>
-          <Link className="nav-item" href="/admin/migration">
+          <Link className="nav-item" href="/admin/migration" onClick={() => closeNavigation()}>
             <DatabaseZap aria-hidden="true" size={17} /> Migration center
           </Link>
-          <Link className="nav-item" href="/operations/california">
+          <Link className="nav-item" href="/operations/california" onClick={() => closeNavigation()}>
             <Landmark aria-hidden="true" size={17} /> California ops
           </Link>
-          <Link className="nav-item" href="/pilot/release-one">
+          <Link className="nav-item" href="/pilot/release-one" onClick={() => closeNavigation()}>
             <FlaskConical aria-hidden="true" size={17} /> Release 1 pilot
           </Link>
         </div>
       </aside>
+      {navigationOpen ? <button className="mobile-navigation-backdrop" type="button" aria-label="Close navigation" onClick={() => closeNavigation(true)} /> : null}
 
       <div className="workspace">
         <header className="topbar">
+          <button ref={navigationTrigger} className="mobile-nav-trigger" type="button" aria-label="Open navigation" aria-expanded={navigationOpen} aria-controls="primary-navigation" onClick={() => setNavigationOpen(true)}>
+            <Menu aria-hidden="true" size={20} />
+          </button>
           <CommandPalette />
           <div className="topbar-actions">
             <button
