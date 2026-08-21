@@ -11,6 +11,7 @@ Every event contains event ID/type/version, tenant, aggregate type/ID, optional 
 | `document.intake_received` | authorized PDF quarantine | title, size, MIME, checksum, classification, scan status |
 | `document_evidence.*` | original materialization, derivative/provider-block, approval, Bates/exhibit assignment, production assembly/validation/approval/finalization | immutable parent checksum, page range, derivative/version state, review gates, manifest checksum, human authorization, and explicit OCR/AI connection flags |
 | `communication.*` | synthetic inbound preservation, association resolution/undo, draft, approval, blocked delivery | transition identity, human authorization, false Microsoft/provider-delivery flags, and content-free event payload; bodies remain only in matter-scoped message records |
+| `calendar.*` | synthetic docket materialization, reminder acknowledgement, conflict resolution, sync block | local recurrence marker, transition identity, human authorization, and explicit false Microsoft/provider-write flags |
 | `fact.verified` / `fact.rejected` | human fact review | decision, edit/reason, human authorization |
 | `intake.*` | intake decision | action, reason, human authorization |
 | `intake.candidate_created` / `intake.match_resolved` / `intake.conflict_cleared` / `intake.information_supplied` / `intake.matter_opened` | durable intake lifecycle | content-free transition, gate counts, human authorization, and deterministic provider mode |

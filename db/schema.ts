@@ -776,3 +776,78 @@ export const communicationDecisions = sqliteTable("communication_decisions", {
   uniqueIndex("idx_communication_decision_idempotency").on(table.tenantId, table.idempotencyKey),
   index("idx_communication_decision_aggregate").on(table.tenantId, table.aggregateType, table.aggregateId, table.createdAt),
 ]);
+
+export const calendarSeries = sqliteTable("calendar_series", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(),
+  title: text("title").notNull(), recurrenceRule: text("recurrence_rule").notNull(), timezone: text("timezone").notNull(),
+  startsAt: integer("starts_at", { mode: "timestamp_ms" }).notNull(), endsAt: integer("ends_at", { mode: "timestamp_ms" }).notNull(),
+  occurrenceCount: integer("occurrence_count").notNull(), status: text("status", { enum: ["active", "cancelled"] }).notNull(),
+  providerMode: text("provider_mode", { enum: ["deterministic_sandbox", "human_authored", "live"] }).notNull(),
+  revision: integer("revision").notNull().default(1), createdBy: text("created_by").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_calendar_series_matter").on(table.tenantId, table.matterId, table.startsAt)]);
+
+export const calendarEvents = sqliteTable("calendar_events", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(),
+  seriesId: text("series_id"), parentEventId: text("parent_event_id"),
+  eventKind: text("event_kind", { enum: ["hearing", "deposition", "qme_appointment", "deadline", "preparation", "client_call"] }).notNull(),
+  title: text("title").notNull(), startsAt: integer("starts_at", { mode: "timestamp_ms" }).notNull(), endsAt: integer("ends_at", { mode: "timestamp_ms" }).notNull(),
+  allDay: integer("all_day", { mode: "boolean" }).notNull().default(false), timezone: text("timezone").notNull(), location: text("location"),
+  ownerId: text("owner_id").notNull(), status: text("status", { enum: ["scheduled", "completed", "cancelled"] }).notNull(),
+  sourceType: text("source_type").notNull(), sourceId: text("source_id").notNull(), externalProviderId: text("external_provider_id"),
+  revision: integer("revision").notNull().default(1), createdBy: text("created_by").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_calendar_event_matter_time").on(table.tenantId, table.matterId, table.startsAt),
+  index("idx_calendar_event_owner_time").on(table.tenantId, table.ownerId, table.startsAt, table.endsAt),
+]);
+
+export const calendarEventDependencies = sqliteTable("calendar_event_dependencies", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(),
+  parentEventId: text("parent_event_id").notNull(), childEventId: text("child_event_id").notNull(),
+  relationType: text("relation_type", { enum: ["deadline_chain", "preparation_for"] }).notNull(),
+  offsetDays: integer("offset_days").notNull(), calculationBasis: text("calculation_basis").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_calendar_dependency_edge").on(table.tenantId, table.parentEventId, table.childEventId),
+  index("idx_calendar_dependency_matter").on(table.tenantId, table.matterId, table.createdAt),
+]);
+
+export const calendarReminders = sqliteTable("calendar_reminders", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), eventId: text("event_id").notNull(),
+  channel: text("channel", { enum: ["in_app"] }).notNull(), offsetMinutes: integer("offset_minutes").notNull(),
+  remindAt: integer("remind_at", { mode: "timestamp_ms" }).notNull(), status: text("status", { enum: ["scheduled", "acknowledged", "cancelled"] }).notNull(),
+  acknowledgedBy: text("acknowledged_by"), acknowledgedAt: integer("acknowledged_at", { mode: "timestamp_ms" }),
+  revision: integer("revision").notNull().default(1), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_calendar_reminder_due").on(table.tenantId, table.status, table.remindAt)]);
+
+export const calendarConflicts = sqliteTable("calendar_conflicts", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(),
+  eventId: text("event_id").notNull(), conflictingEventId: text("conflicting_event_id").notNull(), conflictType: text("conflict_type", { enum: ["owner_overlap"] }).notNull(),
+  status: text("status", { enum: ["open", "reschedule_required", "accepted_with_reason"] }).notNull(), explanation: text("explanation").notNull(),
+  resolutionReason: text("resolution_reason"), resolvedBy: text("resolved_by"), resolvedAt: integer("resolved_at", { mode: "timestamp_ms" }),
+  revision: integer("revision").notNull().default(1), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_calendar_conflict_pair").on(table.tenantId, table.eventId, table.conflictingEventId),
+  index("idx_calendar_conflict_status").on(table.tenantId, table.status, table.updatedAt),
+]);
+
+export const calendarSyncStates = sqliteTable("calendar_sync_states", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), provider: text("provider", { enum: ["microsoft_365"] }).notNull(),
+  calendarOwnerId: text("calendar_owner_id").notNull(), status: text("status", { enum: ["not_connected", "connected", "revoked", "error"] }).notNull(),
+  providerMode: text("provider_mode", { enum: ["not_connected", "live"] }).notNull(), grantedScopes: text("granted_scopes", { mode: "json" }).$type<string[]>().notNull().default([]),
+  deltaCursor: text("delta_cursor"), subscriptionId: text("subscription_id"), lastSuccessfulSyncAt: integer("last_successful_sync_at", { mode: "timestamp_ms" }),
+  healthDetail: text("health_detail").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  revision: integer("revision").notNull().default(1),
+}, (table) => [uniqueIndex("idx_calendar_sync_owner").on(table.tenantId, table.provider, table.calendarOwnerId)]);
+
+export const calendarDecisions = sqliteTable("calendar_decisions", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(),
+  aggregateType: text("aggregate_type").notNull(), aggregateId: text("aggregate_id").notNull(), action: text("action").notNull(),
+  fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason"),
+  actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_calendar_decision_idempotency").on(table.tenantId, table.idempotencyKey),
+  index("idx_calendar_decision_aggregate").on(table.tenantId, table.aggregateType, table.aggregateId, table.createdAt),
+]);

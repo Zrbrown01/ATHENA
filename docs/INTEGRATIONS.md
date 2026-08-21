@@ -4,7 +4,7 @@ All providers implement health, backfill, reconciliation, revocation, provider e
 
 | Provider | Current mode | Activation evidence required |
 |---|---|---|
-| Microsoft 365 | Not connected; native message/thread/attachment metadata, matter association, draft/approval, and retryable blocked delivery persist without claiming provider IDs, scopes, cursors, sync timestamps, or transmission | app registration, tenant consent, least-privileged mail/calendar scopes, mailbox authorization, attachment sync, subscriptions/delta recovery, revocation, sending, and delivery reconciliation |
+| Microsoft 365 | Not connected; native communication and calendar records persist without claiming provider IDs, scopes, cursors, subscriptions, sync timestamps, transmission, or calendar writes | app registration, tenant consent, least-privileged mail/calendar scopes, mailbox authorization, attachment sync, subscriptions/delta recovery, revocation, sending/calendar writes, and delivery reconciliation |
 | MerusCase | Not connected; deterministic shaped import only | provider relationship, endpoint documentation, OAuth, export samples, source-ID mapping, verified read/write behavior, reconciliation |
 | Malware scanning | Not connected; every upload remains quarantined | approved provider, contract/BAA as applicable, signature/version evidence, release and failure policy |
 | OCR/AI | Production disabled; deterministic fixed QME processor only | approved providers, security/privacy review, BAA/DPA where applicable, model/data-retention controls, source-grounding evaluation |
