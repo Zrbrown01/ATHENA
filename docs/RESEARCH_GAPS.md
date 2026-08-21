@@ -19,7 +19,7 @@
 
 - Design-partner interviews by role, daily workflow observation, billing guideline samples, and migration inventories.
 - Accessibility testing with keyboard and assistive-technology users.
-- Performance/load targets using representative matter/document volumes.
+- Representative multi-user performance/load using production-shaped matter/document volumes. Athena now records a bounded 25,000-row local algorithm audit, but browser/network, production database, event worker, queue, archive streaming, edge/WAF, concurrency, and independent results remain unmeasured.
 - Complete export expectations and client offboarding acceptance.
 
 ## Assurance gaps

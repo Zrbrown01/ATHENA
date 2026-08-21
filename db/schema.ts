@@ -5224,3 +5224,36 @@ export const structuredAuthorityDecisions = sqliteTable(
   },
   (table) => [uniqueIndex("idx_structured_authority_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_structured_authority_decision_history").on(table.tenantId, table.requestId, table.createdAt)],
 );
+
+export const scaleAssessments = sqliteTable(
+  "scale_assessments",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), environment: text("environment").notNull(),
+    workloadProfile: text("workload_profile").notNull(), status: text("status", { enum: ["measured", "reviewed_with_gaps", "rejected"] }).notNull(),
+    overallOutcome: text("overall_outcome", { enum: ["conditional", "fail"] }).notNull(), blockingGaps: text("blocking_gaps", { mode: "json" }).$type<string[]>().notNull(),
+    maxPageSize: integer("max_page_size").notNull(), outboxBatchLimit: integer("outbox_batch_limit").notNull(), archiveByteLimit: integer("archive_byte_limit").notNull(), archiveRowLimit: integer("archive_row_limit").notNull(),
+    revision: integer("revision").notNull().default(1), reviewedBy: text("reviewed_by"), reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+    createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [index("idx_scale_assessment_history").on(table.tenantId, table.createdAt)],
+);
+
+export const scaleMeasurements = sqliteTable(
+  "scale_measurements",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), assessmentId: text("assessment_id").notNull(), metricCode: text("metric_code").notNull(),
+    targetMs: integer("target_ms").notNull(), measuredMs: integer("measured_ms"), status: text("status", { enum: ["pass", "fail", "not_measured"] }).notNull(),
+    method: text("method").notNull(), sampleSize: integer("sample_size").notNull(), limitation: text("limitation"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [uniqueIndex("idx_scale_measurement_metric").on(table.tenantId, table.assessmentId, table.metricCode)],
+);
+
+export const scaleDecisions = sqliteTable(
+  "scale_decisions",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), assessmentId: text("assessment_id").notNull(), action: text("action").notNull(),
+    fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason").notNull(), actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [uniqueIndex("idx_scale_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_scale_decision_history").on(table.tenantId, table.assessmentId, table.createdAt)],
+);

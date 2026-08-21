@@ -69,3 +69,7 @@ A Worker scheduled handler is configured every five minutes to drain only the At
 ## Structured authority approval
 
 `authority_approval.create_request`, `authority_approval.approve_request`, `authority_approval.attempt_delivery`, `authority_approval.record_human_response`, and `authority_approval.confirm_response` preserve the request-to-ledger chain. Events declare secure-page/delivery truth, human verification, and the settlement-readiness recalculation trigger.
+
+## Scale evidence
+
+`scale.run_local_benchmark` and `scale.review_capacity` preserve the bounded local measurement and partner review. Their payloads always declare production readiness, representative load, and independent validation false.
