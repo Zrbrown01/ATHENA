@@ -25,9 +25,10 @@ Every accepted command records authenticated actor, event, audit record, idempot
 - Versioned D1 governance-rule and obligation schemas. Obligations snapshot rule code/version/citation and calculation trace, retain trigger provenance and owner revision, and persist create, reassignment, completion-evidence, and cancellation-reason events through the transactional outbox.
 - Deterministic calendar/business-day calculation with supplied holiday sets, weekend skipping, next-business-day roll, rule/version/citation output, and calculation trace.
 - A persisted synthetic firm-policy rule demonstrates the engine without presenting an unreviewed legal deadline as authoritative. Content status distinguishes `synthetic_sandbox`, `pending_attorney_review`, and `attorney_approved`; pending content is blocked, and sandbox content requires explicit acknowledgement.
+- Revisioned dependency edges, partner-decided due-date exceptions and waivers, business-day-relative dependent dates, blocking-predecessor completion, and attention/critical/breached escalation acknowledgements now persist atomically with event/outbox evidence. These controls remain explicitly synthetic until California content is attorney approved.
 - Versioned retention policies, matter legal-hold schema, and a disposition evaluator that never deletes automatically and requires human review after the retention window.
 - Persisted matter-access policy schema; explicit denies and ethical walls override ordinary matter membership.
 
 ## Required next engine layer
 
-Attorney-reviewed California source content, sourced holiday data operations, exception/waiver workflow, escalation, client/matter overrides, rule simulation, version diff, and deterministic rebuild tests remain to be implemented. No statutory California content is approved in this environment.
+Attorney-reviewed California source content, sourced holiday data operations, client/matter overrides, recurrence, rule simulation, version diff, and deterministic rebuild tests remain to be implemented. No statutory California content is approved in this environment.

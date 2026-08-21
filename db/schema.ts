@@ -2015,7 +2015,7 @@ export const obligations = sqliteTable(
     dueAt: integer("due_at", { mode: "timestamp_ms" }).notNull(),
     ownerId: text("owner_id").notNull(),
     status: text("status", {
-      enum: ["open", "completed", "cancelled"],
+      enum: ["open", "completed", "cancelled", "waived"],
     }).notNull(),
     calculation: text("calculation", { mode: "json" })
       .$type<string[]>()
@@ -2037,6 +2037,114 @@ export const obligations = sqliteTable(
       table.tenantId,
       table.status,
       table.dueAt,
+    ),
+  ],
+);
+
+export const obligationDependencies = sqliteTable(
+  "obligation_dependencies",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    predecessorObligationId: text("predecessor_obligation_id").notNull(),
+    successorObligationId: text("successor_obligation_id").notNull(),
+    relationType: text("relation_type", {
+      enum: ["preparation_before", "follow_up_after"],
+    }).notNull(),
+    offsetBusinessDays: integer("offset_business_days").notNull(),
+    blocksPredecessorCompletion: integer("blocks_predecessor_completion", {
+      mode: "boolean",
+    }).notNull(),
+    calculation: text("calculation", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    reason: text("reason").notNull(),
+    createdBy: text("created_by").notNull(),
+    eventId: text("event_id").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_obligation_dependency_edge").on(
+      table.tenantId,
+      table.predecessorObligationId,
+      table.successorObligationId,
+    ),
+    index("idx_obligation_dependency_predecessor").on(
+      table.tenantId,
+      table.matterId,
+      table.predecessorObligationId,
+    ),
+  ],
+);
+
+export const obligationExceptions = sqliteTable(
+  "obligation_exceptions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    obligationId: text("obligation_id").notNull(),
+    exceptionType: text("exception_type", {
+      enum: ["due_date_exception", "waiver"],
+    }).notNull(),
+    status: text("status", {
+      enum: ["requested", "approved", "denied", "revoked"],
+    }).notNull(),
+    proposedDueAt: integer("proposed_due_at", { mode: "timestamp_ms" }),
+    reason: text("reason").notNull(),
+    authorityBasis: text("authority_basis").notNull(),
+    decisionReason: text("decision_reason"),
+    revision: integer("revision").notNull().default(1),
+    requestedBy: text("requested_by").notNull(),
+    requestedAt: integer("requested_at", { mode: "timestamp_ms" }).notNull(),
+    decidedBy: text("decided_by"),
+    decidedAt: integer("decided_at", { mode: "timestamp_ms" }),
+    requestEventId: text("request_event_id").notNull(),
+    decisionEventId: text("decision_event_id"),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_obligation_exception_status").on(
+      table.tenantId,
+      table.matterId,
+      table.obligationId,
+      table.status,
+    ),
+  ],
+);
+
+export const obligationEscalations = sqliteTable(
+  "obligation_escalations",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    obligationId: text("obligation_id").notNull(),
+    level: text("level", {
+      enum: ["attention", "critical", "breached"],
+    }).notNull(),
+    status: text("status", { enum: ["open", "acknowledged"] }).notNull(),
+    evaluatedAt: integer("evaluated_at", { mode: "timestamp_ms" }).notNull(),
+    dueAt: integer("due_at", { mode: "timestamp_ms" }).notNull(),
+    businessDaysRemaining: integer("business_days_remaining").notNull(),
+    basis: text("basis").notNull(),
+    response: text("response"),
+    revision: integer("revision").notNull().default(1),
+    createdBy: text("created_by").notNull(),
+    acknowledgedBy: text("acknowledged_by"),
+    acknowledgedAt: integer("acknowledged_at", { mode: "timestamp_ms" }),
+    eventId: text("event_id").notNull(),
+    acknowledgmentEventId: text("acknowledgment_event_id"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_obligation_escalation_status").on(
+      table.tenantId,
+      table.matterId,
+      table.obligationId,
+      table.status,
     ),
   ],
 );

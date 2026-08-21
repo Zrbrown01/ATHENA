@@ -1,11 +1,12 @@
 import { createId } from "@paralleldrive/cuid2";
 import { and, desc, eq } from "drizzle-orm";
 import { getPreviewDb } from "../../db";
-import { governanceRules, obligations, previewEvents, previewOutbox } from "../../db/schema";
+import { governanceRules, obligations, optimisticWriteClaims, previewEvents, previewOutbox } from "../../db/schema";
 import type { ObligationCommand, ObligationStatus } from "@/domain/governance/obligation";
 import type { DeadlineResult, DeadlineRule } from "@/domain/governance/deadline";
 import type { EventEnvelope } from "./events";
 import type { RequestActor } from "./request-actor";
+import { rethrowOptimisticClaimConflict } from "./optimistic-concurrency";
 
 export async function readObligationRule(tenantId: string, code: string) {
   const db = getPreviewDb();
@@ -65,10 +66,13 @@ export async function persistObligationDecision(input: {
     const current = await readObligation(command.tenantId, command.matterId, command.obligationId);
     if (!current || current.status !== "open" || current.revision !== command.expectedRevision) throw new Error("Obligation changed; refresh before retrying");
     const patch = transitionPatch(command, input.actor.userId, now, current.revision + 1);
-    await db.batch([
-      db.update(obligations).set(patch).where(and(eq(obligations.tenantId, command.tenantId), eq(obligations.matterId, command.matterId), eq(obligations.id, command.obligationId), eq(obligations.status, "open"), eq(obligations.revision, command.expectedRevision))),
-      eventWrite, outboxWrite,
-    ]);
+    try {
+      await db.batch([
+        db.insert(optimisticWriteClaims).values({ id: createId(), tenantId: command.tenantId, aggregateType: "obligation", aggregateId: command.obligationId, expectedRevision: command.expectedRevision, claimedRevision: command.expectedRevision + 1, actorId: input.actor.userId, eventId: input.event.eventId, idempotencyKey: command.idempotencyKey, createdAt: now }),
+        db.update(obligations).set(patch).where(and(eq(obligations.tenantId, command.tenantId), eq(obligations.matterId, command.matterId), eq(obligations.id, command.obligationId), eq(obligations.status, "open"), eq(obligations.revision, command.expectedRevision))),
+        eventWrite, outboxWrite,
+      ]);
+    } catch (error) { rethrowOptimisticClaimConflict(error); }
   }
   return { replayed: false };
 }

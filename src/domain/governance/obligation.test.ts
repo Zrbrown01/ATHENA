@@ -26,6 +26,8 @@ describe("obligation lifecycle policy", () => {
     const raw = { action: "complete", tenantId: "tenant-golden", matterId: "matter-1", obligationId: "obl-1", expectedRevision: 2, evidence: "Reviewed source pages 27–31", idempotencyKey: "obligation-complete-0001" };
     expect(decideObligation({ context, raw, current: { status: "open", revision: 2, ownerId: "attorney-1" } }).event.eventType).toBe("obligation.completed");
     expect(() => decideObligation({ context, raw, current: { status: "open", revision: 3, ownerId: "attorney-1" } })).toThrow(/refresh/);
+    expect(() => decideObligation({ context, raw, current: { status: "open", revision: 2, ownerId: "attorney-1" }, pendingExceptionCount: 1 })).toThrow(/pending exception/);
+    expect(() => decideObligation({ context, raw, current: { status: "open", revision: 2, ownerId: "attorney-1" }, openBlockingDependencyCount: 1 })).toThrow(/dependent obligation/);
   });
 
   it("blocks cross-tenant access and terminal-state mutation", () => {

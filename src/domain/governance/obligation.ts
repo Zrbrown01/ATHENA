@@ -3,7 +3,7 @@ import { createEvent } from "@/platform/events";
 import { authorizeMatter, requireRole, type TenantContext } from "@/platform/tenant-context";
 import type { DeadlineResult } from "./deadline";
 
-export type ObligationStatus = "open" | "completed" | "cancelled";
+export type ObligationStatus = "open" | "completed" | "cancelled" | "waived";
 export type GovernanceContentStatus = "synthetic_sandbox" | "pending_attorney_review" | "attorney_approved";
 
 export const obligationCommand = z.discriminatedUnion("action", [
@@ -19,6 +19,8 @@ export function decideObligation(input: {
   context: TenantContext;
   raw: unknown;
   current?: { status: ObligationStatus; revision: number; ownerId: string } | null;
+  pendingExceptionCount?: number;
+  openBlockingDependencyCount?: number;
   rule?: { code: string; version: number; contentStatus: GovernanceContentStatus } | null;
   deadline?: DeadlineResult;
 }) {
@@ -34,6 +36,8 @@ export function decideObligation(input: {
     if (!input.current) throw new Error("Obligation was not found");
     if (input.current.status !== "open") throw new Error("Only open obligations can be changed");
     if (input.current.revision !== command.expectedRevision) throw new Error("Obligation changed; refresh before retrying");
+    if ((input.pendingExceptionCount ?? 0) > 0) throw new Error("Resolve the pending exception request before changing the obligation");
+    if (command.action === "complete" && (input.openBlockingDependencyCount ?? 0) > 0) throw new Error("Complete every blocking dependent obligation first");
     if (command.action === "reassign" && input.current.ownerId === command.ownerId) throw new Error("Choose a different owner");
   }
 
