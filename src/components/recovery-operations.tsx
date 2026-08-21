@@ -32,7 +32,8 @@ type P = {
   limitation?: string;
   error?: string;
 };
-const E = "recovery-local-proof-001";
+const E = "recovery-local-proof-002";
+const SNAPSHOT = "snapshot-local-20260821-002";
 export function RecoveryOperations() {
   const [data, setData] = useState<P | null>(null),
     [pending, setPending] = useState(false),
@@ -62,16 +63,16 @@ export function RecoveryOperations() {
       body = {
         action: "register_local_snapshot",
         ...shared,
-        snapshotId: "snapshot-local-20260821-001",
+        snapshotId: SNAPSHOT,
         scope:
           "Local owner-only D1 pilot export; no provider backup or production restore is represented.",
         objectRef:
-          "local-only:.wrangler/athena-local-backup.sql (not uploaded)",
+          "local-only:.wrangler/recovery/athena-local-backup-v54.sql (not uploaded)",
         snapshotSha256:
-          "93647434eef8daaecbb3cd586e7a6bf2295c9fd0fa6dbb5cdedf393ef2e551da",
-        byteSize: 617968,
-        tableCount: 122,
-        dataAsOf: "2026-08-21T03:05:00.000Z",
+          "d842e35f7e852a9b6e0a85ce21bd4dc0df96cd096d902176adb0e9ee2ee86482",
+        byteSize: 1041015,
+        tableCount: 174,
+        dataAsOf: "2026-08-21T05:52:00.000Z",
         localExportAcknowledged: true,
       };
     else if (e.status === "planned")
@@ -95,12 +96,12 @@ export function RecoveryOperations() {
         reason:
           "All required local restore checks matched the checksum-pinned export manifest.",
         checks: [
-          ["table_count", "122"],
-          ["event_count", "146"],
-          ["outbox_count", "146"],
+          ["table_count", "174"],
+          ["event_count", "237"],
+          ["outbox_count", "237"],
           [
             "snapshot_checksum",
-            "93647434eef8daaecbb3cd586e7a6bf2295c9fd0fa6dbb5cdedf393ef2e551da",
+            "d842e35f7e852a9b6e0a85ce21bd4dc0df96cd096d902176adb0e9ee2ee86482",
           ],
           ["tenant_scope", "1"],
         ].map(([code, value]) => ({
@@ -166,7 +167,7 @@ export function RecoveryOperations() {
       </section>
     );
   const e = data.exercises.find((x) => x.id === E),
-    s = data.snapshots.find((x) => x.id === "snapshot-local-20260821-001");
+    s = data.snapshots.find((x) => x.id === SNAPSHOT);
   return (
     <section className="panel operator-panel">
       <header>

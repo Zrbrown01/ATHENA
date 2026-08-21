@@ -14,6 +14,7 @@
     "db:generate:postgres": "drizzle-kit generate --config drizzle.postgres.config.ts",
     "db:migrate:local": "wrangler d1 migrations apply athena-preview --local --persist-to .wrangler/state --config wrangler.local.jsonc",
     "db:backup:local": "wrangler d1 export athena-preview --local --config wrangler.local.jsonc --output .wrangler/athena-local-backup.sql",
+    "db:recovery:verify": "sh scripts/verify-local-recovery.sh",
     "db:migrate:postgres": "drizzle-kit migrate --config drizzle.postgres.config.ts",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "lint": "eslint .",

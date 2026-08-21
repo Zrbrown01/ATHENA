@@ -78,7 +78,13 @@ Local backup command:
 npm run db:backup:local
 ```
 
-The generated backup remains under the ignored `.wrangler/` directory. Production backup and restore evidence is still a launch gate.
+Repeatable disposable restore verification:
+
+```bash
+npm run db:recovery:verify
+```
+
+The verification command exports only the local D1 database, restores it into a temporary SQLite database, checks the full expected application-table and migration counts, verifies event/outbox parity and single-tenant scope, runs SQLite integrity and foreign-key checks, prints a checksum-pinned JSON manifest, and removes the temporary files. Production/provider backup and restore evidence is still a launch gate.
 
 ## Product loop
 

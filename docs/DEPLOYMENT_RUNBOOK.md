@@ -75,7 +75,7 @@ TXT _cf-custom-hostname.www -> 62406762-1264-4515-b2b8-b8fe5874a50e
 
 ## Backup and restore evidence
 
-- Local D1: `npm run db:backup:local` writes an ignored SQL export beneath `.wrangler/`. Restore only into a disposable local database, reapply migrations, and compare table counts, event IDs, export checksums, and workflow stages.
+- Local D1: `npm run db:recovery:verify` exports only local D1, restores into disposable SQLite, verifies the expected application-table and migration counts, event/outbox parity, tenant scope, integrity, and foreign keys, prints a checksum-pinned manifest, and removes its temporary files.
 - Target PostgreSQL: use an encrypted managed snapshot plus `pg_dump --format=custom`; restore into an isolated recovery environment and run tenant/isolation, checksum, event/outbox, and export reconciliation.
 - R2/object storage: require provider versioning/replication or approved backup, inventory/checksum manifests, tenant-scoped restore, and periodic sample recovery.
 - A backup configuration is not evidence. Record restore date, operator, source point, recovery environment, duration, checks, exceptions, and approval.
