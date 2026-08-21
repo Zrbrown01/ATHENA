@@ -647,3 +647,132 @@ export const auditRecords = sqliteTable("audit_records", {
   uniqueIndex("idx_audit_tenant_request").on(table.tenantId, table.requestId),
   index("idx_audit_tenant_resource").on(table.tenantId, table.resourceType, table.resourceId, table.createdAt),
 ]);
+
+export const mailboxConnections = sqliteTable("mailbox_connections", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  provider: text("provider", { enum: ["microsoft_365"] }).notNull(),
+  mailboxAddress: text("mailbox_address").notNull(),
+  status: text("status", { enum: ["not_connected", "connected", "revoked", "error"] }).notNull(),
+  providerMode: text("provider_mode", { enum: ["not_connected", "live"] }).notNull(),
+  grantedScopes: text("granted_scopes", { mode: "json" }).$type<string[]>().notNull().default([]),
+  deltaCursor: text("delta_cursor"),
+  lastSuccessfulSyncAt: integer("last_successful_sync_at", { mode: "timestamp_ms" }),
+  healthDetail: text("health_detail").notNull(),
+  createdBy: text("created_by").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_mailbox_tenant_address").on(table.tenantId, table.mailboxAddress),
+  index("idx_mailbox_tenant_status").on(table.tenantId, table.status, table.updatedAt),
+]);
+
+export const communicationThreads = sqliteTable("communication_threads", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  mailboxConnectionId: text("mailbox_connection_id").notNull(),
+  providerThreadId: text("provider_thread_id"),
+  subject: text("subject").notNull(),
+  participants: text("participants", { mode: "json" }).$type<string[]>().notNull(),
+  matterId: text("matter_id"),
+  associationStatus: text("association_status", { enum: ["unreviewed", "suggested", "filed", "excluded"] }).notNull(),
+  autoFilingExcluded: integer("auto_filing_excluded", { mode: "boolean" }).notNull().default(false),
+  messageCount: integer("message_count").notNull().default(0),
+  lastMessageAt: integer("last_message_at", { mode: "timestamp_ms" }).notNull(),
+  revision: integer("revision").notNull().default(1),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_communication_thread_matter").on(table.tenantId, table.matterId, table.lastMessageAt),
+  index("idx_communication_thread_review").on(table.tenantId, table.associationStatus, table.lastMessageAt),
+]);
+
+export const communicationMessages = sqliteTable("communication_messages", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  threadId: text("thread_id").notNull(),
+  matterId: text("matter_id"),
+  providerMessageId: text("provider_message_id"),
+  internetMessageId: text("internet_message_id"),
+  direction: text("direction", { enum: ["inbound", "outbound"] }).notNull(),
+  fromAddress: text("from_address").notNull(),
+  toAddresses: text("to_addresses", { mode: "json" }).$type<string[]>().notNull(),
+  ccAddresses: text("cc_addresses", { mode: "json" }).$type<string[]>().notNull().default([]),
+  subject: text("subject").notNull(),
+  bodyText: text("body_text").notNull(),
+  bodySha256: text("body_sha256").notNull(),
+  receivedOrDraftedAt: integer("received_or_drafted_at", { mode: "timestamp_ms" }).notNull(),
+  status: text("status", { enum: ["preserved", "draft", "approved", "blocked_not_connected", "sent", "failed"] }).notNull(),
+  providerMode: text("provider_mode", { enum: ["deterministic_sandbox", "human_authored", "not_connected", "live"] }).notNull(),
+  deliveryAttempted: integer("delivery_attempted", { mode: "boolean" }).notNull().default(false),
+  approvedBy: text("approved_by"),
+  approvedAt: integer("approved_at", { mode: "timestamp_ms" }),
+  revision: integer("revision").notNull().default(1),
+  createdBy: text("created_by").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_communication_message_provider").on(table.tenantId, table.providerMessageId),
+  index("idx_communication_message_thread").on(table.tenantId, table.threadId, table.receivedOrDraftedAt),
+  index("idx_communication_message_matter").on(table.tenantId, table.matterId, table.receivedOrDraftedAt),
+]);
+
+export const communicationAttachments = sqliteTable("communication_attachments", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  threadId: text("thread_id").notNull(),
+  messageId: text("message_id").notNull(),
+  matterId: text("matter_id"),
+  fileName: text("file_name").notNull(),
+  mimeType: text("mime_type").notNull(),
+  byteSize: integer("byte_size").notNull(),
+  sha256: text("sha256").notNull(),
+  providerAttachmentId: text("provider_attachment_id"),
+  sourceObjectKey: text("source_object_key"),
+  extractionStatus: text("extraction_status", { enum: ["preserved_metadata", "quarantined", "released", "blocked_not_connected"] }).notNull(),
+  documentEvidenceId: text("document_evidence_id"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_communication_attachment_message").on(table.tenantId, table.messageId, table.id),
+  index("idx_communication_attachment_thread").on(table.tenantId, table.threadId, table.createdAt),
+]);
+
+export const matterAssociationCandidates = sqliteTable("matter_association_candidates", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  threadId: text("thread_id").notNull(),
+  messageId: text("message_id").notNull(),
+  suggestedMatterId: text("suggested_matter_id").notNull(),
+  targetMatterId: text("target_matter_id"),
+  signals: text("signals", { mode: "json" }).$type<string[]>().notNull(),
+  confidenceBasis: text("confidence_basis").notNull(),
+  status: text("status", { enum: ["pending", "filed", "do_not_file", "excluded", "undone"] }).notNull(),
+  resolutionReason: text("resolution_reason"),
+  resolvedBy: text("resolved_by"),
+  resolvedAt: integer("resolved_at", { mode: "timestamp_ms" }),
+  revision: integer("revision").notNull().default(1),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_association_candidate_message").on(table.tenantId, table.messageId),
+  index("idx_association_candidate_review").on(table.tenantId, table.status, table.updatedAt),
+]);
+
+export const communicationDecisions = sqliteTable("communication_decisions", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  matterId: text("matter_id"),
+  aggregateType: text("aggregate_type").notNull(),
+  aggregateId: text("aggregate_id").notNull(),
+  action: text("action").notNull(),
+  fromStatus: text("from_status").notNull(),
+  toStatus: text("to_status").notNull(),
+  reason: text("reason"),
+  actorId: text("actor_id").notNull(),
+  eventId: text("event_id").notNull(),
+  idempotencyKey: text("idempotency_key").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_communication_decision_idempotency").on(table.tenantId, table.idempotencyKey),
+  index("idx_communication_decision_aggregate").on(table.tenantId, table.aggregateType, table.aggregateId, table.createdAt),
+]);
