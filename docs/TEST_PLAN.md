@@ -27,7 +27,7 @@ Classification tests table-drive all nine planes, search/download restrictions, 
 
 Tenant-portability tests prove that missing schema tables or original objects force `partial`, completeness requires full coverage, partner role and tenant isolation are enforced, and every declared archive entry is read back with exact byte-size/SHA-256 verification. The initial partial proof exposed the 118-table gap; the dynamic serializer then built a 1,034,752-byte TAR with 11 entries, 12 categories, all 150 current tables, zero available originals, no missing items, a matching archive SHA-256, idempotent replay, and a foreign-tenant 403.
 
-Deposition tests prove governance approval, ordered lifecycle states, an honest Noted block with zero provider attempt, role/tenant/matter gates, and synthetic transcript return. The API proof reached closure revision 7 with seven decisions/events/outbox records, a human-verified calendar identity, and the pinned synthetic transcript SHA-256; subsequent deposition, dictation, and client-portal migrations automatically increased tenant-export coverage to all 159 tables.
+Deposition tests prove governance approval, ordered lifecycle states, an honest Noted block with zero provider attempt, role/tenant/matter gates, and synthetic transcript return. The API proof reached closure revision 7 with seven decisions/events/outbox records, a human-verified calendar identity, and the pinned synthetic transcript SHA-256; subsequent deposition, dictation, client-portal, and telephony migrations automatically increased tenant-export coverage to all 162 tables.
 
 The local integration smoke executes all seven companion API transitions against migrated D1/R2, downloads the export, and verifies seven events plus limitations. The production build enumerates all application/API routes.
 
@@ -61,3 +61,11 @@ Automated browser E2E/visual regression, adversarial database concurrency tests,
 - Prove activation stops with external login, identity connection, and invitation delivery all false.
 - Prove attorney role, tenant, matter, revision, expiry, and revocation gates.
 - Verify seven persisted decisions/events/outbox records and revocation of every previously allowed share item.
+
+## Telephony and SMS lifecycle
+
+- Prove current SMS opt-in and voice consent, with recording disabled, before communication artifacts may advance.
+- Prove attorney review precedes the honest disconnected SMS handoff and `deliveryAttempted` remains false.
+- Prove human-recorded HELP and STOP evidence, immediate opt-out suppression, and no later SMS transition.
+- Prove non-recorded call metadata, attorney matter association, and explicit time confirmation.
+- Prove ordering, revision, role, tenant, and matter gates; verify eleven decisions/events/outbox records through closure.

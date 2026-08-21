@@ -1,0 +1,36 @@
+"use client";
+import { CheckCircle2, LoaderCircle, PhoneOff } from "lucide-react";
+import { useState } from "react";
+import { StatusPill } from "./status-pill";
+type Projection = { contacts: Array<{ id: string; contactName: string; contactNumber: string; tenantNumber: string; smsConsentStatus: string; voiceConsentStatus: string; recordingAllowed: boolean; providerMode: string; status: string; revision: number; candidateTimeId: string | null }>; interactions: Array<{ id: string; contactId: string; channel: string; interactionType: string; status: string; durationSeconds: number | null; recordingStatus: string; deliveryAttempted: boolean }>; decisions: Array<{ id: string; contactId: string; action: string }>; times: Array<{ id: string; runId: string; minutes: number; status: string }>; limitation?: string; error?: string };
+const CONTACT = "telephony-contact-rivera-001", shared = { tenantId: "tenant-golden", matterId: "matter-golden-001", contactId: CONTACT };
+export function TelephonyOperations() {
+  const [data, setData] = useState<Projection | null>(null), [pending, setPending] = useState(false), [message, setMessage] = useState<string | null>(null);
+  async function request(body?: Record<string, unknown>) { const response = await fetch("/api/telephony", { method: body ? "POST" : "GET", headers: body ? { "content-type": "application/json" } : undefined, body: body ? JSON.stringify(body) : undefined }); const payload = await response.json() as Projection; if (!response.ok) throw new Error(payload.error ?? "Operation failed"); setData(payload); }
+  async function load() { setPending(true); try { await request(); } catch (error) { setMessage(error instanceof Error ? error.message : "Load failed"); } finally { setPending(false); } }
+  async function advance() {
+    const contact = data?.contacts.find((item) => item.id === CONTACT), interactions = data?.interactions.filter((item) => item.contactId === CONTACT) ?? [], idempotencyKey = `telephony-${crypto.randomUUID()}`;
+    let body: Record<string, unknown>;
+    if (!contact) body = { action: "configure_contact", ...shared, idempotencyKey, contactName: "Jennifer Smith", contactNumber: "+15550101001", tenantNumber: "+15550101999", sandboxAcknowledged: true };
+    else { const base = { ...shared, idempotencyKey, expectedRevision: contact.revision };
+      if (contact.status === "configured") body = { action: "record_consents", ...base, evidence: "Attorney preserved explicitly synthetic voice and SMS consent evidence; recording remains prohibited.", smsOptIn: true, voiceConsent: true, recordingAllowed: false };
+      else if (contact.status === "consented") body = { action: "draft_sms", ...base, interactionId: "telephony-sms-rivera-001", body: "Synthetic scheduling notice: please contact defense counsel about the Rivera matter. Reply STOP to opt out or HELP for help." };
+      else if (contact.status === "sms_draft") body = { action: "approve_sms", ...base, interactionId: "telephony-sms-rivera-001", reason: "Attorney reviewed the synthetic text, consent evidence, recipient, purpose, and opt-out language." };
+      else if (contact.status === "sms_approved") body = { action: "attempt_sms_delivery", ...base, interactionId: "telephony-sms-rivera-001", reason: "Record the provider connection block without attempting SMS delivery." };
+      else if (contact.status === "delivery_blocked" && !interactions.some((item) => item.interactionType === "help")) body = { action: "record_help", ...base, helpInteractionId: "telephony-help-rivera-001", receivedAt: "2026-08-20T20:00:00.000Z", evidence: "Human recorded an explicitly synthetic inbound HELP request and support-handling evidence." };
+      else if (contact.status === "delivery_blocked") body = { action: "record_stop", ...base, stopInteractionId: "telephony-stop-rivera-001", receivedAt: "2026-08-20T20:01:00.000Z", evidence: "Human recorded an explicitly synthetic inbound STOP instruction and immediate suppression." };
+      else if (contact.status === "opted_out") body = { action: "record_call_metadata", ...base, callInteractionId: "telephony-call-rivera-001", occurredAt: "2026-08-20T20:05:00.000Z", durationSeconds: 384, evidence: "Human verified a synthetic voice call occurred with consent; only metadata and a human note were preserved.", recordingCreated: false };
+      else if (contact.status === "call_logged") body = { action: "associate_call", ...base, callInteractionId: "telephony-call-rivera-001", reason: "Attorney confirmed the synthetic call metadata belongs to the Rivera golden matter." };
+      else if (contact.status === "matter_associated") body = { action: "confirm_time", ...base, candidateTimeId: "telephony-time-rivera-001", minutes: 6, narrative: "Telephone conference with claims professional regarding Rivera scheduling", taskCode: "L120", activityCode: "A108", reason: "Attorney explicitly confirmed six minutes from non-recorded synthetic call metadata." };
+      else body = { action: "close", ...base, reason: "Attorney closed the synthetic telephony proof after consent, suppression, filing, and time confirmation." };
+    }
+    setPending(true); try { await request(body); setMessage("Telephony evidence advanced."); } catch (error) { setMessage(error instanceof Error ? error.message : "Operation failed"); } finally { setPending(false); }
+  }
+  if (!data) return <section className="panel operator-load"><PhoneOff size={22}/><div><h2>Calling and texting controls</h2><p>Load numbers, consent, messaging, HELP/STOP, non-recorded calls, filing, and time evidence.</p><button className="secondary-action" onClick={() => void load()} disabled={pending}>{pending ? <LoaderCircle className="spin" size={15}/> : <PhoneOff size={15}/>}Load telephony controls</button>{message && <p className="inline-message">{message}</p>}</div></section>;
+  const contact = data.contacts.find((item) => item.id === CONTACT), interactions = data.interactions.filter((item) => item.contactId === CONTACT), time = data.times.find((item) => item.runId === CONTACT);
+  return <section className="panel operator-panel"><header><div><h2>Provider-neutral telephony lifecycle</h2><p>{data.limitation}</p></div><StatusPill tone={contact?.status === "closed" ? "success" : ["delivery_blocked", "opted_out"].includes(contact?.status ?? "") ? "warning" : "info"}>{contact?.status ?? "not configured"}</StatusPill></header>
+    {contact && <dl><div><dt>Provider</dt><dd>{contact.providerMode}</dd></div><div><dt>SMS</dt><dd>{contact.smsConsentStatus}</dd></div><div><dt>Recording</dt><dd>{contact.recordingAllowed ? "on" : "off"}</dd></div><div><dt>Time</dt><dd>{time ? `${time.minutes}m` : "—"}</dd></div></dl>}
+    {interactions.length > 0 && <ol>{interactions.map((item) => <li key={item.id}><strong>{item.channel} · {item.interactionType} · {item.status}</strong><small>delivery attempted {String(item.deliveryAttempted)} · recording {item.recordingStatus}{item.durationSeconds ? ` · ${item.durationSeconds}s` : ""}</small></li>)}</ol>}
+    {contact?.status !== "closed" && <button className="primary-action" onClick={() => void advance()} disabled={pending}>{pending ? <LoaderCircle className="spin" size={15}/> : <CheckCircle2 size={15}/>}Advance synthetic lifecycle</button>}{message && <p className="inline-message" role="status">{message}</p>}
+  </section>;
+}

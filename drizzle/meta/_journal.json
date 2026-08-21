@@ -274,6 +274,13 @@
       "when": 1787285923445,
       "tag": "0038_lean_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "6",
+      "when": 1787286294983,
+      "tag": "0039_furry_zemo",
+      "breakpoints": true
     }
   ]
 }

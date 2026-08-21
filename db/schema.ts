@@ -5145,3 +5145,43 @@ export const clientPortalDecisions = sqliteTable(
     index("idx_portal_decision_history").on(table.tenantId, table.accessRequestId, table.createdAt),
   ],
 );
+
+export const telephonyContacts = sqliteTable(
+  "telephony_contacts",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id"),
+    contactName: text("contact_name").notNull(), contactNumber: text("contact_number").notNull(), tenantNumber: text("tenant_number").notNull(),
+    smsConsentStatus: text("sms_consent_status", { enum: ["unknown", "opted_in", "opted_out"] }).notNull(),
+    voiceConsentStatus: text("voice_consent_status", { enum: ["unknown", "consented"] }).notNull(),
+    consentEvidence: text("consent_evidence"), recordingAllowed: integer("recording_allowed", { mode: "boolean" }).notNull().default(false),
+    provider: text("provider").notNull(), providerMode: text("provider_mode", { enum: ["not_connected", "human_verified_sandbox"] }).notNull(),
+    status: text("status", { enum: ["configured", "consented", "sms_draft", "sms_approved", "delivery_blocked", "opted_out", "call_logged", "matter_associated", "time_confirmed", "closed"] }).notNull(),
+    candidateTimeId: text("candidate_time_id"), revision: integer("revision").notNull().default(1), createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [uniqueIndex("idx_telephony_contact_number").on(table.tenantId, table.contactNumber), index("idx_telephony_contact_status").on(table.tenantId, table.status, table.updatedAt)],
+);
+
+export const telephonyInteractions = sqliteTable(
+  "telephony_interactions",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id"), contactId: text("contact_id").notNull(),
+    channel: text("channel", { enum: ["sms", "voice"] }).notNull(), direction: text("direction", { enum: ["inbound", "outbound"] }).notNull(),
+    interactionType: text("interaction_type", { enum: ["message", "help", "stop", "call_metadata"] }).notNull(),
+    body: text("body"), bodySha256: text("body_sha256"), durationSeconds: integer("duration_seconds"), recordingStatus: text("recording_status", { enum: ["not_applicable", "disabled"] }).notNull(),
+    status: text("status", { enum: ["draft", "approved", "blocked_not_connected", "preserved", "filed"] }).notNull(),
+    providerMode: text("provider_mode", { enum: ["not_connected", "human_verified_sandbox"] }).notNull(), deliveryAttempted: integer("delivery_attempted", { mode: "boolean" }).notNull().default(false),
+    approvedBy: text("approved_by"), occurredAt: integer("occurred_at", { mode: "timestamp_ms" }).notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [index("idx_telephony_interaction_history").on(table.tenantId, table.contactId, table.occurredAt)],
+);
+
+export const telephonyDecisions = sqliteTable(
+  "telephony_decisions",
+  {
+    id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id"), contactId: text("contact_id").notNull(),
+    action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [uniqueIndex("idx_telephony_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_telephony_decision_history").on(table.tenantId, table.contactId, table.createdAt)],
+);

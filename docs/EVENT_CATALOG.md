@@ -61,3 +61,7 @@ A Worker scheduled handler is configured every five minutes to drain only the At
 ## Client portal
 
 `client_portal.request_access`, `client_portal.verify_identity`, `client_portal.approve_access`, `client_portal.evaluate_share_item`, `client_portal.attempt_activation`, and `client_portal.revoke_access` preserve the internal control lifecycle. Events explicitly record that external login and identity are disabled and no invitation was sent; share evaluation includes the server-side classification outcome.
+
+## Telephony and SMS
+
+`telephony.configure_contact`, `telephony.record_consents`, `telephony.draft_sms`, `telephony.approve_sms`, `telephony.attempt_sms_delivery`, `telephony.record_help`, `telephony.record_stop`, `telephony.record_call_metadata`, `telephony.associate_call`, `telephony.confirm_time`, and `telephony.close` preserve the provider-neutral lifecycle. Every event declares provider/dispatched/recording truth; STOP declares immediate SMS suppression.
