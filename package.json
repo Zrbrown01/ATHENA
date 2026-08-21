@@ -23,7 +23,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:update": "playwright test --update-snapshots",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run build"
+    "test:performance": "playwright test --config playwright.performance.config.ts",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build && npm run test:performance"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^2.3.1",
