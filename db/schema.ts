@@ -4974,3 +4974,109 @@ export const depositionDecisions = sqliteTable(
     ),
   ],
 );
+
+export const dictationSessions = sqliteTable(
+  "dictation_sessions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    title: text("title").notNull(),
+    workProductType: text("work_product_type").notNull(),
+    durationSeconds: integer("duration_seconds").notNull(),
+    audioSha256: text("audio_sha256").notNull(),
+    consentEvidence: text("consent_evidence").notNull(),
+    templateId: text("template_id"),
+    templateVersion: text("template_version"),
+    status: text("status", {
+      enum: [
+        "captured",
+        "provider_blocked",
+        "transcript_ready",
+        "templated",
+        "in_review",
+        "approved",
+        "time_confirmed",
+        "filed",
+      ],
+    }).notNull(),
+    provider: text("provider").notNull(),
+    providerMode: text("provider_mode", {
+      enum: ["not_connected", "deterministic_sandbox"],
+    }).notNull(),
+    workProductId: text("work_product_id"),
+    candidateTimeId: text("candidate_time_id"),
+    revision: integer("revision").notNull().default(1),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_dictation_session_matter_status").on(
+      table.tenantId,
+      table.matterId,
+      table.status,
+    ),
+  ],
+);
+
+export const dictationArtifacts = sqliteTable(
+  "dictation_artifacts",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    sessionId: text("session_id").notNull(),
+    artifactType: text("artifact_type", {
+      enum: ["audio_metadata", "synthetic_transcript", "templated_draft"],
+    }).notNull(),
+    title: text("title").notNull(),
+    content: text("content"),
+    sha256: text("sha256").notNull(),
+    sourceArtifactId: text("source_artifact_id"),
+    providerMode: text("provider_mode", {
+      enum: ["not_connected", "deterministic_sandbox"],
+    }).notNull(),
+    status: text("status", { enum: ["preserved", "ready", "approved"] })
+      .notNull(),
+    approvedBy: text("approved_by"),
+    approvedAt: integer("approved_at", { mode: "timestamp_ms" }),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_dictation_artifact_history").on(
+      table.tenantId,
+      table.sessionId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const dictationDecisions = sqliteTable(
+  "dictation_decisions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    sessionId: text("session_id").notNull(),
+    action: text("action").notNull(),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_dictation_decision_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_dictation_decision_history").on(
+      table.tenantId,
+      table.sessionId,
+      table.createdAt,
+    ),
+  ],
+);

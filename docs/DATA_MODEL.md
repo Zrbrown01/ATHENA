@@ -82,4 +82,11 @@ Every D1 schema change is generated through Drizzle, inspected for backward comp
 
 The deterministic QME processor creates a valid synthetic PDF with a pinned SHA-256 and `trusted_synthetic_fixture` storage metadata. This generated fixture may enter `ready` without a malware provider because it contains fixed source-controlled text and no user bytes. User uploads remain `awaiting_scan` and are not given the same trust path.
 
-Tenant portability uses a separate TAR and manifest. The serializer discovers all Drizzle tables at runtime, requires a tenant column before inclusion, and serializes the full current schema into human-readable indexes and structured category records. It includes checksum-verified originals when present, lists per-entry SHA-256 values, and verifies the archive before persistence. The deposition migration automatically increased coverage from 150 to 153 tables. Any future table without tenant context or missing/mismatched original forces `partial`.
+Tenant portability uses a separate TAR and manifest. The serializer discovers all Drizzle tables at runtime, requires a tenant column before inclusion, and serializes the full current schema into human-readable indexes and structured category records. It includes checksum-verified originals when present, lists per-entry SHA-256 values, and verifies the archive before persistence. Deposition and dictation migrations automatically increased coverage from 150 to 156 tables. Any future table without tenant context or missing/mismatched original forces `partial`.
+
+## Verbatim dictation evidence
+
+- `dictation_sessions` is the revisioned aggregate for capture, provider truth, transcription, template, review, approval, confirmed time, and matter filing.
+- `dictation_artifacts` preserves checksum-pinned audio metadata, explicitly synthetic transcripts, and source-linked templated drafts. Production audio bytes are not represented by this pilot.
+- `dictation_decisions` is the immutable action ledger with actor, transition, reason, event, and idempotency evidence.
+- Approved filing materializes an approved `work_product_drafts` row; attorney-confirmed time materializes a `candidate_time_entries` row. Both retain the dictation session as their run identity.

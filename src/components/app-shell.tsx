@@ -10,6 +10,7 @@ import {
   HardDriveDownload,
   Landmark,
   Mail,
+  Mic2,
   Settings,
   ShieldAlert,
   ShieldCheck,
@@ -34,6 +35,7 @@ const navigation = [
   ["Reports", Landmark, "/reports"],
   ["Clients", Users, "/clients"],
   ["Noted", Video, "/depositions"],
+  ["Verbatim", Mic2, "/verbatim"],
 ] as const;
 
 export function AppShell({

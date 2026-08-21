@@ -27,7 +27,7 @@ Classification tests table-drive all nine planes, search/download restrictions, 
 
 Tenant-portability tests prove that missing schema tables or original objects force `partial`, completeness requires full coverage, partner role and tenant isolation are enforced, and every declared archive entry is read back with exact byte-size/SHA-256 verification. The initial partial proof exposed the 118-table gap; the dynamic serializer then built a 1,034,752-byte TAR with 11 entries, 12 categories, all 150 current tables, zero available originals, no missing items, a matching archive SHA-256, idempotent replay, and a foreign-tenant 403.
 
-Deposition tests prove governance approval, ordered lifecycle states, an honest Noted block with zero provider attempt, role/tenant/matter gates, and synthetic transcript return. The API proof reached closure revision 7 with seven decisions/events/outbox records, a human-verified calendar identity, and the pinned synthetic transcript SHA-256; the subsequent tenant export automatically covered all 153 tables.
+Deposition tests prove governance approval, ordered lifecycle states, an honest Noted block with zero provider attempt, role/tenant/matter gates, and synthetic transcript return. The API proof reached closure revision 7 with seven decisions/events/outbox records, a human-verified calendar identity, and the pinned synthetic transcript SHA-256; subsequent deposition and dictation migrations automatically increased tenant-export coverage to all 156 tables.
 
 The local integration smoke executes all seven companion API transitions against migrated D1/R2, downloads the export, and verifies seven events plus limitations. The production build enumerates all application/API routes.
 
@@ -45,3 +45,11 @@ Automated browser E2E/visual regression, adversarial database concurrency tests,
 - TAR tests prove safe paths, unique entries, header checksums, manifest presence, exact original hashes, and rejection of incomplete restoration claims.
 - The complete golden-archive test packages manifest v3 with the deterministic PDF, reads both entries back, and proves restoration evidence.
 - Download responses expose the stored checksum, completeness classification, and restoration-verification state.
+
+## Verbatim dictation lifecycle
+
+- Prove acknowledged synthetic capture metadata and consent evidence without storing or transmitting audio bytes.
+- Prove the disconnected Verbatim handoff records `providerConnected=false` and `providerCallAttempted=false`.
+- Prove ordered transcript, template, review, approval, time-confirmation, and filing transitions with optimistic revision checks.
+- Prove attorney-only approval/time/filing and tenant/matter isolation.
+- Verify checksum-linked artifacts, immutable decisions/events/outbox, confirmed time evidence, and the approved matter work-product projection.
