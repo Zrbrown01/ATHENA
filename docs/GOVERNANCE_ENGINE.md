@@ -27,9 +27,10 @@ Every accepted command records authenticated actor, event, audit record, idempot
 - A persisted synthetic firm-policy rule demonstrates the engine without presenting an unreviewed legal deadline as authoritative. Content status distinguishes `synthetic_sandbox`, `pending_attorney_review`, and `attorney_approved`; pending content is blocked, and sandbox content requires explicit acknowledgement.
 - Revisioned dependency edges, partner-decided due-date exceptions and waivers, business-day-relative dependent dates, blocking-predecessor completion, and attention/critical/breached escalation acknowledgements now persist atomically with event/outbox evidence. These controls remain explicitly synthetic until California content is attorney approved.
 - Active policy layers resolve the documented firm → client → matter-type → matter precedence chain. Partner-only creation and supersession preserve immutable versions and field-level diffs; deterministic simulations snapshot every applicable layer, the selected layer, calculation trace, and due date. Pending, expired, unacknowledged synthetic, and falsely attorney-approved content fail closed.
+- Full-matter rebuilds replay each obligation from its exact rule version, trigger, dependency chain, and approved exception/waiver. Immutable matched, drifted, and blocked findings require a single-winner partner review; rebuilds never mutate operational legal work.
 - Versioned retention policies, matter legal-hold schema, and a disposition evaluator that never deletes automatically and requires human review after the retention window.
 - Persisted matter-access policy schema; explicit denies and ethical walls override ordinary matter membership.
 
 ## Required next engine layer
 
-Attorney-reviewed California source content, sourced holiday data operations, recurrence, activation of verified client instructions, and deterministic full-matter rebuild tests remain to be implemented. No statutory California content is approved in this environment.
+Attorney-reviewed California source content, sourced holiday data operations, recurrence, and activation of verified client instructions remain to be implemented. No statutory California content is approved in this environment.

@@ -2213,6 +2213,82 @@ export const obligationExceptions = sqliteTable(
   ],
 );
 
+export const obligationRebuildRuns = sqliteTable(
+  "obligation_rebuild_runs",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    asOf: integer("as_of", { mode: "timestamp_ms" }).notNull(),
+    outcome: text("outcome", {
+      enum: ["matched", "exceptions", "blocked"],
+    }).notNull(),
+    status: text("status", { enum: ["pending_review", "reviewed"] }).notNull(),
+    obligationCount: integer("obligation_count").notNull(),
+    matchedCount: integer("matched_count").notNull(),
+    driftedCount: integer("drifted_count").notNull(),
+    blockedCount: integer("blocked_count").notNull(),
+    revision: integer("revision").notNull().default(1),
+    reviewOutcome: text("review_outcome", {
+      enum: ["certified", "exceptions_noted"],
+    }),
+    reviewNotes: text("review_notes"),
+    requestedBy: text("requested_by").notNull(),
+    reviewedBy: text("reviewed_by"),
+    runEventId: text("run_event_id").notNull(),
+    reviewEventId: text("review_event_id"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  },
+  (table) => [
+    index("idx_obligation_rebuild_run_matter").on(
+      table.tenantId,
+      table.matterId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const obligationRebuildFindings = sqliteTable(
+  "obligation_rebuild_findings",
+  {
+    id: text("id").primaryKey(),
+    runId: text("run_id").notNull(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id").notNull(),
+    obligationId: text("obligation_id").notNull(),
+    result: text("result", {
+      enum: ["matched", "drifted", "blocked"],
+    }).notNull(),
+    actualDueAt: integer("actual_due_at", { mode: "timestamp_ms" }).notNull(),
+    expectedDueAt: integer("expected_due_at", { mode: "timestamp_ms" }),
+    actualStatus: text("actual_status").notNull(),
+    expectedStatus: text("expected_status"),
+    ruleCode: text("rule_code").notNull(),
+    ruleVersion: integer("rule_version").notNull(),
+    dependencyId: text("dependency_id"),
+    exceptionIds: text("exception_ids", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    reasons: text("reasons", { mode: "json" }).$type<string[]>().notNull(),
+    calculation: text("calculation", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_obligation_rebuild_finding").on(
+      table.runId,
+      table.obligationId,
+    ),
+    index("idx_obligation_rebuild_finding_matter").on(
+      table.tenantId,
+      table.matterId,
+      table.runId,
+    ),
+  ],
+);
+
 export const obligationEscalations = sqliteTable(
   "obligation_escalations",
   {

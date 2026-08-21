@@ -5,6 +5,7 @@ import { AccessControlOperations } from "@/components/access-control-operations"
 import { RetentionOperations } from "@/components/retention-operations";
 import { ScaleOperations } from "@/components/scale-operations";
 import { GovernancePolicyOperations } from "@/components/governance-policy-operations";
+import { ObligationRebuildOperations } from "@/components/obligation-rebuild-operations";
 
 export default function PlatformOperationsPage() {
   return (
@@ -32,6 +33,7 @@ export default function PlatformOperationsPage() {
           </div>
         </div>
         <GovernancePolicyOperations />
+        <ObligationRebuildOperations />
         <RetentionOperations />
         <AccessControlOperations />
         <EthicalWallOperations />
