@@ -6,6 +6,10 @@ export const metadata: Metadata = {
   title: "Athena · Workers’ Compensation Defense OS",
   description: "Matter-centered operations for workers’ compensation defense firms.",
   applicationName: "Athena",
+  icons: {
+    icon: [{ url: "/brand/athena-app-icon.png", type: "image/png", sizes: "512x512" }],
+    apple: [{ url: "/brand/athena-app-icon.png", type: "image/png", sizes: "512x512" }],
+  },
   alternates: { canonical: "/" },
   openGraph: {
     title: "Athena · Workers’ Compensation Defense OS",

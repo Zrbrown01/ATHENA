@@ -28,6 +28,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { CommandPalette } from "./command-palette";
 
@@ -78,10 +79,26 @@ export function AppShell({
           </button>
         </div>
         <Link href="/" className="brand" aria-label="Athena home" onClick={() => closeNavigation()}>
-          <span className="brand-mark">A</span>
-          <span>
-            <strong>ATHENA</strong>
-            <small>Defense OS</small>
+          <Image
+            className="brand-emblem"
+            src="/brand/athena-app-icon.png"
+            width={512}
+            height={512}
+            sizes="42px"
+            alt=""
+            priority
+          />
+          <span className="brand-copy">
+            <Image
+              className="brand-wordmark"
+              src="/brand/athena-wordmark.png"
+              width={1000}
+              height={250}
+              sizes="116px"
+              alt=""
+              priority
+            />
+            <small>Defense case management</small>
           </span>
         </Link>
 
