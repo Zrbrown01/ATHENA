@@ -4132,3 +4132,184 @@ export const recoveryDecisions = sqliteTable(
     ),
   ],
 );
+
+export const directoryConnections = sqliteTable(
+  "directory_connections",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    provider: text("provider", { enum: ["microsoft_entra"] }).notNull(),
+    providerMode: text("provider_mode", {
+      enum: ["not_connected", "live"],
+    }).notNull(),
+    status: text("status", {
+      enum: ["not_connected", "healthy", "degraded", "revoked"],
+    }).notNull(),
+    syncCursor: text("sync_cursor"),
+    lastReconciledAt: integer("last_reconciled_at", { mode: "timestamp_ms" }),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_directory_provider").on(table.tenantId, table.provider),
+  ],
+);
+
+export const directoryIdentities = sqliteTable(
+  "directory_identities",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    connectionId: text("connection_id").notNull(),
+    externalObjectId: text("external_object_id"),
+    email: text("email").notNull(),
+    normalizedEmail: text("normalized_email").notNull(),
+    displayName: text("display_name").notNull(),
+    status: text("status", {
+      enum: ["invited", "active", "suspended", "offboarded"],
+    }).notNull(),
+    identitySource: text("identity_source", {
+      enum: ["local_fixture", "directory_synced"],
+    }).notNull(),
+    mfaState: text("mfa_state", {
+      enum: ["unknown", "enforced", "not_enforced"],
+    }).notNull(),
+    sessionRevocationState: text("session_revocation_state", {
+      enum: [
+        "not_requested",
+        "blocked_not_connected",
+        "human_verified",
+        "provider_confirmed",
+      ],
+    }).notNull(),
+    revision: integer("revision").notNull().default(1),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_directory_identity_email").on(
+      table.tenantId,
+      table.normalizedEmail,
+    ),
+    index("idx_directory_identity_status").on(table.tenantId, table.status),
+  ],
+);
+
+export const roleDefinitions = sqliteTable(
+  "role_definitions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    code: text("code").notNull(),
+    title: text("title").notNull(),
+    permissions: text("permissions", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    privileged: integer("privileged", { mode: "boolean" }).notNull(),
+    immutable: integer("immutable", { mode: "boolean" }).notNull(),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_role_definition_code").on(table.tenantId, table.code),
+  ],
+);
+
+export const roleAssignments = sqliteTable(
+  "role_assignments",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    identityId: text("identity_id").notNull(),
+    roleDefinitionId: text("role_definition_id").notNull(),
+    scopeType: text("scope_type", { enum: ["firm", "matter"] }).notNull(),
+    matterId: text("matter_id"),
+    status: text("status", { enum: ["active", "revoked"] }).notNull(),
+    grantReason: text("grant_reason").notNull(),
+    grantedBy: text("granted_by").notNull(),
+    grantedAt: integer("granted_at", { mode: "timestamp_ms" }).notNull(),
+    revokedBy: text("revoked_by"),
+    revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
+    revocationEvidence: text("revocation_evidence"),
+  },
+  (table) => [
+    index("idx_role_assignment_identity").on(
+      table.tenantId,
+      table.identityId,
+      table.status,
+    ),
+    uniqueIndex("idx_role_assignment_scope").on(
+      table.tenantId,
+      table.identityId,
+      table.roleDefinitionId,
+      table.scopeType,
+      table.matterId,
+    ),
+  ],
+);
+
+export const offboardingRuns = sqliteTable(
+  "offboarding_runs",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    identityId: text("identity_id").notNull(),
+    status: text("status", {
+      enum: [
+        "initiated",
+        "assignments_revoked",
+        "session_revocation_blocked",
+        "completed",
+      ],
+    }).notNull(),
+    reason: text("reason").notNull(),
+    activeAssignmentCount: integer("active_assignment_count").notNull(),
+    revokedAssignmentCount: integer("revoked_assignment_count").notNull(),
+    sessionRevocationMode: text("session_revocation_mode", {
+      enum: ["not_connected", "human_verified_external", "live"],
+    }).notNull(),
+    sessionRevocationEvidence: text("session_revocation_evidence"),
+    revision: integer("revision").notNull().default(1),
+    initiatedBy: text("initiated_by").notNull(),
+    initiatedAt: integer("initiated_at", { mode: "timestamp_ms" }).notNull(),
+    completedAt: integer("completed_at", { mode: "timestamp_ms" }),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_offboarding_identity").on(
+      table.tenantId,
+      table.identityId,
+      table.status,
+    ),
+  ],
+);
+
+export const identityDecisions = sqliteTable(
+  "identity_decisions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    identityId: text("identity_id").notNull(),
+    action: text("action").notNull(),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_identity_decision_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_identity_decision_identity").on(
+      table.tenantId,
+      table.identityId,
+      table.createdAt,
+    ),
+  ],
+);

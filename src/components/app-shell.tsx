@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Sparkles,
   Users,
+  UserCog,
   WalletCards,
 } from "lucide-react";
 import Link from "next/link";
@@ -80,6 +81,9 @@ export function AppShell({
           </Link>
           <Link className="nav-item" href="/admin/recovery">
             <HardDriveDownload aria-hidden="true" size={17} /> Recovery evidence
+          </Link>
+          <Link className="nav-item" href="/admin/directory">
+            <UserCog aria-hidden="true" size={17} /> Identity & roles
           </Link>
           <Link className="nav-item" href="/admin/migration">
             <DatabaseZap aria-hidden="true" size={17} /> Migration center

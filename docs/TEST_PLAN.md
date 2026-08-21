@@ -17,6 +17,8 @@ Document-evidence lifecycle tests additionally prove immutable original checksum
 
 Recovery tests prove exact five-category verification, mismatched restore failure, verification-before-approval, and tenant denial. A separate disposable SQLite exercise matched 122 tables, 146 events, 146 outbox rows, the pinned export checksum, and one tenant without production mutation.
 
+Directory tests prove firm/matter scope consistency, suspension-first offboarding, self-offboarding denial, foreign-tenant denial, and explicit non-completion when session revocation is disconnected. The API proof persisted seven immutable roles with 17 permissions, a matter-scoped assignment, suspension, assignment revocation, six decisions/events/outbox records, and a `session_revocation_blocked` terminal pilot state.
+
 The local integration smoke executes all seven companion API transitions against migrated D1/R2, downloads the export, and verifies seven events plus limitations. The production build enumerates all application/API routes.
 
 ## Remaining gates
