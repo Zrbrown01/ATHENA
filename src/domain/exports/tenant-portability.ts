@@ -24,6 +24,74 @@ export const tenantExportCategories = [
 
 export type TenantExportCategory = (typeof tenantExportCategories)[number];
 
+export const tenantExportRuntimeLimits = {
+  queryPageSize: 500,
+  maximumRows: 50_000,
+  maximumArchiveBytes: 64 * 1024 * 1024,
+} as const;
+
+export class TenantExportLimitError extends Error {
+  constructor(
+    public readonly code: "row_limit_exceeded" | "archive_byte_limit_exceeded",
+    public readonly observed: number,
+    public readonly limit: number,
+  ) {
+    super(`Tenant export ${code.replaceAll("_", " ")}: ${observed} exceeds ${limit}`);
+    this.name = "TenantExportLimitError";
+  }
+}
+
+export function enforceTenantExportRuntimeBudget(input: {
+  rowCount: number;
+  estimatedArchiveBytes: number;
+}) {
+  if (input.rowCount > tenantExportRuntimeLimits.maximumRows)
+    throw new TenantExportLimitError(
+      "row_limit_exceeded",
+      input.rowCount,
+      tenantExportRuntimeLimits.maximumRows,
+    );
+  if (
+    input.estimatedArchiveBytes >
+    tenantExportRuntimeLimits.maximumArchiveBytes
+  )
+    throw new TenantExportLimitError(
+      "archive_byte_limit_exceeded",
+      input.estimatedArchiveBytes,
+      tenantExportRuntimeLimits.maximumArchiveBytes,
+    );
+}
+
+export function estimateTarByteSize(entries: Array<{ bytes: Uint8Array }>) {
+  return estimateTarByteSizeFromSizes(
+    entries.map((entry) => entry.bytes.byteLength),
+  );
+}
+
+export function estimateTarByteSizeFromSizes(sizes: number[]) {
+  return (
+    sizes.reduce(
+      (total, size) => total + 512 + Math.ceil(size / 512) * 512,
+      0,
+    ) + 1024
+  );
+}
+
+export function tenantExportLimitFailureEvidence(
+  error: TenantExportLimitError,
+) {
+  return {
+    status: "failed" as const,
+    completeness: "partial" as const,
+    eventType: "tenant_export.failed" as const,
+    decisionOutcome: "failed" as const,
+    missingItems: [`runtime_${error.code}`],
+    limitCode: error.code,
+    observed: error.observed,
+    limit: error.limit,
+  };
+}
+
 export const tenantExportCommand = z.object({
   action: z.literal("create_portability_archive"),
   tenantId: z.string().min(1),

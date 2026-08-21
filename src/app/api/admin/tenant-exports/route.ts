@@ -26,7 +26,7 @@ import { matters } from "../../../../../db/schema";
 import { eq } from "drizzle-orm";
 
 const limitation =
-  "This creates a real checksummed TAR for synthetic pilot data across 12 required portability categories and every tenant-aware table discovered from Athena's current Drizzle schema. Completeness still fails if any schema table lacks tenant context or any original object is missing or fails checksum verification. Data held only by disconnected providers and independent database restoration are not represented.";
+  "This creates a real checksummed TAR for synthetic pilot data across 12 required portability categories and every tenant-aware table discovered from Athena's current Drizzle schema. Reads are paged in 500-row chunks; an export stops with durable failed-job, decision, event, and outbox evidence above 50,000 tenant rows or a 64 MiB estimated/final archive. Completeness still fails if a table lacks tenant context or an original is missing or invalid. The TAR is assembled in memory, so streaming, encryption/key policy, provider-held data, and independent restoration remain unavailable.";
 
 export async function GET(request: Request) {
   try {

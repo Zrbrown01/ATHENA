@@ -25,7 +25,13 @@ import {
 import { buildTarArchive, readTarArchive } from "@/domain/exports/tar-archive";
 import {
   assessTenantExportCoverage,
+  enforceTenantExportRuntimeBudget,
+  estimateTarByteSize,
+  estimateTarByteSizeFromSizes,
+  TenantExportLimitError,
+  tenantExportLimitFailureEvidence,
   tenantExportCategories,
+  tenantExportRuntimeLimits,
   type TenantExportCategory,
   type TenantExportCommand,
   verifyTenantPortabilityArchive,
@@ -95,7 +101,14 @@ export async function persistTenantExport(input: {
   event: EventEnvelope<Record<string, unknown>>;
   actor: RequestActor;
 }) {
-  const artifact = await buildTenantArtifact(input.command, input.actor);
+  let artifact: Awaited<ReturnType<typeof buildTenantArtifact>>;
+  try {
+    artifact = await buildTenantArtifact(input.command, input.actor);
+  } catch (error) {
+    if (error instanceof TenantExportLimitError)
+      return persistTenantExportFailure(input, error);
+    throw error;
+  }
   const db = getPreviewDb();
   const now = new Date(input.event.occurredAt);
   try {
@@ -185,6 +198,102 @@ export async function persistTenantExport(input: {
     replayed: false,
     eventId: input.event.eventId,
     completeness: artifact.coverage.completeness,
+    status: "ready" as const,
+  };
+}
+
+async function persistTenantExportFailure(
+  input: {
+    command: TenantExportCommand;
+    event: EventEnvelope<Record<string, unknown>>;
+    actor: RequestActor;
+  },
+  error: TenantExportLimitError,
+) {
+  const db = getPreviewDb();
+  const now = new Date(input.event.occurredAt);
+  const failure = tenantExportLimitFailureEvidence(error);
+  const failedEvent = {
+    ...input.event,
+    eventType: failure.eventType,
+    payload: {
+      ...input.event.payload,
+      outcome: "failed",
+      limitCode: failure.limitCode,
+      observed: failure.observed,
+      limit: failure.limit,
+    },
+  };
+  const sourceTableCount = schemaTableInventory().length;
+  const missingItems = failure.missingItems;
+  await db.batch([
+    db.insert(tenantExportJobs).values({
+      id: input.command.exportId,
+      tenantId: input.command.tenantId,
+      status: failure.status,
+      purpose: input.command.purpose,
+      format: "application/x-tar",
+      completeness: failure.completeness,
+      requiredCategoryCount: tenantExportCategories.length,
+      includedCategoryCount: 0,
+      sourceTableCount,
+      includedTableCount: 0,
+      sourceOriginalCount: 0,
+      includedOriginalCount: 0,
+      missingItems,
+      objectKey: `${input.command.tenantId}/exports/tenant/${input.command.exportId}/failed`,
+      sha256: "",
+      byteSize: 0,
+      archiveEntryCount: 0,
+      restorationVerifiedAt: null,
+      createdBy: input.actor.userId,
+      createdAt: now,
+    }),
+    db.insert(tenantExportDecisions).values({
+      id: createId(),
+      tenantId: input.command.tenantId,
+      exportId: input.command.exportId,
+      action: input.command.action,
+      outcome: failure.decisionOutcome,
+      reason: `Tenant portability archive stopped at the enforced ${error.code}: ${error.observed} exceeded ${error.limit}.`,
+      actorId: input.actor.userId,
+      eventId: failedEvent.eventId,
+      idempotencyKey: input.command.idempotencyKey,
+      createdAt: now,
+    }),
+    db.insert(previewEvents).values({
+      eventId: failedEvent.eventId,
+      eventType: failedEvent.eventType,
+      eventVersion: failedEvent.eventVersion,
+      tenantId: failedEvent.tenantId,
+      aggregateType: failedEvent.aggregateType,
+      aggregateId: failedEvent.aggregateId,
+      actorId: input.actor.userId,
+      occurredAt: now,
+      correlationId: failedEvent.correlationId,
+      causationId: failedEvent.causationId,
+      idempotencyKey: failedEvent.idempotencyKey,
+      source: failedEvent.source,
+      visibility: failedEvent.visibility,
+      retentionPolicy: failedEvent.retentionPolicy,
+      payload: failedEvent.payload,
+    }),
+    db.insert(previewOutbox).values({
+      id: createId(),
+      tenantId: failedEvent.tenantId,
+      eventId: failedEvent.eventId,
+      topic: "athena.tenant_exports",
+      payload: failedEvent,
+      attempts: 0,
+      availableAt: now,
+    }),
+  ]);
+  return {
+    replayed: false,
+    eventId: failedEvent.eventId,
+    completeness: "partial" as const,
+    status: "failed" as const,
+    limitCode: error.code,
   };
 }
 
@@ -193,24 +302,29 @@ async function buildTenantArtifact(
   actor: RequestActor,
 ) {
   const db = getPreviewDb();
-  const schemaTables = (Object.values(athenaSchema) as unknown[]).filter(
-    (value): value is AnySQLiteTable => is(value, SQLiteTable),
-  );
+  const schemaTables = schemaTableInventory();
   const tenantTables = schemaTables.flatMap((table) => {
     const tenantColumn = getTableColumns(table).tenantId;
     return tenantColumn ? [{ table, tenantColumn }] : [];
   });
-  const tableRows = await Promise.all(
-    tenantTables.map(({ table, tenantColumn }) =>
-      rows(db, table, tenantColumn, command.tenantId),
-    ),
-  );
-  const tableData = new Map<string, unknown[]>(
-    tenantTables.map(({ table }, index) => [
-      getTableName(table),
-      tableRows[index],
-    ]),
-  );
+  let totalRows = 0;
+  const tableData = new Map<string, unknown[]>();
+  for (const { table, tenantColumn } of tenantTables) {
+    const tableRows = await pagedRows(
+      db,
+      table,
+      tenantColumn,
+      command.tenantId,
+      (pageRows) => {
+        totalRows += pageRows;
+        enforceTenantExportRuntimeBudget({
+          rowCount: totalRows,
+          estimatedArchiveBytes: 0,
+        });
+      },
+    );
+    tableData.set(getTableName(table), tableRows);
+  }
   const includedTableNames = [...tableData.keys()].sort();
   const categoryTables: Record<TenantExportCategory, string[]> = {
     original_files: ["document_intakes"],
@@ -279,9 +393,21 @@ async function buildTenantArtifact(
     category: TenantExportCategory;
     recordCount: number;
   }> = [];
+  let projectedEntrySizes = entries.map((entry) => entry.bytes.byteLength);
+  enforceTenantExportRuntimeBudget({
+    rowCount: totalRows,
+    estimatedArchiveBytes: estimateTarByteSizeFromSizes(projectedEntrySizes),
+  });
   for (const document of documents) {
     const object = await getDocumentBucket().get(document.objectKey);
     if (!object) continue;
+    enforceTenantExportRuntimeBudget({
+      rowCount: totalRows,
+      estimatedArchiveBytes: estimateTarByteSizeFromSizes([
+        ...projectedEntrySizes,
+        object.size,
+      ]),
+    });
     const bytes = new Uint8Array(await object.arrayBuffer());
     if ((await sha256Hex(bytes)) !== document.sha256) continue;
     originalEntries.push({
@@ -290,6 +416,7 @@ async function buildTenantArtifact(
       category: "original_files",
       recordCount: 1,
     });
+    projectedEntrySizes = [...projectedEntrySizes, bytes.byteLength];
   }
   const contentEntries = [...entries, ...originalEntries];
   const checksums = await Promise.all(
@@ -342,7 +469,15 @@ async function buildTenantArtifact(
     { path: "checksums.json", bytes: jsonBytes(checksums) },
     { path: "manifest.json", bytes: jsonBytes(manifest) },
   ];
+  enforceTenantExportRuntimeBudget({
+    rowCount: totalRows,
+    estimatedArchiveBytes: estimateTarByteSize(archiveEntries),
+  });
   const archive = buildTarArchive(archiveEntries);
+  enforceTenantExportRuntimeBudget({
+    rowCount: totalRows,
+    estimatedArchiveBytes: archive.byteLength,
+  });
   await verifyTenantPortabilityArchive(archive);
   const objectKey = `${command.tenantId}/exports/tenant/${command.exportId}/tenant-portability.tar`;
   const sha256 = await sha256Hex(archive);
@@ -370,13 +505,34 @@ async function buildTenantArtifact(
   };
 }
 
-function rows(
+async function pagedRows(
   db: ReturnType<typeof getPreviewDb>,
   table: AnySQLiteTable,
   tenantColumn: AnySQLiteColumn,
   tenantId: string,
+  onPage: (rowCount: number) => void,
 ) {
-  return db.select().from(table).where(eq(tenantColumn, tenantId));
+  const result: unknown[] = [];
+  let offset = 0;
+  while (true) {
+    const page = await db
+      .select()
+      .from(table)
+      .where(eq(tenantColumn, tenantId))
+      .limit(tenantExportRuntimeLimits.queryPageSize)
+      .offset(offset);
+    result.push(...page);
+    onPage(page.length);
+    if (page.length < tenantExportRuntimeLimits.queryPageSize) break;
+    offset += page.length;
+  }
+  return result;
+}
+
+function schemaTableInventory() {
+  return (Object.values(athenaSchema) as unknown[]).filter(
+    (value): value is AnySQLiteTable => is(value, SQLiteTable),
+  );
 }
 
 function jsonBytes(value: unknown) {

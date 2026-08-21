@@ -76,7 +76,7 @@ TXT _cf-custom-hostname.www -> 62406762-1264-4515-b2b8-b8fe5874a50e
 - Complete golden exports use `application/x-tar` and contain `manifest.json` plus `documents/<document-id>/original.pdf` entries.
 - Before an export job becomes ready, Athena parses the TAR, rejects unsafe/duplicate paths or invalid header checksums, and recomputes every original SHA-256 against document metadata.
 - `restoration_verified_at` is written only after that read-back succeeds. Missing or mismatched bytes preserve a partial classification and machine-readable `missing_items`.
-- This verifies the synthetic matter archive, not full-environment disaster recovery. Production archives still require streaming/size limits, encryption policy, key recovery, and sampled restore exercises.
+- Tenant portability reads tables in 500-row pages and stops above 50,000 total rows or a 64 MiB estimated/final TAR, preserving a non-downloadable failed job and immutable limit evidence. This still verifies synthetic archives, not full-environment disaster recovery; streaming TAR construction, encryption policy, key recovery, and sampled restore exercises remain required.
 
 ## Production launch checklist
 

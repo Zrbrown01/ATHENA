@@ -7,6 +7,7 @@ import { StatusPill } from "./status-pill";
 type Projection = {
   jobs: Array<{
     id: string;
+    status: "ready" | "failed";
     completeness: "partial" | "complete";
     includedCategoryCount: number;
     requiredCategoryCount: number;
@@ -45,6 +46,7 @@ export function TenantExportOperations() {
     const projection = (await response.json()) as Projection;
     if (!response.ok) throw new Error(projection.error ?? "Operation failed");
     setData(projection);
+    return projection;
   }
 
   async function load() {
@@ -63,7 +65,7 @@ export function TenantExportOperations() {
     setMessage(null);
     try {
       const id = `tenant-export-${crypto.randomUUID()}`;
-      await request({
+      const projection = await request({
         action: "create_portability_archive",
         tenantId: "tenant-golden",
         exportId: id,
@@ -72,8 +74,11 @@ export function TenantExportOperations() {
         syntheticDataAcknowledged: true,
         idempotencyKey: `tenant-export-create-${crypto.randomUUID()}`,
       });
+      const job = projection.jobs.find((item) => item.id === id);
       setMessage(
-        "Tenant portability archive created with explicit coverage truth.",
+        job?.status === "failed"
+          ? `Tenant archive stopped safely: ${job.missingItems.join(" · ")}.`
+          : "Tenant portability archive created with explicit coverage truth.",
       );
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Export failed");
@@ -133,16 +138,24 @@ export function TenantExportOperations() {
             </small>
           </div>
           <StatusPill
-            tone={job.completeness === "complete" ? "success" : "warning"}
+            tone={
+              job.status === "failed"
+                ? "danger"
+                : job.completeness === "complete"
+                  ? "success"
+                  : "warning"
+            }
           >
-            {job.completeness}
+            {job.status === "failed" ? "failed safely" : job.completeness}
           </StatusPill>
-          <a
-            className="secondary-action"
-            href={`/api/admin/tenant-exports/${job.id}`}
-          >
-            Download TAR
-          </a>
+          {job.status === "ready" && (
+            <a
+              className="secondary-action"
+              href={`/api/admin/tenant-exports/${job.id}`}
+            >
+              Download TAR
+            </a>
+          )}
           {data.scopeItems
             .filter((item) => item.exportId === job.id)
             .map((item) => (

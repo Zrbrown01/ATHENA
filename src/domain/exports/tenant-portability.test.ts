@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   assessTenantExportCoverage,
   decideTenantExport,
+  enforceTenantExportRuntimeBudget,
+  estimateTarByteSize,
+  TenantExportLimitError,
+  tenantExportLimitFailureEvidence,
   tenantExportCategories,
+  tenantExportRuntimeLimits,
   verifyTenantPortabilityArchive,
 } from "./tenant-portability";
 import { buildTarArchive } from "./tar-archive";
@@ -121,5 +126,51 @@ describe("tenant portability", () => {
     await expect(verifyTenantPortabilityArchive(corrupted)).rejects.toThrow(
       /checksum mismatch/,
     );
+  });
+
+  it("enforces inclusive row and archive byte ceilings", () => {
+    expect(() =>
+      enforceTenantExportRuntimeBudget({
+        rowCount: tenantExportRuntimeLimits.maximumRows,
+        estimatedArchiveBytes: tenantExportRuntimeLimits.maximumArchiveBytes,
+      }),
+    ).not.toThrow();
+    expect(() =>
+      enforceTenantExportRuntimeBudget({
+        rowCount: tenantExportRuntimeLimits.maximumRows + 1,
+        estimatedArchiveBytes: 0,
+      }),
+    ).toThrow(TenantExportLimitError);
+    expect(() =>
+      enforceTenantExportRuntimeBudget({
+        rowCount: 0,
+        estimatedArchiveBytes:
+          tenantExportRuntimeLimits.maximumArchiveBytes + 1,
+      }),
+    ).toThrow(/archive byte limit exceeded/);
+  });
+
+  it("estimates TAR headers, padding, and terminal blocks exactly", () => {
+    expect(
+      estimateTarByteSize([
+        { bytes: new Uint8Array(1) },
+        { bytes: new Uint8Array(513) },
+      ]),
+    ).toBe(3584);
+  });
+
+  it("maps a runtime ceiling to durable failed-export evidence", () => {
+    const evidence = tenantExportLimitFailureEvidence(
+      new TenantExportLimitError("row_limit_exceeded", 50_001, 50_000),
+    );
+    expect(evidence).toMatchObject({
+      status: "failed",
+      completeness: "partial",
+      eventType: "tenant_export.failed",
+      decisionOutcome: "failed",
+      missingItems: ["runtime_row_limit_exceeded"],
+      observed: 50_001,
+      limit: 50_000,
+    });
   });
 });
