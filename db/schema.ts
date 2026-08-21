@@ -362,6 +362,18 @@ export const matterParties = sqliteTable("matter_parties", {
   id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), partyType: text("party_type", { enum: ["person", "organization"] }).notNull(), partyId: text("party_id").notNull(), role: text("role").notNull(), claimId: text("claim_id"), injuryId: text("injury_id"), adjudicationCaseId: text("adjudication_case_id"), status: text("status", { enum: ["active", "former"] }).notNull(), sourceLinkId: text("source_link_id").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [uniqueIndex("idx_matter_party_identity").on(table.tenantId, table.matterId, table.partyType, table.partyId, table.role), index("idx_matter_party_role").on(table.tenantId, table.matterId, table.role)]);
 
+export const matterTasks = sqliteTable("matter_tasks", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), title: text("title").notNull(), taskType: text("task_type").notNull(), priority: text("priority", { enum: ["critical", "high", "normal", "low"] }).notNull(), ownerId: text("owner_id").notNull(), dueAt: integer("due_at", { mode: "timestamp_ms" }).notNull(), status: text("status", { enum: ["open", "in_progress", "blocked", "completed", "cancelled"] }).notNull(), blockerReason: text("blocker_reason"), completionEvidence: text("completion_evidence"), completedBy: text("completed_by"), completedAt: integer("completed_at", { mode: "timestamp_ms" }), cancelledBy: text("cancelled_by"), cancelledAt: integer("cancelled_at", { mode: "timestamp_ms" }), cancellationReason: text("cancellation_reason"), revision: integer("revision").notNull().default(1), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_matter_task_queue").on(table.tenantId, table.ownerId, table.status, table.dueAt), index("idx_matter_task_matter").on(table.tenantId, table.matterId, table.status)]);
+
+export const taskDependencies = sqliteTable("task_dependencies", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), taskId: text("task_id").notNull(), dependsOnTaskId: text("depends_on_task_id").notNull(), dependencyType: text("dependency_type", { enum: ["finish_to_start"] }).notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_task_dependency_identity").on(table.tenantId, table.taskId, table.dependsOnTaskId)]);
+
+export const taskDecisions = sqliteTable("task_decisions", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), taskId: text("task_id").notNull(), action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason"), actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_task_decision_idempotency").on(table.tenantId, table.idempotencyKey), index("idx_task_decision_history").on(table.tenantId, table.taskId, table.createdAt)]);
+
 export const governanceRules = sqliteTable("governance_rules", {
   id: text("id").primaryKey(),
   tenantId: text("tenant_id").notNull(),

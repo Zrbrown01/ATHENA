@@ -64,6 +64,7 @@ Updated: 2026-08-20
 | Documents/evidence | Tested quarantine slice | PDF security tests, tenant R2 keys, checksums, metadata, and compensation; scanning/release, versions, preview, processing, and full export remain |
 | Communications | Externally blocked | Retryable Microsoft handoff is persisted and never labeled sent; Graph connection/sync/delivery remain unavailable |
 | Calendar/docketing | Functional obligation slice | Versioned business-day calculation plus durable create/reassign/complete/cancel lifecycle, provenance, optimistic revision checks, evidence/reason fields, event/outbox writes, and operator controls. The only active content is an explicitly acknowledged synthetic firm policy; attorney-reviewed California rules, sourced holidays, recurrence, chains, and readiness remain |
+| Native tasks | Functional golden lifecycle | Matter-scoped create/start/block/unblock/reassign/complete/cancel transitions persist with owner, due date, priority, dependencies, optimistic revision, evidence, event/outbox, and idempotency. Cross-matter queues, recurrence, reminders, and provider calendar sync remain |
 | Court/EAMS | Externally blocked | Packet approval and honest health; versioned forms/packet validation/status adapter remain |
 | Proceedings/readiness | Product foundation | California queue view; structured readiness evaluator remains |
 | Records/subpoenas | Not started | Domain and end-to-end lifecycle remain |

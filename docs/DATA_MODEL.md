@@ -45,6 +45,7 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 | `intake_match_candidates`, `conflict_findings` | explainable possible-duplicate evidence and separately resolved, source-referenced conflict findings |
 | `intake_review_decisions` | immutable reviewer action, transition, reason, actor, event, and idempotency evidence |
 | `persons`, `organizations`, `party_aliases`, `matter_parties` | canonical people/organization identities, normalized alias lookup, role-compatible matter assignments, claim/injury/ADJ scope, and source-link provenance |
+| `matter_tasks`, `task_dependencies`, `task_decisions` | owner/due/priority/status task state, finish-to-start edges, optimistic revision, completion/cancellation evidence, and immutable transition history |
 
 ## Object keys
 
