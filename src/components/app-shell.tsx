@@ -1,5 +1,6 @@
 import {
   BriefcaseBusiness,
+  Archive,
   BadgeCheck,
   CalendarDays,
   DatabaseZap,
@@ -93,6 +94,9 @@ export function AppShell({
           </Link>
           <Link className="nav-item" href="/admin/classification">
             <Tags aria-hidden="true" size={17} /> Data classification
+          </Link>
+          <Link className="nav-item" href="/admin/exports">
+            <Archive aria-hidden="true" size={17} /> Tenant exports
           </Link>
           <Link className="nav-item" href="/admin/disposition">
             <Trash2 aria-hidden="true" size={17} /> Disposition control

@@ -4756,3 +4756,91 @@ export const classificationDecisions = sqliteTable(
     ),
   ],
 );
+
+export const tenantExportJobs = sqliteTable(
+  "tenant_export_jobs",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    status: text("status", { enum: ["ready", "failed"] }).notNull(),
+    purpose: text("purpose").notNull(),
+    format: text("format", { enum: ["application/x-tar"] }).notNull(),
+    completeness: text("completeness", {
+      enum: ["partial", "complete"],
+    }).notNull(),
+    requiredCategoryCount: integer("required_category_count").notNull(),
+    includedCategoryCount: integer("included_category_count").notNull(),
+    sourceTableCount: integer("source_table_count").notNull(),
+    includedTableCount: integer("included_table_count").notNull(),
+    sourceOriginalCount: integer("source_original_count").notNull(),
+    includedOriginalCount: integer("included_original_count").notNull(),
+    missingItems: text("missing_items", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    objectKey: text("object_key").notNull(),
+    sha256: text("sha256").notNull(),
+    byteSize: integer("byte_size").notNull(),
+    archiveEntryCount: integer("archive_entry_count").notNull(),
+    restorationVerifiedAt: integer("restoration_verified_at", {
+      mode: "timestamp_ms",
+    }),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_tenant_export_object_key").on(table.objectKey),
+    index("idx_tenant_export_history").on(table.tenantId, table.createdAt),
+  ],
+);
+
+export const tenantExportScopeItems = sqliteTable(
+  "tenant_export_scope_items",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    exportId: text("export_id").notNull(),
+    category: text("category").notNull(),
+    status: text("status", {
+      enum: ["included", "partial", "omitted"],
+    }).notNull(),
+    recordCount: integer("record_count").notNull(),
+    sourceTables: text("source_tables", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    reason: text("reason"),
+  },
+  (table) => [
+    uniqueIndex("idx_tenant_export_scope_category").on(
+      table.tenantId,
+      table.exportId,
+      table.category,
+    ),
+  ],
+);
+
+export const tenantExportDecisions = sqliteTable(
+  "tenant_export_decisions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    exportId: text("export_id").notNull(),
+    action: text("action").notNull(),
+    outcome: text("outcome", { enum: ["created", "failed"] }).notNull(),
+    reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_tenant_export_decision_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_tenant_export_decision_history").on(
+      table.tenantId,
+      table.exportId,
+      table.createdAt,
+    ),
+  ],
+);
