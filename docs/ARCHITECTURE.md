@@ -23,6 +23,8 @@ Athena does not use full event sourcing. The application writes queryable relati
 
 Every tenant-owned record carries `tenant_id`. Production queries must receive tenant context from verified identity claims, include tenant predicates, and use PostgreSQL row-level security as defense in depth. Isolation also applies to object keys, cache keys, jobs, search documents, events, logs, exports, and AI retrieval.
 
+After tenant/matter authorization, the resource-classification boundary evaluates a versioned label set against the requested data plane. The pilot persists policy versions, active resource labels, bounded overrides, and immutable decisions. Search, export creation, and archive download are representative wired adapters; remaining planes are proven in the governed fixture but not yet globally intercepted.
+
 Hosted pilot requests require platform-authenticated identity headers and the site is owner-only. Local development uses an explicit synthetic identity. Neither is the final multi-tenant identity/RLS design, and the distinction is intentionally called out in build status.
 
 ## Domain boundaries

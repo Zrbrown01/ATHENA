@@ -12,6 +12,10 @@ Only a partner or firm administrator with existing matter access may place or re
 
 The shared isolation boundary covers API reads/writes, object bytes, exports, jobs, events, search, AI retrieval, caches, and support. Search, AI retrieval, and cache products are not active; their adapters must call this boundary before lookup when implemented. Support additionally requires a current, partner-approved, matter-scoped grant.
 
+## Classification boundary
+
+Resource classification is a second, subordinate decision after tenant and matter authorization. The approved policy models access, search, AI, sharing, download, printing, retention, export, and logging. Search currently redacts or omits classified document results; export creation and archive download call the shared boundary. The administration proof records all nine outcomes for one synthetic document. Unclassified resources currently preserve legacy allow behavior, so firmwide mandatory labeling and remaining adapter coverage are required before production.
+
 The synthetic support identity is denied ordinary pilot matter membership. A partner or firm administrator can grant 15–240 minutes for one matter, one purpose, and one ticket reference. Expiry is mandatory; revocation is immediate and revision-guarded. An active ethical wall still overrides the grant. The support endpoint returns scope metadata only—never matter facts, documents, work product, export bytes, or client information—and Sites remains owner-only.
 
 Access-review attestations snapshot counts of active walls, unexpired support grants, and allowed/denied decisions for a defined review period. The reviewer records a certified or exceptions-noted outcome and notes. Athena now also persists an immutable built-in permission catalog, normalized local-fixture identities, scoped role assignments, suspension, assignment revocation, and offboarding decisions. This remains control evidence, not proof that an external directory or customer roster was reviewed; Microsoft Entra SSO/SCIM, MFA claims, reconciliation, and automatic session revocation are not connected.

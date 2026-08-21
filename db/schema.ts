@@ -4636,3 +4636,123 @@ export const dispositionDecisions = sqliteTable(
     ),
   ],
 );
+
+export const classificationPolicyVersions = sqliteTable(
+  "classification_policy_versions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    version: integer("version").notNull(),
+    status: text("status", {
+      enum: ["draft", "approved", "retired"],
+    }).notNull(),
+    labels: text("labels", { mode: "json" }).$type<string[]>().notNull(),
+    planes: text("planes", { mode: "json" }).$type<string[]>().notNull(),
+    denyOverridesAllow: integer("deny_overrides_allow", {
+      mode: "boolean",
+    }).notNull(),
+    approvedBy: text("approved_by").notNull(),
+    approvedAt: integer("approved_at", { mode: "timestamp_ms" }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_classification_policy_version").on(
+      table.tenantId,
+      table.version,
+    ),
+  ],
+);
+
+export const resourceClassifications = sqliteTable(
+  "resource_classifications",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id"),
+    resourceType: text("resource_type").notNull(),
+    resourceId: text("resource_id").notNull(),
+    labels: text("labels", { mode: "json" }).$type<string[]>().notNull(),
+    policyVersion: integer("policy_version").notNull(),
+    source: text("source").notNull(),
+    status: text("status", { enum: ["active", "superseded"] }).notNull(),
+    revision: integer("revision").notNull().default(1),
+    classifiedBy: text("classified_by").notNull(),
+    classifiedAt: integer("classified_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_resource_classification_active").on(
+      table.tenantId,
+      table.resourceType,
+      table.resourceId,
+      table.revision,
+    ),
+    index("idx_resource_classification_matter").on(
+      table.tenantId,
+      table.matterId,
+      table.status,
+    ),
+  ],
+);
+
+export const classificationOverrides = sqliteTable(
+  "classification_overrides",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    resourceType: text("resource_type").notNull(),
+    resourceId: text("resource_id").notNull(),
+    plane: text("plane").notNull(),
+    reason: text("reason").notNull(),
+    approvedBy: text("approved_by").notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    status: text("status", {
+      enum: ["active", "expired", "revoked"],
+    }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_classification_override_resource").on(
+      table.tenantId,
+      table.resourceType,
+      table.resourceId,
+      table.status,
+    ),
+  ],
+);
+
+export const classificationDecisions = sqliteTable(
+  "classification_decisions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    matterId: text("matter_id"),
+    resourceType: text("resource_type").notNull(),
+    resourceId: text("resource_id").notNull(),
+    plane: text("plane").notNull(),
+    outcome: text("outcome", {
+      enum: ["allow", "deny", "redact", "retain"],
+    }).notNull(),
+    labels: text("labels", { mode: "json" }).$type<string[]>().notNull(),
+    reasonCodes: text("reason_codes", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    policyVersion: integer("policy_version").notNull(),
+    overrideId: text("override_id"),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    decidedAt: integer("decided_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_classification_decision_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_classification_decision_resource").on(
+      table.tenantId,
+      table.resourceType,
+      table.resourceId,
+      table.decidedAt,
+    ),
+  ],
+);

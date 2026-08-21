@@ -19,12 +19,15 @@ Athena is being designed to support HIPAA-regulated workflows and SOC 2 readines
 - Dependency, secret, static, and container scanning.
 - Restore tests, incident response, access reviews, risk register, subprocessor and BAA registry.
 - No sensitive content in logs; use identifiers and correlated telemetry.
+- Versioned data classification must govern access, search, AI, sharing, download, printing, retention, export, and logging. Deny wins; legal hold forces retention; authentication, ethical-wall, AI-restricted, and hold labels cannot be bypassed by a temporary override.
 
 ## AI controls
 
 Production AI processing of regulated data remains disabled until contractual and technical approval. Outputs must be permission-aware, source-grounded, labeled, reviewed, and audited. Documents are untrusted input and must be isolated from system instructions and tool authority.
 
 AI may propose facts, drafts, tasks, time, and form fields. It may not autonomously send substantive advice, file, submit invoices, accept authority, change exposure, close a matter, delete originals, waive rules, or share privileged data.
+
+The current classification slice proves that privileged, medical-sensitive, and AI-restricted labels deny the AI plane and preserve a reason-coded decision. No AI provider or retrieval route is connected, so this is policy evidence rather than approval to process production data.
 
 ## Required pre-pilot evidence
 

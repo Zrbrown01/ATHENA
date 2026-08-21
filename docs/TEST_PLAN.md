@@ -23,6 +23,8 @@ Provider-compliance tests prove complete prerequisite evaluation, exact missing-
 
 Disposition tests prove legal-hold blocking, synthetic-target enforcement, requester self-approval denial, distinct dual approval, execution gating, and tenant denial. One API proof deleted exactly one dual-approved synthetic record while preserving its checksum and immutable audit/event evidence; a second persisted-hold proof retained its target and recorded `blocked_by_hold` before the synthetic hold was formally released.
 
+Classification tests table-drive all nine planes, search/download restrictions, legal-hold retention precedence, sensitive-log redaction, active override behavior, non-overridable labels, and tenant/matter denial. The API proof persisted one synthetic four-label resource and nine decisions with outcomes `allow`, `allow`, `deny`, `deny`, `allow`, `deny`, `retain`, `allow`, and `redact`; replay was idempotent, a foreign tenant received 403, and an immutable-label override received 400.
+
 The local integration smoke executes all seven companion API transitions against migrated D1/R2, downloads the export, and verifies seven events plus limitations. The production build enumerates all application/API routes.
 
 ## Remaining gates

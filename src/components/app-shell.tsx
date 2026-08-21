@@ -13,6 +13,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Sparkles,
+  Tags,
   Trash2,
   Users,
   UserCog,
@@ -90,6 +91,9 @@ export function AppShell({
           <Link className="nav-item" href="/admin/compliance">
             <BadgeCheck aria-hidden="true" size={17} /> Provider compliance
           </Link>
+          <Link className="nav-item" href="/admin/classification">
+            <Tags aria-hidden="true" size={17} /> Data classification
+          </Link>
           <Link className="nav-item" href="/admin/disposition">
             <Trash2 aria-hidden="true" size={17} /> Disposition control
           </Link>
@@ -114,9 +118,15 @@ export function AppShell({
               type="button"
               disabled
               title="AI provider is not connected"
+              data-policy-plane="ai"
+              aria-describedby="athena-ai-policy-state"
             >
               <Sparkles size={16} aria-hidden="true" /> Ask Athena
             </button>
+            <span id="athena-ai-policy-state" className="sr-only">
+              AI retrieval is disabled and classified resources require an AI
+              plane policy decision before use.
+            </span>
             <div className="user-button" aria-label="Signed in pilot identity">
               <span className="avatar">MC</span>
               <span>
