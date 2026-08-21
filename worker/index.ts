@@ -4,6 +4,7 @@ import {
   handleImageOptimization,
 } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
+import { runScheduledInternalDelivery } from "../src/platform/outbox-scheduler";
 
 interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
@@ -58,6 +59,9 @@ const worker = {
     }
 
     return withSecurityHeaders(await handler.fetch(request, env, ctx));
+  },
+  scheduled(controller: { scheduledTime: number; cron: string }, _env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(runScheduledInternalDelivery({ trigger: `cron:${controller.cron}`, scheduledAt: new Date(controller.scheduledTime) }));
   },
 };
 

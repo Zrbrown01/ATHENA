@@ -28,6 +28,7 @@ export default defineConfig(async () => {
           compatibility_flags: ["nodejs_compat"],
           d1_databases: d1 ? [{ binding: d1, database_name: "athena-preview", database_id: SITE_CREATOR_PLACEHOLDER_DATABASE_ID }] : [],
           r2_buckets: r2 ? [{ binding: r2, bucket_name: "athena-documents" }] : [],
+          triggers: { crons: ["*/5 * * * *"] },
         },
       }),
     ],

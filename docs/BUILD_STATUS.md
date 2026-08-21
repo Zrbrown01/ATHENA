@@ -19,7 +19,7 @@ Updated: 2026-08-20
 | Requirement area | Current evidence | Audit result |
 |---|---|---|
 | Experience foundation | Semantic tokens, shell, queue/table floorplans, focus/reduced-motion styles, responsive layout | Functional foundation; density, command palette, context-panel focus management, and automated accessibility proof remain |
-| Platform foundation | Authenticated headers, tenant-aware target schema, D1 events/outbox, R2 keys | Partial; contextual authorization, audit/access events, publisher/retries, rate limits, export, backup evidence remain |
+| Platform foundation | Authenticated headers, tenant-scoped D1/R2, immutable events, durable outbox, internal scheduler/checkpoints/reconciliation, access evidence, rate limits, verified matter archives, and local backup evidence | Partial; PostgreSQL RLS, edge policy, external provider consumers, full restore evidence, and independent validation remain |
 | Domain foundation | Matter/Claim/Injury/ADJ separation, evidence facts, human decision records | Partial; live pilot data is narrower than canonical target model |
 | Release 1 golden loop | Durable seven-stage companion, source-linked fixture analysis, draft approval, blocked delivery handoff, time/billing, audit/event/outbox writes, downloadable export | Complete as a deterministic owner-only pilot; live provider activation and production-scale controls remain explicitly outside this proof |
 | Native core and California operations | Coherent screens and selected approval commands | Product-shaped foundation; most records are synthetic fixtures, not complete vertical slices |
@@ -42,7 +42,7 @@ Updated: 2026-08-20
 | Human workflow gates | Functional pilot | Intake, authority, time, report, and filing decisions are validated and persisted with immutable event context |
 | Release 1 companion workflow | Tested pilot | Seven-stage persistent deterministic workflow proves import, source-linked QME analysis, Verbatim-shaped draft, attorney approval, honest Microsoft block, confirmed time, billing validation, audit/event/outbox, and export |
 | Event Ledger | Functional pilot | Canonical immutable event table/envelope plus tenant-scoped internal delivery receipts |
-| Reliable event delivery | Tested pilot | Leases, recovery, exponential retry/dead-letter/replay policy, Athena-native publisher, and health projection; no external provider delivery is implied |
+| Reliable event delivery | Tested internal slice | Leases, recovery, exponential retry/dead-letter/replay, five-minute Worker handler, consumer event checkpoints, legacy checkpoint backfill, reconciliation runs, and operator fallback for the Athena-native sink. Sites cron activation requires timestamp verification; no external provider delivery is implied |
 | Tenant isolation | Pilot boundary | Owner-only site identity is required; keys and queries are tenant-scoped. Multi-tenant production policy/RLS remains |
 | Document ingestion | Quarantined pilot | PDF MIME/signature/size checks, SHA-256, R2 originals, D1 metadata, compensating delete, and quarantine state. Malware scanning/OCR remain disconnected |
 | Microsoft 365 | Externally blocked | Adapter foundation only; app registration, credentials, consent, scopes, and verification required |
@@ -76,7 +76,7 @@ Updated: 2026-08-20
 | Verbatim | Tested sandbox slice | Deterministic source-linked work product and approval; audio/transcription/review provider lifecycle remains unavailable |
 | Search / Ask Athena | Not started / externally blocked | AI is disabled; secure structured/full-text search and source-grounded retrieval remain |
 | Migration Center | Foundation | Deterministic source-ID import event and migration plan; historical adapter/reconciliation/cutover remain |
-| Trust control plane | Foundation | Disabled adapter contract, health states, events/outbox; retries/dead letters/cursors/subscriptions/replay remain |
+| Trust control plane | Functional internal slice | Disabled adapter contract, health states, events/outbox, retry/dead-letter/replay, internal checkpoints and reconciliation. External provider credentials, cursors/subscriptions, signed delivery, idempotency, and reconciliation remain blocked |
 | Security/compliance | In progress | Auth headers, owner-only access, origin checks, CSP/secure headers, persisted ethical walls, content-free allow/deny evidence, durable write throttles, time-boxed matter-scoped support grants, and count-only review attestations. PostgreSQL RLS, enterprise-directory reconciliation, edge/WAF limits, restore exercises, and penetration testing remain |
 
 ## Security risks requiring resolution
@@ -91,6 +91,6 @@ Updated: 2026-08-20
 
 1. Enterprise directory/role reconciliation, edge/WAF policy, and independent isolation validation.
 2. Attorney-reviewed California rule/holiday content, exception/waiver controls, recurrence, chains, escalation, and readiness records.
-3. Automated outbox scheduling plus external consumer idempotency and reconciliation after provider approval.
+3. Verify Sites cron timestamps; add external consumer idempotency, subscriptions/cursors, signed delivery, and reconciliation only after provider approval.
 4. Approved malware scanning/OCR pipeline with quarantine release; full-environment restore and incident exercises.
 5. Production archive scale limits, streaming, encryption/key policy, and restore tooling for non-synthetic originals.

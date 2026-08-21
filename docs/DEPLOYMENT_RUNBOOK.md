@@ -94,6 +94,7 @@ TXT _cf-custom-hostname.www -> 62406762-1264-4515-b2b8-b8fe5874a50e
 ## Event-delivery operations
 
 - Open `/admin/platform` as a partner or firm administrator and load tenant-scoped health.
+- Confirm a recent `cron:*/5 * * * *` reconciliation timestamp after deployment. Sites does not expose cron configuration status, so absence of a fresh run is an activation failure that must be investigated; the owner-only manual cycle is a fallback, not proof that cron is active.
 - `pending` messages may be published only to the Athena-native internal sink in this pilot. The receipt text explicitly disclaims external delivery.
 - A lease expires after 30 seconds so another worker can recover abandoned work. Retry policy uses capped exponential backoff and dead-letters at five attempts.
 - Investigate the last error before replay. Replay resets attempt state but does not alter the immutable source event or prior delivery receipts.

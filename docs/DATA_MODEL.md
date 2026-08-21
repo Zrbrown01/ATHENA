@@ -35,6 +35,8 @@ The target model must expand by domain rather than accumulating unrelated JSON. 
 | `rate_limit_windows` | durable atomic per-actor/per-action fixed-window counters and expiry metadata |
 | `support_access_grants` | one synthetic support identity, matter, purpose, ticket, mandatory expiry, approval/revocation actors, status, and revision |
 | `access_review_attestations` | defined review period, reviewer outcome/notes, and a count-only snapshot of active access controls and decisions |
+| `outbox_consumer_checkpoints` | one tenant/consumer/event processing checkpoint with outbox identity, payload hash, and processing time |
+| `outbox_reconciliation_runs` | trigger, processed/checkpoint/receipt counts, exception count, outcome, detail, and run timestamps |
 
 ## Object keys
 

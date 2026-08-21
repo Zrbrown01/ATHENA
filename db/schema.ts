@@ -127,6 +127,34 @@ export const supportAccessGrants = sqliteTable("support_access_grants", {
   index("idx_support_grant_active").on(table.tenantId, table.status, table.expiresAt),
 ]);
 
+export const outboxConsumerCheckpoints = sqliteTable("outbox_consumer_checkpoints", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  consumer: text("consumer").notNull(),
+  eventId: text("event_id").notNull(),
+  outboxId: text("outbox_id").notNull(),
+  payloadHash: text("payload_hash").notNull(),
+  processedAt: integer("processed_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_consumer_event_once").on(table.tenantId, table.consumer, table.eventId),
+  index("idx_consumer_checkpoint_outbox").on(table.tenantId, table.outboxId),
+]);
+
+export const outboxReconciliationRuns = sqliteTable("outbox_reconciliation_runs", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  consumer: text("consumer").notNull(),
+  trigger: text("trigger").notNull(),
+  processedMessages: integer("processed_messages").notNull(),
+  checkpoints: integer("checkpoints").notNull(),
+  deliveryReceipts: integer("delivery_receipts").notNull(),
+  exceptions: integer("exceptions").notNull(),
+  outcome: text("outcome", { enum: ["matched", "exceptions"] }).notNull(),
+  detail: text("detail").notNull(),
+  startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(),
+  finishedAt: integer("finished_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_reconciliation_tenant_time").on(table.tenantId, table.finishedAt)]);
+
 export const accessReviewAttestations = sqliteTable("access_review_attestations", {
   id: text("id").primaryKey(),
   tenantId: text("tenant_id").notNull(),
