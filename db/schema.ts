@@ -851,3 +851,60 @@ export const calendarDecisions = sqliteTable("calendar_decisions", {
   uniqueIndex("idx_calendar_decision_idempotency").on(table.tenantId, table.idempotencyKey),
   index("idx_calendar_decision_aggregate").on(table.tenantId, table.aggregateType, table.aggregateId, table.createdAt),
 ]);
+
+export const reportDefinitions = sqliteTable("report_definitions", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), clientName: text("client_name").notNull(),
+  code: text("code").notNull(), version: integer("version").notNull(), title: text("title").notNull(),
+  reportType: text("report_type", { enum: ["initial", "status", "significant_event", "closure", "portfolio"] }).notNull(),
+  requiredSections: text("required_sections", { mode: "json" }).$type<string[]>().notNull(),
+  cadence: text("cadence").notNull(), scheduleMode: text("schedule_mode", { enum: ["local_intent", "external_connected"] }).notNull(),
+  contentStatus: text("content_status", { enum: ["synthetic_sandbox", "pending_attorney_review", "attorney_approved"] }).notNull(),
+  effectiveAt: integer("effective_at", { mode: "timestamp_ms" }).notNull(), reviewBy: integer("review_by", { mode: "timestamp_ms" }).notNull(),
+  createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_report_definition_version").on(table.tenantId, table.code, table.version)]);
+
+export const reportInstances = sqliteTable("report_instances", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), definitionId: text("definition_id").notNull(),
+  definitionCode: text("definition_code").notNull(), definitionVersion: integer("definition_version").notNull(), title: text("title").notNull(),
+  status: text("status", { enum: ["draft", "validated", "approved", "delivery_blocked", "delivered"] }).notNull(),
+  dueAt: integer("due_at", { mode: "timestamp_ms" }).notNull(), recipientAddresses: text("recipient_addresses", { mode: "json" }).$type<string[]>().notNull(),
+  sourceCoverageCount: integer("source_coverage_count").notNull(), unresolvedConflictCount: integer("unresolved_conflict_count").notNull(),
+  scheduleMode: text("schedule_mode", { enum: ["local_intent", "external_connected"] }).notNull(),
+  providerMode: text("provider_mode", { enum: ["deterministic_sandbox", "human_authored", "not_connected", "live"] }).notNull(),
+  revision: integer("revision").notNull().default(1), approvedBy: text("approved_by"), approvedAt: integer("approved_at", { mode: "timestamp_ms" }),
+  createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_report_instance_matter_due").on(table.tenantId, table.matterId, table.dueAt)]);
+
+export const reportSections = sqliteTable("report_sections", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), reportInstanceId: text("report_instance_id").notNull(),
+  sectionCode: text("section_code").notNull(), title: text("title").notNull(), position: integer("position").notNull(), body: text("body").notNull(),
+  bodySha256: text("body_sha256").notNull(), sourceRecordIds: text("source_record_ids", { mode: "json" }).$type<string[]>().notNull(),
+  providerMode: text("provider_mode", { enum: ["deterministic_sandbox", "human_authored"] }).notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_report_section_code").on(table.tenantId, table.reportInstanceId, table.sectionCode),
+  uniqueIndex("idx_report_section_position").on(table.tenantId, table.reportInstanceId, table.position),
+]);
+
+export const reportValidations = sqliteTable("report_validations", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), reportInstanceId: text("report_instance_id").notNull(),
+  revision: integer("revision").notNull(), outcome: text("outcome", { enum: ["pass", "fail"] }).notNull(),
+  checks: text("checks", { mode: "json" }).$type<Array<{ code: string; status: string; explanation: string }>>().notNull(),
+  sourceCoverageCount: integer("source_coverage_count").notNull(), createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_report_validation_instance").on(table.tenantId, table.reportInstanceId, table.createdAt)]);
+
+export const reportDeliveries = sqliteTable("report_deliveries", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), reportInstanceId: text("report_instance_id").notNull(),
+  provider: text("provider", { enum: ["microsoft_365"] }).notNull(), status: text("status", { enum: ["blocked_not_connected", "sent", "failed"] }).notNull(),
+  providerMode: text("provider_mode", { enum: ["not_connected", "live"] }).notNull(), providerDeliveryAttempted: integer("provider_delivery_attempted", { mode: "boolean" }).notNull(),
+  recipientAddresses: text("recipient_addresses", { mode: "json" }).$type<string[]>().notNull(), reason: text("reason").notNull(), providerMessageId: text("provider_message_id"),
+  createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_report_delivery_instance").on(table.tenantId, table.reportInstanceId, table.createdAt)]);
+
+export const reportDecisions = sqliteTable("report_decisions", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), reportInstanceId: text("report_instance_id").notNull(),
+  action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason"),
+  actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_report_decision_idempotency").on(table.tenantId, table.idempotencyKey),
+  index("idx_report_decision_instance").on(table.tenantId, table.reportInstanceId, table.createdAt),
+]);

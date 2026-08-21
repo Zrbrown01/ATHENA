@@ -183,6 +183,13 @@
       "when": 1787279211657,
       "tag": "0025_foamy_lilith",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1787279657509,
+      "tag": "0026_rich_blue_blade",
+      "breakpoints": true
     }
   ]
 }
