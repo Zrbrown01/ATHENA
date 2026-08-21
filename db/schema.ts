@@ -3999,3 +3999,136 @@ export const securityOperationsDecisions = sqliteTable(
     ),
   ],
 );
+
+export const backupSnapshots = sqliteTable(
+  "backup_snapshots",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    scope: text("scope").notNull(),
+    sourceType: text("source_type", {
+      enum: ["local_d1_export", "provider_backup"],
+    }).notNull(),
+    providerMode: text("provider_mode", {
+      enum: ["local_verified", "not_connected", "live"],
+    }).notNull(),
+    objectRef: text("object_ref").notNull(),
+    sha256: text("sha256").notNull(),
+    byteSize: integer("byte_size").notNull(),
+    tableCount: integer("table_count").notNull(),
+    dataAsOf: integer("data_as_of", { mode: "timestamp_ms" }).notNull(),
+    immutable: integer("immutable", { mode: "boolean" }).notNull(),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_backup_snapshot_checksum").on(
+      table.tenantId,
+      table.sha256,
+    ),
+  ],
+);
+
+export const recoveryExercises = sqliteTable(
+  "recovery_exercises",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    snapshotId: text("snapshot_id").notNull(),
+    status: text("status", {
+      enum: ["planned", "restored", "verified", "approved", "failed"],
+    }).notNull(),
+    targetEnvironment: text("target_environment").notNull(),
+    productionMutation: integer("production_mutation", {
+      mode: "boolean",
+    }).notNull(),
+    startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(),
+    completedAt: integer("completed_at", { mode: "timestamp_ms" }),
+    durationSeconds: integer("duration_seconds"),
+    rpoSeconds: integer("rpo_seconds"),
+    rtoSeconds: integer("rto_seconds"),
+    revision: integer("revision").notNull().default(1),
+    operatorId: text("operator_id").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_recovery_exercise_status").on(
+      table.tenantId,
+      table.status,
+      table.updatedAt,
+    ),
+  ],
+);
+
+export const recoveryVerificationChecks = sqliteTable(
+  "recovery_verification_checks",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    exerciseId: text("exercise_id").notNull(),
+    code: text("code").notNull(),
+    expectedValue: text("expected_value").notNull(),
+    actualValue: text("actual_value").notNull(),
+    outcome: text("outcome", { enum: ["pass", "fail"] }).notNull(),
+    evidenceRef: text("evidence_ref").notNull(),
+    verifiedBy: text("verified_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_recovery_check_code").on(
+      table.tenantId,
+      table.exerciseId,
+      table.code,
+    ),
+  ],
+);
+
+export const recoveryApprovals = sqliteTable(
+  "recovery_approvals",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    exerciseId: text("exercise_id").notNull(),
+    outcome: text("outcome", { enum: ["approved", "rejected"] }).notNull(),
+    scopeLimitation: text("scope_limitation").notNull(),
+    notes: text("notes").notNull(),
+    approvedBy: text("approved_by").notNull(),
+    approvedAt: integer("approved_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("idx_recovery_approval_exercise").on(
+      table.tenantId,
+      table.exerciseId,
+      table.approvedAt,
+    ),
+  ],
+);
+
+export const recoveryDecisions = sqliteTable(
+  "recovery_decisions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull(),
+    exerciseId: text("exercise_id").notNull(),
+    action: text("action").notNull(),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    reason: text("reason").notNull(),
+    actorId: text("actor_id").notNull(),
+    eventId: text("event_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_recovery_decision_idempotency").on(
+      table.tenantId,
+      table.idempotencyKey,
+    ),
+    index("idx_recovery_decision_exercise").on(
+      table.tenantId,
+      table.exerciseId,
+      table.createdAt,
+    ),
+  ],
+);

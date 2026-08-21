@@ -22,7 +22,7 @@ Athena is an isolated Vinext/React/TypeScript modular monolith deployed as an ow
 - Outbox rows are written but no delivery/reconciliation worker exists.
 - Quarantined uploads cannot be released because malware scanning is not connected.
 - Static operational fixtures can be mistaken for implemented records unless screens and status documentation label their scope precisely.
-- Complete export, retention/legal-hold review, controlled migration, and a synthetic incident/control/risk operations slice are implemented. Backup restore evidence, automatic identity revocation/alerting/notification, complete tenant export, and provider recovery remain incomplete.
+- Complete golden-matter export, retention/legal-hold review, controlled migration, incident/control/risk operations, and a checksum-pinned disposable local restore exercise are implemented. Provider/cross-region restore evidence, automatic identity revocation/alerting/notification, complete tenant export, and provider recovery remain incomplete.
 
 ## Release gates
 

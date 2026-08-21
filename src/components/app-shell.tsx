@@ -5,6 +5,7 @@ import {
   FileText,
   FlaskConical,
   Gauge,
+  HardDriveDownload,
   Landmark,
   Mail,
   Settings,
@@ -76,6 +77,9 @@ export function AppShell({
           </Link>
           <Link className="nav-item" href="/admin/security">
             <ShieldAlert aria-hidden="true" size={17} /> Security operations
+          </Link>
+          <Link className="nav-item" href="/admin/recovery">
+            <HardDriveDownload aria-hidden="true" size={17} /> Recovery evidence
           </Link>
           <Link className="nav-item" href="/admin/migration">
             <DatabaseZap aria-hidden="true" size={17} /> Migration center
