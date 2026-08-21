@@ -908,3 +908,47 @@ export const reportDecisions = sqliteTable("report_decisions", {
   uniqueIndex("idx_report_decision_idempotency").on(table.tenantId, table.idempotencyKey),
   index("idx_report_decision_instance").on(table.tenantId, table.reportInstanceId, table.createdAt),
 ]);
+
+export const matterBudgets = sqliteTable("matter_budgets", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(),
+  title: text("title").notNull(), currency: text("currency").notNull(), totalBudgetCents: integer("total_budget_cents").notNull(),
+  status: text("status", { enum: ["draft", "approved", "closed"] }).notNull(), contentStatus: text("content_status", { enum: ["synthetic_sandbox", "client_approved"] }).notNull(),
+  effectiveDate: integer("effective_date", { mode: "timestamp_ms" }).notNull(), revision: integer("revision").notNull().default(1),
+  approvedBy: text("approved_by"), approvedAt: integer("approved_at", { mode: "timestamp_ms" }), createdBy: text("created_by").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_matter_budget_matter").on(table.tenantId, table.matterId, table.createdAt)]);
+
+export const budgetPhases = sqliteTable("budget_phases", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), budgetId: text("budget_id").notNull(),
+  phaseCode: text("phase_code").notNull(), title: text("title").notNull(), position: integer("position").notNull(), budgetCents: integer("budget_cents").notNull(),
+  incurredCents: integer("incurred_cents").notNull().default(0), remainingCents: integer("remaining_cents").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_budget_phase_code").on(table.tenantId, table.budgetId, table.phaseCode),
+  uniqueIndex("idx_budget_phase_position").on(table.tenantId, table.budgetId, table.position),
+]);
+
+export const accrualSnapshots = sqliteTable("accrual_snapshots", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), budgetId: text("budget_id").notNull(),
+  period: text("period").notNull(), feesCents: integer("fees_cents").notNull(), expensesCents: integer("expenses_cents").notNull(),
+  totalAccruedCents: integer("total_accrued_cents").notNull(), budgetVarianceCents: integer("budget_variance_cents").notNull(),
+  sourceRecordIds: text("source_record_ids", { mode: "json" }).$type<string[]>().notNull(), recordedBy: text("recorded_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_accrual_budget_period").on(table.tenantId, table.budgetId, table.period)]);
+
+export const profitabilitySnapshots = sqliteTable("profitability_snapshots", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), budgetId: text("budget_id").notNull(),
+  asOfDate: integer("as_of_date", { mode: "timestamp_ms" }).notNull(), billedCents: integer("billed_cents").notNull(), collectedCents: integer("collected_cents").notNull(),
+  workedValueCents: integer("worked_value_cents").notNull(), directCostCents: integer("direct_cost_cents").notNull(),
+  realizationBasisPoints: integer("realization_basis_points").notNull(), contributionCents: integer("contribution_cents").notNull(),
+  projectionMode: text("projection_mode", { enum: ["deterministic_sandbox", "firm_approved"] }).notNull(), sourceRecordIds: text("source_record_ids", { mode: "json" }).$type<string[]>().notNull(),
+  createdBy: text("created_by").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_profitability_budget_date").on(table.tenantId, table.budgetId, table.asOfDate)]);
+
+export const budgetDecisions = sqliteTable("budget_decisions", {
+  id: text("id").primaryKey(), tenantId: text("tenant_id").notNull(), matterId: text("matter_id").notNull(), budgetId: text("budget_id").notNull(),
+  action: text("action").notNull(), fromStatus: text("from_status").notNull(), toStatus: text("to_status").notNull(), reason: text("reason"),
+  actorId: text("actor_id").notNull(), eventId: text("event_id").notNull(), idempotencyKey: text("idempotency_key").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_budget_decision_idempotency").on(table.tenantId, table.idempotencyKey),
+  index("idx_budget_decision_budget").on(table.tenantId, table.budgetId, table.createdAt),
+]);
